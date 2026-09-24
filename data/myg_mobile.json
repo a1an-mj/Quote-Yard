@@ -1,0 +1,866 @@
+[
+    {
+        "name": "Vivo Y31 5G | 6 GB | 256 GB | Blush Red",
+        "price": 31999,
+        "url": "https://www.myg.in/mobile-phones/vivo/vivo-y31-5g-6-gb-256-gb-blush-red/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "vivo Y31t 5G | 4 GB | 128GB | Crimson Red",
+        "price": 25999,
+        "url": "https://www.myg.in/mobile-phones/vivo/vivo-y31t-5g-6gb-128gb-crimson-red-en/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "vivo Y31t 5G | 4 GB | 128GB | Golden Mist",
+        "price": 25999,
+        "url": "https://www.myg.in/mobile-phones/vivo/vivo-y31t-5g-4-gb-128gb-golden-mist/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Google Pixel 11 Pro Fold 5G | 16 GB | 512 GB | Olive",
+        "price": 186999,
+        "url": "https://www.myg.in/mobile-phones/google/google-pixel-11-pro-fold-5g-16-gb-512-gb-olive/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 17 | 256 GB | Black | NM",
+        "price": 99900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-17-256-gb-black-clone/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 17 | 256 GB | White | NM",
+        "price": 99900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-17-256-gb-white-nm/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 17 | 256 GB | Mist Blue | NM",
+        "price": 99900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-17-256-gb-mist-blue-nm/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 17 | 256 GB | Lavender | NM",
+        "price": 99900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-17-256-gb-lavender-nm/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Xiaomi 17T 5G | 12 GB | 512 GB | Black",
+        "price": 69999,
+        "url": "https://www.myg.in/mobile-phones/xiaomi/xiaomi-17t-5g-12-gb-512-gb-black/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Tecno Pova 8 5G | 8 GB | 128 GB | Terminal Green | LK6",
+        "price": 31999,
+        "url": "https://www.myg.in/mobile-phones/tecno/tecno-pova-8-5g-8-gb-128-gb-terminal-green-lk6/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Nokia 123 Shield DS | Purple | TA-1742",
+        "price": 2299,
+        "url": "https://www.myg.in/mobile-phones/nokia/nokia-123-shield-ds-green-ta-1742-en/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Nokia 123 Shield DS | Green | TA-1742",
+        "price": 2299,
+        "url": "https://www.myg.in/mobile-phones/nokia/nokia-123-shield-ds-green-ta-1742/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy S26 FE 5G | 8 GB | 256 GB | Pistachio",
+        "price": 79999,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-s26-fe-5g-8-gb-256-gb-graphite-en/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy S26 FE 5G | 8 GB | 256 GB | Graphite",
+        "price": 79999,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-s26-fe-5g-8-gb-256-gb-graphite/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 18 Pro Max | 2TB | Silver",
+        "price": 329900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-18-pro-max-2tb-silver/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 18 Pro | 2 TB | Glacier",
+        "price": 314900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-18-pro-2-tb-glacier/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 18 Pro | 2 TB | Black",
+        "price": 314900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-18-pro-1-tb-black/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 18 Pro | 1 TB | Glacier",
+        "price": 239900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-18-pro-1-tb-glacier/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 18 Pro | 1 TB | Silver",
+        "price": 239900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-18-pro-1-tb-silver/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 18 Pro | 1 TB | Black",
+        "price": 239900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-18-pro-256-gb-black-en/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 18 Pro | 512 GB | Glacier",
+        "price": 189900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-18-pro-256-gb-glacier-en/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 18 Pro | 512 GB | Silver",
+        "price": 189900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-18-pro-512-gb-silver/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 18 Pro | 512 GB | Black",
+        "price": 189900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-18-pro-256-gb-black/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 18 Pro | 256 GB | Glacier",
+        "price": 164900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-18-pro-256-gb-glacier/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 18 Pro | 256 GB | Black",
+        "price": 164900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-18-pro-256-gb-silver/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 18 Pro Max | 256GB | Glacier",
+        "price": 179900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-18-pro-max-256gb-glacier/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 18 Pro Max | 256GB | Silver",
+        "price": 179900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-18-pro-max-256gb-silver/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 18 Pro | 256 GB | Silver",
+        "price": 164900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-18-pro-256-gb-silver-mjrq4hn-a/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Redmi Note 17 Pro 5G | 8 GB | 256 GB | Cloud Blue",
+        "price": 39999,
+        "url": "https://www.myg.in/mobile-phones/xiaomi/redmi-note-17-pro-5g-8-gb-256-gb-stealth-black-en-2/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Redmi Note 17 Pro 5G | 8 GB | 256 GB | Stealth Black",
+        "price": 39999,
+        "url": "https://www.myg.in/mobile-phones/xiaomi/redmi-note-17-pro-5g-8-gb-256-gb-stealth-black-en/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Redmi Note 17 Pro 5G | 8 GB | 256 GB | Purple Vibe",
+        "price": 39999,
+        "url": "https://www.myg.in/mobile-phones/xiaomi/redmi-note-17-pro-5g-8-gb-256-gb-stealth-black/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Apple iPhone 18 Pro Max | 256GB | Black",
+        "price": 179900,
+        "url": "https://www.myg.in/mobile-phones/apple/apple-iphone-18-pro-max-256gb-black/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Redmi Note 17 Pro 5G | 8 GB | 128 GB | Purple Vibe",
+        "price": 36999,
+        "url": "https://www.myg.in/mobile-phones/xiaomi/redmi-note-17-pro-5g-8-gb-128-gb-stealth-black-en-2/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Redmi Note 17 Pro 5G | 8 GB | 128 GB | Cloud Blue",
+        "price": 36999,
+        "url": "https://www.myg.in/mobile-phones/xiaomi/redmi-note-17-pro-5g-8-gb-128-gb-stealth-black-en/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Redmi Note 17 Pro 5G | 8 GB | 128 GB | Stealth Black",
+        "price": 36999,
+        "url": "https://www.myg.in/mobile-phones/xiaomi/redmi-note-17-pro-5g-8-gb-128-gb-stealth-black/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Nothing Phone 4b | 8 GB | 128 GB | Blue | A009P",
+        "price": 39999,
+        "url": "https://www.myg.in/mobile-phones/nothing/nothing-phone-4b-8-gb-128-gb-blue-a009p/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Nothing Phone 4a | 12 GB | 256 GB | Black | A069",
+        "price": 50999,
+        "url": "https://www.myg.in/mobile-phones/nothing/nothing-phone-4a-12-gb-256-gb-blue-a069-en/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Nothing Phone 4a Pro | 12 GB | 256 GB | Pink | A069P",
+        "price": 59999,
+        "url": "https://www.myg.in/mobile-phones/nothing/nothing-phone-4a-pro-12-gb-256-gb-black-a069p-en/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Nothing Phone 4a Pro | 12 GB | 256 GB | Black | A069P",
+        "price": 59999,
+        "url": "https://www.myg.in/mobile-phones/nothing/nothing-phone-4a-pro-12-gb-256-gb-black-a069p/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Tecno Pova 8 Pro | 12 GB | 512 GB | Tundra Green | LK7",
+        "price": 54999,
+        "url": "https://www.myg.in/mobile-phones/tecno/tecno-pova-8-pro-12-gb-512-gb-tundra-green-lk7/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Nothing Phone 4a | 12 GB | 256 GB | Blue | A069",
+        "price": 50999,
+        "url": "https://www.myg.in/mobile-phones/nothing/nothing-phone-4a-12-gb-256-gb-blue-a069/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy A27 5G | 8 GB | 128 GB | Light Pink",
+        "price": 38999,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-a27-5g-8-gb-128-gb-light-pink/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Nokia 110 Power Keypad Phone | Dual SIM | Purple | TA-1751",
+        "price": 1849,
+        "url": "https://www.myg.in/mobile-phones/nokia/nokia-110-power-keypad-phone-dual-sim-grey-ta-1751-en-2/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Nokia 110 Power Keypad Phone | Dual SIM | Blue | TA-1751",
+        "price": 1849,
+        "url": "https://www.myg.in/mobile-phones/nokia/nokia-110-power-keypad-phone-dual-sim-grey-ta-1751-en/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Nokia 110 Power Keypad Phone | Dual SIM | Grey | TA-1751",
+        "price": 1849,
+        "url": "https://www.myg.in/mobile-phones/nokia/nokia-110-power-keypad-phone-dual-sim-grey-ta-1751/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Vivo Y21 5G | 6 GB | 128 GB | Mystic Blue",
+        "price": 26499,
+        "url": "https://www.myg.in/mobile-phones/vivo/vivo-y21-5g-6-gb-128-gb-mystic-blue/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Vivo X300 Ultra With Photographer Kit | 16 GB | 512 GB | Eclipse Black",
+        "price": 209999,
+        "url": "https://www.myg.in/mobile-phones/vivo/vivo-x300-ultra-with-photographer-kit-16-gb-512-gb-eclipse-black/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Vivo Y05 | 4 GB | 64 GB | Champagne Gold",
+        "price": 14999,
+        "url": "https://www.myg.in/mobile-phones/vivo/vivo-y05-4-gb-64-gb-mystic-blue-en-2/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Vivo Y05 | 4 GB | 64 GB | Straw Gold",
+        "price": 14999,
+        "url": "https://www.myg.in/mobile-phones/vivo/vivo-y05-4-gb-64-gb-mystic-blue-en/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Vivo Y05 | 4 GB | 64 GB | Mystic Blue",
+        "price": 14999,
+        "url": "https://www.myg.in/mobile-phones/vivo/vivo-y05-4-gb-64-gb-mystic-blue/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "oppo Find X9 5G | 12GB | 256GB | Titanium Grey | NM",
+        "price": 84999,
+        "url": "https://www.myg.in/mobile-phones/oppo/oppo-find-x9-5g-12gb-256gb-titanium-grey-clone/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "HMD 100 DS | Red | TA-1753",
+        "price": 1099,
+        "url": "https://www.myg.in/mobile-phones/hmd/hmd-100-ds-red-ta-1753/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "HMD 100 DS | Teal | TA-1753",
+        "price": 1099,
+        "url": "https://www.myg.in/mobile-phones/hmd/hmd-100-ds-teal-ta-1753/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "HMD 100 DS | Grey | TA-1753",
+        "price": 1099,
+        "url": "https://www.myg.in/mobile-phones/hmd/hmd-100-ds-grey-ta-1753/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Tecno Spark Go3 Pro | 4 GB | 128 GB | Sunrise Orange",
+        "price": 16999,
+        "url": "https://www.myg.in/mobile-phones/tecno/tecno-spark-go3-pro-4-gb-128-gb-basalt-titanium-en-3/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Tecno Spark Go3 Pro | 4 GB | 128 GB | Eclipse Black",
+        "price": 16999,
+        "url": "https://www.myg.in/mobile-phones/tecno/tecno-spark-go3-pro-4-gb-128-gb-basalt-titanium-en-2/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Tecno Spark Go3 Pro | 4 GB | 128 GB | Burgundy Red",
+        "price": 16999,
+        "url": "https://www.myg.in/mobile-phones/tecno/tecno-spark-go3-pro-4-gb-128-gb-basalt-titanium-en/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Tecno Spark Go3 Pro | 4 GB | 128 GB | Basalt Titanium",
+        "price": 16999,
+        "url": "https://www.myg.in/mobile-phones/tecno/tecno-spark-go3-pro-4-gb-128-gb-basalt-titanium/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Vivo Y31 5G | 6 GB | 256 GB | Coral Green",
+        "price": 31999,
+        "url": "https://www.myg.in/mobile-phones/vivo/vivo-y31-5g-6-gb-128-gb-coral-green-en/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "vivo Y31t 5G | 4GB | 128GB | Seashore Green",
+        "price": 25999,
+        "url": "https://www.myg.in/mobile-phones/vivo/vivo-y31t-5g-4gb-128gb-seashore-green/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "vivo Y31t 5G | 6GB | 256GB | Crimson Red",
+        "price": 34999,
+        "url": "https://www.myg.in/mobile-phones/vivo/vivo-y31t-5g-6gb-256gb-crimson-red/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Vivo Y31 5G | 6 GB | 128 GB | Coral Green",
+        "price": 27999,
+        "url": "https://www.myg.in/mobile-phones/vivo/vivo-y31-5g-6-gb-128-gb-coral-green/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "vivo Y31t 5G | 6GB | 128GB | Golden Mist",
+        "price": 29999,
+        "url": "https://www.myg.in/mobile-phones/vivo/vivo-y31t-5g-6gb-128gb-golden-mist/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "vivo Y31t 5G | 6GB | 128GB | Crimson Red",
+        "price": 29999,
+        "url": "https://www.myg.in/mobile-phones/vivo/vivo-y31t-5g-6gb-128gb-crimson-red/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Redmi Note 17 5G | 8 GB | 128 GB | Dark Night",
+        "price": 30999,
+        "url": "https://www.myg.in/mobile-phones/xiaomi/redmi-note-17-5g-8-gb-128-gb-arctic-blue/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Redmi Note 17 5G | 6 GB | 128 GB | Dark Night",
+        "price": 27999,
+        "url": "https://www.myg.in/mobile-phones/xiaomi/redmi-note-17-5g-6-gb-128-gb-arctic-blue-en/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "vivo Y31t 5G | 6GB | 128GB | Seashore Green",
+        "price": 29999,
+        "url": "https://www.myg.in/mobile-phones/vivo/vivo-y31t-5g-6gb-128gb-seashore-green/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Redmi Note 17 5G | 6 GB | 128 GB | Arctic Blue",
+        "price": 27999,
+        "url": "https://www.myg.in/mobile-phones/xiaomi/redmi-note-17-5g-6-gb-128-gb-arctic-blue/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Redmi 17 5G | 8 GB | 128 GB | Endless Blue",
+        "price": 26999,
+        "url": "https://www.myg.in/mobile-phones/xiaomi/redmi-17-5g-6-gb-128-gb-endless-blue/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Redmi 17 5G | 8 GB | 128 GB | Absolute Black",
+        "price": 26999,
+        "url": "https://www.myg.in/mobile-phones/xiaomi/redmi-17-5g-6-gb-128-gb-absolute-black-en-3/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Redmi 17 5G | 8 GB | 128 GB | Eternal Orange",
+        "price": 26999,
+        "url": "https://www.myg.in/mobile-phones/xiaomi/redmi-17-5g-6-gb-128-gb-eternal-orange/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Redmi 17 5G | 6 GB | 128 GB | Endless Blue",
+        "price": 23999,
+        "url": "https://www.myg.in/mobile-phones/xiaomi/redmi-17-5g-6-gb-128-gb-absolute-black-en-2/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Redmi 17 5G | 6 GB | 128 GB | Eternal Orange",
+        "price": 23999,
+        "url": "https://www.myg.in/mobile-phones/xiaomi/redmi-17-5g-6-gb-128-gb-absolute-black-en/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Redmi 17 5G | 6 GB | 128 GB | Absolute Black",
+        "price": 23999,
+        "url": "https://www.myg.in/mobile-phones/xiaomi/redmi-17-5g-6-gb-128-gb-absolute-black/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Nothing Phone (4a) Pro 5G | 8 GB | 256 GB | Black | NM",
+        "price": 57999,
+        "url": "https://www.myg.in/mobile-phones/nothing/nothing-phone-4a-pro-5g-8-gb-256-gb-black-nm/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Nokia 130 Music Dual Sim with Music Player | Dedicated Music Buttons | Purple | NM",
+        "price": 2123,
+        "url": "https://www.myg.in/mobile-phones/nokia/nokia-130-music-dual-sim-with-music-player-dedicated-music-buttons-purple-nm/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Tecno Spark Go3 Pro | 4 GB | 64 GB | Burgundy Red",
+        "price": 15999,
+        "url": "https://www.myg.in/mobile-phones/tecno/tecno-spark-go3-pro-4-gb-64-gb-sunrise-orange-en/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Tecno Spark Go3 Pro | 4 GB | 64 GB | Sunrise Orange",
+        "price": 15999,
+        "url": "https://www.myg.in/mobile-phones/tecno/tecno-spark-go3-pro-4-gb-64-gb-sunrise-orange/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy Z Fold8 Ultra 5G | 12GB | 256GB | Cream | NM",
+        "price": 199999,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-z-fold8-ultra-5g-12gb-256gb-cream-nm/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy Z Fold8 Ultra 5G | 12GB | 256GB | Violet Shadow | NM",
+        "price": 199999,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-z-fold8-ultra-5g-12gb-256gb-violet-shadow-nm/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Tecno Pova curve 2 5G | 8 GB | 128 GB | Mystic Purple | NM",
+        "price": 31999,
+        "url": "https://www.myg.in/mobile-phones/tecno/tecno-pova-curve-2-5g-8-gb-128-gb-mystic-purple-clone/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Realme C83 5G | 4GB | 64GB | Sprouting Green | NM",
+        "price": 19999,
+        "url": "https://www.myg.in/mobile-phones/realme/realme-c83-5g-4gb-64gb-sprouting-green-clone/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Realme C83 5G | 6GB | 128GB | Blooming Purple | NM",
+        "price": 26999,
+        "url": "https://www.myg.in/mobile-phones/realme/realme-c83-5g-6gb-128gb-blooming-purple-nm/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Realme C83 5G | 4GB | 64GB | Blooming Purple | NM",
+        "price": 19999,
+        "url": "https://www.myg.in/mobile-phones/realme/realme-c83-5g-4gb-64gb-blooming-purple-clone/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Realme C83 5G | 6GB | 128GB | Sprouting Green | NM",
+        "price": 26999,
+        "url": "https://www.myg.in/mobile-phones/realme/realme-c83-5g-6gb-128gb-sprouting-green-nm/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy S26 Ultra 5G | 12GB | 256GB | White | NM1",
+        "price": 130999,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-s26-ultra-5g-12gb-256gb-white-nm1/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy S26 Ultra 5G | 12GB | 512GB | Cobalt Violet | NM1",
+        "price": 150999,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-s26-ultra-5g-12gb-512gb-cobalt-violet-nm-clone/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Realme C83 5G | 4GB | 128GB | Sprouting Green | NM",
+        "price": 23999,
+        "url": "https://www.myg.in/mobile-phones/realme/realme-c83-5g-4gb-128gb-sprouting-green-clone/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy A36 5G | 12 GB | 256 GB | Awesome Lavender | NM",
+        "price": 45499,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-a36-5g-12-gb-256-gb-awesome-lavender-nm/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy A36 5G | 12 GB | 256 GB | Awesome Black | NM",
+        "price": 46499,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-a36-5g-12-gb-256-gb-awesome-black-nm/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy A56 5G | 8GB | 256 GB | Awesome Olive | NM",
+        "price": 48999,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-a56-5g-8gb-256-gb-awesome-olive-nm/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy A56 5G | 12 GB | 256 GB | Awesome Light Gray | NM",
+        "price": 54499,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-a56-5g-12-gb-256-gb-awesome-light-gray-nm/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "REDMI Note 15 Pro 5G | 8GB | 128GB | Mirage Blue | NM",
+        "price": 31999,
+        "url": "https://www.myg.in/mobile-phones/xiaomi/redmi-note-15-pro-5g-8gb-128gb-mirage-blue-clone/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "REDMI Note 15 Pro 5G | 8GB | 128GB | Silver Ash | NM",
+        "price": 31999,
+        "url": "https://www.myg.in/mobile-phones/xiaomi/redmi-note-15-pro-5g-8gb-128gb-silver-ash-nm/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Realme C83 5G | 4GB | 128GB | Blooming Purple | NM",
+        "price": 23999,
+        "url": "https://www.myg.in/mobile-phones/realme/realme-c83-5g-4gb-128gb-blooming-purple-nm/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "realme 16 Pro 5G | 12 GB | 256 GB | Pebble Grey | NM",
+        "price": 49999,
+        "url": "https://www.myg.in/mobile-phones/realme/realme-16-pro-5g-12-gb-256-gb-pebble-grey-nm1/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "realme 16 Pro 5G | 12 GB | 256 GB | Master Gold | NM",
+        "price": 49999,
+        "url": "https://www.myg.in/mobile-phones/realme/realme-16-pro-5g-12-gb-256-gb-master-gold-nm1/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy A36 5G | 8 GB | 256 GB | Awesome Black | NM1",
+        "price": 40999,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-a36-5g-8-gb-256-gb-awesome-black-clone/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy A36 5G | 8 GB | 256 GB | Awesome Lavender | NM1",
+        "price": 40999,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-a36-5g-8-gb-256-gb-awesome-lavender-nm1/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy A36 5G | 8 GB | 256 GB | Awesome White | NM1",
+        "price": 40999,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-a36-5g-8-gb-256-gb-awesome-white-clone/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy S26 Ultra 5G | 12GB | 256GB | Black | NM1",
+        "price": 130999,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-s26-ultra-5g-12gb-256gb-black-nm1/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy S26 Ultra 5G | 12GB | 512 GB | Silver Shadow | NM1",
+        "price": 150999,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-s26-ultra-5g-12gb-512-gb-silver-shadow-nm1/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy S26 Ultra 5G | 12GB | 256GB | Cobalt Violet | NM1",
+        "price": 130999,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-s26-ultra-5g-12gb-256gb-cobalt-violet-nm1/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy Z Fold8 5G | 12GB | 256GB | Cream | NM",
+        "price": 179999,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-z-fold8-5g-12gb-256gb-cream-nm/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy Z Fold8 5G | 12GB | 256GB | Lavender | NM",
+        "price": 179999,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-z-fold8-5g-12gb-256gb-lavender-nm/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy Z Fold8 5G | 12GB | 256GB | Graphite | NM",
+        "price": 179999,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-z-fold8-5g-12gb-256gb-graphite-nm/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Samsung Galaxy Z Fold8 Ultra 5G | 12GB | 256GB | Graphite | NM",
+        "price": 199999,
+        "url": "https://www.myg.in/mobile-phones/samsung/samsung-galaxy-z-fold8-ultra-5g-12gb-256gb-graphite-clone/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    },
+    {
+        "name": "Tecno Pova 8 Pro 5G | 256 GB | 8 GB | Graphite Black",
+        "price": 49999,
+        "url": "https://www.myg.in/mobile-phones/tecno/tecno-pova-8-pro-5g-256-gb-8-gb-graphite-black/",
+        "availability": "In stock",
+        "shop": "myG",
+        "category": "Mobiles"
+    }
+]

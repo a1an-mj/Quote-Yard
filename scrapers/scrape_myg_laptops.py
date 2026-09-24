@@ -54,7 +54,8 @@ def scrape_page(page):
             "name": name,
             "price": price,
             "url": url,
-            "availability": availability
+            "availability": availability,
+            "shop": "myG"
         })
 
     return page_products
@@ -96,10 +97,10 @@ with sync_playwright() as p:
 
     # Save results
     with open(
-        "myg_laptops.json",
-        "w",
-        encoding="utf-8"
-    ) as file:
+    "data/myg_laptops.json",
+    "w",
+    encoding="utf-8"
+) as file:
         json.dump(
             all_products,
             file,
@@ -113,6 +114,6 @@ with sync_playwright() as p:
     print("=" * 60)
 
     print(f"Total products: {len(all_products)}")
-    print("Saved to: myg_laptops.json")
+    print("Saved to: data/myg_laptops.json")
 
     browser.close()
