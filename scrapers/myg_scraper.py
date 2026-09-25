@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """
 MyG.in product scraper — goes through every category in CATEGORIES
 one after another, in a single browser session, writing one JSON
@@ -175,6 +176,12 @@ def scrape_category(
 
         response = page.goto(url, wait_until="domcontentloaded")
 
+
+        # Page number doesn't exist (category has fewer pages).
+        if response and response.status == 404:
+            log.warning("Page does not exist (404). Stopping category.")
+            break
+            
         # Stop this category cleanly if MyG returns 403.
         if response and response.status == 403:
             log.warning("MyG returned 403 Forbidden. Stopping category.")
