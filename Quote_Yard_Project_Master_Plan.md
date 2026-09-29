@@ -1,63 +1,67 @@
 Quote Yard — Project Master Plan
-
-Project Overview
+1. Project Overview
 
 Quote Yard is a retail price comparison platform focused initially on Kerala/India retailers.
 
 The system will collect product listings and prices from multiple retailers, normalize the data, store it in PostgreSQL, match equivalent products, and present price comparisons through a React frontend.
 Target retailers
 
-myG
-Oxygen
-Pittappillil
-Nandilath G-Mart
-Croma
+    Active retailers:
+    myG
+    Oxygen
+    Pittappillil
+    Nandilath G Mart
+
+    Future retailer:
+    Croma
+
+    The scraper/data architecture is designed to be scalable so additional
+    retailers such as Croma can be added later without redesigning the core system.
 
 Main product categories
 
-Mobiles
-Laptops / desktops
-Tablets
-Accessories
-TVs
-Home & Kitchen
-Refrigerators
-Washing Machines
-Air Conditioners
-Small Appliances
-Personal Care
-Home Automation
-Other retailer categories as needed
+    Mobiles
+    Laptops / desktops
+    Tablets
+    Accessories
+    TVs
+    Home & Kitchen
+    Refrigerators
+    Washing Machines
+    Air Conditioners
+    Small Appliances
+    Personal Care
+    Home Automation
+    Other retailer categories as needed
 
 2. Core Architecture
 
 Retailer Websites
-|
-v
+       |
+       v
 Playwright Scrapers
-|
-v
+       |
+       v
 Raw Product Data
-|
-v
+       |
+       v
 Data Cleaning / Normalization
-|
-v
+       |
+       v
 Product Matching
-|
-v
+       |
+       v
 PostgreSQL
-|
-v
+       |
+       v
 FastAPI
-|
-v
+       |
+       v
 React Frontend
 
 A scheduler will trigger the scraping system automatically.
 3. Major Modules
-
-Scraping / Data Collection
+1. Scraping / Data Collection
 
 Collect product information from each retailer.
 
@@ -69,6 +73,7 @@ url
 availability
 shop
 category
+subcategory
 
 The scraper should primarily collect what the retailer actually displays.
 
@@ -101,14 +106,14 @@ Galaxy S25 512GB
 
 Possible matching signals:
 
-Brand
-Product/model name
-Model number
-Variant
-Storage
-RAM where applicable
-Color where reliable
-Category-specific identifiers
+    Brand
+    Product/model name
+    Model number
+    Variant
+    Storage
+    RAM where applicable
+    Color where reliable
+    Category-specific identifiers
 
 Product matching stays separate from scraping.
 4. Database
@@ -130,26 +135,26 @@ Price History
 Conceptually:
 
 Canonical Product
-|
-+---- myG listing
-+---- Oxygen listing
-+---- Pittappillil listing
-+---- Nandilath G-Mart listing
-+---- Croma listing
+       |
+       +---- myG listing
+       +---- Oxygen listing
+       +---- Pittappillil listing
+       +---- Nandilath G Mart listing
+       +---- Croma listing
 
-Backend
+5. Backend
 
 Technology: FastAPI
 
 React
-|
-v
+  |
+  v
 FastAPI
-|
-v
+  |
+  v
 SQLAlchemy
-|
-v
+  |
+  v
 PostgreSQL
 
 Possible future endpoints:
@@ -160,7 +165,7 @@ GET /products/{id}/prices
 GET /search?q=samsung
 GET /compare/{product_id}
 
-Search
+6. Search
 
 Initially simple database-backed search is enough.
 
@@ -186,14 +191,14 @@ Technology: APScheduler
 Example:
 
 02:00 AM
-|
-v
+   |
+   v
 Run retailer scrapers
-|
-v
+   |
+   v
 Process data
-|
-v
+   |
+   v
 Update PostgreSQL
 
 One retailer failing should not stop the whole update.
@@ -201,35 +206,35 @@ One retailer failing should not stop the whole update.
 
 Technology:
 
-React
-Vite
-Tailwind CSS / utility styling
-React Router
+    React
+    Vite
+    Tailwind CSS / utility styling
+    React Router
 
 Prototype flow:
 
 Landing
-↓
+  ↓
 Sign Up / Login
-↓
+  ↓
 Dashboard
-↓
+  ↓
 Search
-↓
+  ↓
 Product Results
-↓
+  ↓
 Product Comparison
 
-Frontend Design
+4. Frontend Design
 
 Visual direction:
 
-Terracotta primary
-Warm Ivory
-Warm Taupe
-Olive Green
-Walnut Brown
-Near Black
+    Terracotta primary
+    Warm Ivory
+    Warm Taupe
+    Olive Green
+    Walnut Brown
+    Near Black
 
 Approximate palette:
 
@@ -242,17 +247,17 @@ Near Black   #171512
 
 Style:
 
-Neo-brutalist / playful brutalist
-Bold chunky typography
-Rounded cards
-Strong dark framing
-High contrast
-Solid color blocks
-Subtle shadows
-Minimal gradients
-Mobile-first
-Responsive
-Subtle animations
+    Neo-brutalist / playful brutalist
+    Bold chunky typography
+    Rounded cards
+    Strong dark framing
+    High contrast
+    Solid color blocks
+    Subtle shadows
+    Minimal gradients
+    Mobile-first
+    Responsive
+    Subtle animations
 
 5. Technology Stack
 Frontend
@@ -295,23 +300,23 @@ Quote Yard will not use OpenAI AI extraction for scraping.
 
 Scraping uses deterministic techniques:
 
-Playwright
-CSS selectors
-DOM extraction
-normalization rules
+    Playwright
+    CSS selectors
+    DOM extraction
+    normalization rules
 
 Avoid premature complexity
 
 Do not add these for the MVP unless a real requirement appears:
 
-Kafka
-RabbitMQ
-Celery
-Redis
-Kubernetes
-complicated AI extraction
-complex search engines
-microservices
+    Kafka
+    RabbitMQ
+    Celery
+    Redis
+    Kubernetes
+    complicated AI extraction
+    complex search engines
+    microservices
 
 The MVP stack is:
 
@@ -327,7 +332,7 @@ Playwright
 +
 APScheduler
 
-Current Repository
+7. Current Repository
 
 quote-yard/
 ├── data/
@@ -349,35 +354,35 @@ data/
 
 GitHub repository:
 
-git@github.com/Quote-Yard.git
+git@github.com:a1an-mj/Quote-Yard.git
 
 Main branch:
 
 main
 
-Current MyG Scraper
+8. Current MyG Scraper
 
 The MyG scraper uses one configuration dictionary:
 
 CATEGORIES = {
-"mobiles": {...},
-"laptops": {...},
-"tablets": {...},
-"accessories": {...},
-"home-kitchen": {...},
-"refrigerators": {...},
-"washing-machines": {...},
-"air-conditioners": {...},
-"small-appliances": {...},
-"personal-care": {...},
-"home-automation": {...},
+    "mobiles": {...},
+    "laptops": {...},
+    "tablets": {...},
+    "accessories": {...},
+    "home-kitchen": {...},
+    "refrigerators": {...},
+    "washing-machines": {...},
+    "air-conditioners": {...},
+    "small-appliances": {...},
+    "personal-care": {...},
+    "home-automation": {...},
 }
 
 Each category defines:
 
-base_url
-output
-label
+    base_url
+    output
+    label
 
 Current selectors:
 
@@ -388,15 +393,15 @@ AVAILABILITY_SELECTOR = "p.text-green"
 Each product currently becomes:
 
 {
-"name": "...",
-"price": 39999,
-"url": "...",
-"availability": "In stock",
-"shop": "myG",
-"category": "Mobiles"
+    "name": "...",
+    "price": 39999,
+    "url": "...",
+    "availability": "In stock",
+    "shop": "myG",
+    "category": "Mobiles"
 }
 
-MyG Price Cleaning
+9. MyG Price Cleaning
 
 Example:
 
@@ -428,7 +433,7 @@ Safety limit:
 
 SAFETY_MAX_PAGES = 100
 
-MyG Navigation Edge Cases
+11. MyG Navigation Edge Cases
 403
 
 Some pages can return:
@@ -455,12 +460,12 @@ Status: fixed. scrape_category() now checks the HTTP response right after page.g
 response = page.goto(url, wait_until="domcontentloaded")
 
 if response and response.status == 404:
-log.warning("Page does not exist (404). Stopping category.")
-break
+    log.warning("Page does not exist (404). Stopping category.")
+    break
 
 if response and response.status == 403:
-log.warning("MyG returned 403 Forbidden. Stopping category.")
-break
+    log.warning("MyG returned 403 Forbidden. Stopping category.")
+    break
 
 This preserves already-collected products and allows them to be saved.
 
@@ -484,15 +489,15 @@ Fresh page per category
 Current architecture:
 
 Browser
-|
-Context
-|
-+-- Page → Mobiles → close
-+-- Page → Laptops → close
-+-- Page → Tablets → close
-+-- Page → Accessories → close
-+-- Page → Home & Kitchen → close
-+-- ...
+  |
+  Context
+  |
+  +-- Page → Mobiles → close
+  +-- Page → Laptops → close
+  +-- Page → Tablets → close
+  +-- Page → Accessories → close
+  +-- Page → Home & Kitchen → close
+  +-- ...
 
 This avoids keeping every category page alive.
 
@@ -506,15 +511,14 @@ Site differences from MyG
 
 Oxygen runs on Shopify, which changes several things from MyG's custom PHP storefront:
 
-            MyG                          Oxygen
-
+                MyG                          Oxygen
 Selectors       CSS on visible text          data-* attributes on the card
-(a.line-clamp-2, etc.)        (data-product-title,
-data-product-price,
-data-product-url)
+                (a.line-clamp-2, etc.)        (data-product-title,
+                                               data-product-price,
+                                               data-product-url)
 Pagination      /category/page-2/             ?page=2 (or &page=2)
 Price format    Already rupees with           Paise (divide by 100)
-₹/commas to strip
+                ₹/commas to strip
 
 Selectors and config
 
@@ -528,11 +532,11 @@ Extra robustness over the MyG scraper
 
 Built with a few defensive additions MyG doesn't have yet:
 
-5xx handling: any status >= 500 stops the category cleanly, not just 403/404.
-Per-page try/except: scrape_category() wraps each page fetch in a try/except, logs, and breaks cleanly on an unexpected error instead of crashing the whole run.
-URL dedup + stop condition: tracks seen_urls; if a page returns zero new URLs, the category stops. Protects against a site serving the same page repeatedly instead of a clean 404.
-detect_availability() fallback chain: scans the card's full text first for "out of stock" / "sold out" / "add to cart"; if that's inconclusive, checks each button/a inside the card individually for the same phrases.
-500ms delay between pages (page.wait_for_timeout), and an explicit 1440x900 viewport on the context.
+    5xx handling: any status >= 500 stops the category cleanly, not just 403/404.
+    Per-page try/except: scrape_category() wraps each page fetch in a try/except, logs, and breaks cleanly on an unexpected error instead of crashing the whole run.
+    URL dedup + stop condition: tracks seen_urls; if a page returns zero new URLs, the category stops. Protects against a site serving the same page repeatedly instead of a clean 404.
+    detect_availability() fallback chain: scans the card's full text first for "out of stock" / "sold out" / "add to cart"; if that's inconclusive, checks each button/a inside the card individually for the same phrases.
+    500ms delay between pages (page.wait_for_timeout), and an explicit 1440x900 viewport on the context.
 
 Category URLs — verification status
 
@@ -540,8 +544,8 @@ CATEGORIES covers: mobiles, laptops, kitchen-appliances, refrigerators, washing-
 
 Verified:
 
-mobiles — the guessed slug /collections/mobile-phones was wrong. Correct slug is /collections/mobile-smart-phones. Fixed and confirmed: names, prices, URLs, and availability all populated correctly on a real scrape; the paise/100 price conversion is confirmed correct against real prices (e.g. ₹13,499 Galaxy A07, ₹1,39,999 Galaxy S26 Ultra).
-All categories — a full headless run across every category in CATEGORIES completed successfully. Pagination (?page=N), the URL-dedup "no new products" stop condition, and every category URL slug all confirmed working end to end.
+    mobiles — the guessed slug /collections/mobile-phones was wrong. Correct slug is /collections/mobile-smart-phones. Fixed and confirmed: names, prices, URLs, and availability all populated correctly on a real scrape; the paise/100 price conversion is confirmed correct against real prices (e.g. ₹13,499 Galaxy A07, ₹1,39,999 Galaxy S26 Ultra).
+    All categories — a full headless run across every category in CATEGORIES completed successfully. Pagination (?page=N), the URL-dedup "no new products" stop condition, and every category URL slug all confirmed working end to end.
 
 Availability check
 
@@ -585,7 +589,100 @@ One category, limited pages (used for the mobiles verification test):
 
 python scrapers/oxygen_scraper.py --only laptops --max-pages 1
 
-MyG Scraper Commands
+12b. Pittappillil Online Store Scraper
+
+Third retailer scraper: scrapers/pittappillil_scraper.py.
+
+Same MVP field model as MyG and Oxygen (name, price, url, availability, shop), plus a second classification field unique to this retailer so far: subcategory.
+Selectors and config
+
+PRODUCT_CARD_SELECTOR = ".products-list__item"
+PRODUCT_NAME_SELECTOR = ".product-card__name a"
+PRICE_SELECTOR = ".product-card__prices"
+AVAILABILITY_SELECTOR = ".product-card__availability span"
+
+Price extraction is the one tricky part of this retailer: the price block contains both the current price and a struck-through original price in the same element:
+
+<div class="product-card__prices">
+    ₹ 35999
+    <small><strike>₹ 58999</strike></small>
+</div>
+
+extract_current_price() reads only the direct text node on that element (skipping the nested <small>/<strike>), so the discounted price is captured and the original price is correctly ignored.
+
+Pagination is done through query parameters rather than path segments:
+
+/stores/Mobile
+/stores/Mobile?page=2&limit=12
+
+Same defensive posture as Oxygen: 403/404/5xx all stop the category cleanly, seen_urls dedup with a "no new products" stop condition, and a fresh browser context per subcategory with the same image/media/font resource blocking used by MyG and Oxygen.
+Category structure — restructured into category + subcategory
+
+Pittappillil exposes roughly 55 store pages (Air Fryer, Appachatty, Barbeque, Mobiles, Laptops, and so on). Saving one JSON file per store page, as MyG and Oxygen do per top-level category, would have produced 55 small files with no grouping.
+
+Instead, CATEGORIES is two levels deep:
+
+CATEGORIES = {
+    "kitchen-appliances": {
+        "label": "Kitchen Appliances",
+        "output": "pittappillil_kitchen_appliances.json",
+        "subcategories": {
+            "air-fryer": {"url": "...", "label": "Air Fryer"},
+            "appachatty": {"url": "...", "label": "Appachatty"},
+            ...
+        },
+    },
+    "home-appliances": {...},
+    "home-audio": {...},
+    "air-quality": {...},
+    "mobiles-laptops": {...},
+}
+
+The scraper loops every subcategory under a main category, tags each product with both fields, and saves one combined JSON file per main category:
+
+{
+    "name": "Philips Air Fryer...",
+    "price": 8999,
+    "url": "https://www.pittappillilonline.com/...",
+    "availability": "In stock",
+    "shop": "Pittappillil",
+    "category": "Kitchen Appliances",
+    "subcategory": "Air Fryer"
+}
+
+Five main categories, 55 subcategories total:
+
+    Kitchen Appliances (36 subcategories) → pittappillil_kitchen_appliances.json
+    Home Appliances (8 subcategories) → pittappillil_home_appliances.json
+    Home Audio (2 subcategories) → pittappillil_home_audio.json
+    Air Quality and Circulation (5 subcategories) → pittappillil_air_quality.json
+    Mobiles, Laptops and More (4 subcategories) → pittappillil_mobiles_laptops.json
+
+This gives 5 JSON files instead of 55, while keeping the specific subcategory on every product — which maps directly onto the category → subcategory hierarchy planned for PostgreSQL (see section 4, Database).
+CLI
+
+--only now selects main categories rather than individual store pages, and a new --subcategories flag narrows further within whichever categories are selected:
+
+All categories:
+
+python scrapers/pittappillil_scraper.py
+
+Headless:
+
+python scrapers/pittappillil_scraper.py --headless
+
+Selected main categories:
+
+python scrapers/pittappillil_scraper.py --only kitchen-appliances home-appliances
+
+One main category, one subcategory, limited pages (spot-check style, mirroring the Oxygen mobiles test):
+
+python scrapers/pittappillil_scraper.py --only mobiles-laptops --subcategories mobiles --max-pages 1
+
+Status: Pittappillil scraper built, restructured into the category/subcategory grouping above, and confirmed running successfully.
+
+Open item: unlike Oxygen, the 55 subcategory URLs have not been individually spot-checked one by one against the live site (Oxygen's mobiles slug, for example, needed correcting after a first failed guess). Worth a pass through the logs on the next full headless run to confirm every subcategory is actually returning products rather than silently stopping at page 1.
+13. MyG Scraper Commands
 
 All categories:
 
@@ -607,16 +704,16 @@ Page safety limit:
 
 python scrapers/myg_scraper.py --max-pages 20
 
-Existing MyG Work
+14. Existing MyG Work
 Mobiles
 
 Previously collected approximately 108 products before encountering a 403 at page 10.
 
 Mobile parsing extracted:
 
-RAM
-Storage
-Color
+    RAM
+    Storage
+    Color
 
 Some feature phones legitimately had no normal RAM field.
 
@@ -649,12 +746,12 @@ name = product["name"].split("|")[0].strip()
 
 Keep:
 
-name
-price
-url
-availability
-shop
-category
+    name
+    price
+    url
+    availability
+    shop
+    category
 
 Duplicate listings and missing availability were observed and are not being over-engineered yet.
 TVs
@@ -672,7 +769,7 @@ Do not over-parse specifications.
 Prefer:
 
 Raw listing
-↓
+   ↓
 name
 price
 url
@@ -712,15 +809,15 @@ Later, PostgreSQL will store price history separately.
 Always debug in this order:
 
 Fix 1
-↓
+  ↓
 Test once
-↓
+  ↓
 If broken → Fix 2
-↓
+  ↓
 Test once
-↓
+  ↓
 If still broken → Fix 1 + Fix 2
-↓
+  ↓
 Test once
 
 Do not change multiple unrelated things before testing.
@@ -744,51 +841,53 @@ A previous Python file named inspect.py shadowed Python's standard-library inspe
 
 inspect_page.py
 
-Implementation Roadmap
+19. Implementation Roadmap
 Phase 1 — Data Collection
 
-MyG        (stable, 404 fix applied)
-↓
-Oxygen     (done — all categories verified: URLs, pagination, price, availability)
-↓
-Pittappillil  (done — tested successfully)
-↓
-Nandilath G-Mart
-↓
-Croma
+MyG            (stable)
+  ↓
+Oxygen         (done — all categories verified)
+  ↓
+Pittappillil   (done — category/subcategory grouping applied, confirmed working)
+  ↓
+Nandilath G Mart   (done — scraper built and full-page testing confirmed)
+
+Four active retailers are now available for the core Quote Yard pipeline.
+Croma is intentionally deferred and can be added later using the same
+retailer-specific scraper interface.
 
 Build and stabilize each scraper.
 Phase 2 — Data Processing
 
 Raw data
-↓
+   ↓
 Cleaning
-↓
+   ↓
 Normalization
-↓
+   ↓
 Duplicate handling
 
 Phase 3 — PostgreSQL
 
 Build:
 
-schema
-SQLAlchemy models
-retailer records
-product records
-listings
-prices
-price history
+    schema
+    SQLAlchemy models
+    retailer records
+    product records
+    listings
+    prices
+    price history
 
 Phase 4 — FastAPI
 
 Build:
 
-product endpoints
-search
-product detail
-comparison
-price history
+    product endpoints
+    search
+    product detail
+    comparison
+    price history
 
 Phase 5 — Product Matching
 
@@ -805,60 +904,119 @@ Choose deployment environment and move the application from development to a sta
 20. Current Status
 Completed / substantially completed
 
-Quote Yard concept
-Technology direction
-Repository setup
-Git/GitHub setup
-MyG scraping architecture
-Mobile scraping
-Laptop scraping
-Tablet scraping
-TV scraping
-Accessories pipeline
-Basic Home & Kitchen scraping
-Resource blocking
-Fresh page per category
-403 handling
-404 handling (added to scrape_category(), see section 11)
-Simple raw-listing strategy
-Frontend prototype direction
-System Requirements + SRS documentation spreadsheet
-Oxygen scraper built (scrapers/oxygen_scraper.py), including 5xx handling, per-page try/except, URL dedup stop condition, and a fallback-chain availability check — more defensive than MyG's current scraper
-Oxygen scraper fully verified: all category URLs (mobiles slug corrected, rest confirmed by a full headless run), pagination, price conversion, and in-stock availability all confirmed against real scraped data
+    Quote Yard concept
+    Technology direction
+    Repository setup
+    Git/GitHub setup
+    MyG scraping architecture
+    Mobile scraping
+    Laptop scraping
+    Tablet scraping
+    TV scraping
+    Accessories pipeline
+    Basic Home & Kitchen scraping
+    Resource blocking
+    Fresh page per category
+    403 handling
+    404 handling
+    Simple raw-listing strategy
+    Frontend prototype direction
+    System Requirements + SRS documentation spreadsheet
 
-Pittappillil scraper tested successfully; all configured categories and grouped JSON outputs are working correctly.
+    Oxygen scraper built and fully verified:
+        - 5xx handling
+        - per-page error handling
+        - URL deduplication
+        - availability detection
+        - all configured category URLs verified
+        - pagination verified
+        - price conversion verified
+
+    Pittappillil scraper built and confirmed running:
+        - 403/404/5xx handling
+        - per-page error handling
+        - URL deduplication
+        - category/subcategory grouping
+        - 5 main categories / 55 subcategories
+        - grouped JSON output
+        - category and subcategory stored on every product
+
+    Nandilath G Mart scraper built and confirmed:
+        - WordPress/WooCommerce storefront inspected
+        - product card selectors confirmed
+        - product name and URL extraction confirmed
+        - current/discounted price extraction confirmed
+        - availability detection confirmed
+        - category/subcategory grouping implemented
+        - /page/N/ pagination confirmed
+        - full-page testing completed successfully
+        - duplicate URL protection implemented
+        - resource blocking implemented
+        - 403/404/5xx handling implemented
+
+    Four retailers are now active:
+        myG
+        Oxygen
+        Pittappillil
+        Nandilath G Mart
+
+    Croma is deferred for later. The architecture should remain
+    retailer-scalable so it can be added without changing the core
+    normalization, database, backend, or frontend design.
 
 Currently being finished
 
-Confirm the unified MyG scraper is robust end to end against:
-
-403
-404 (fix applied, needs a confirming run across all categories)
-resource exhaustion
-categories with different page counts
-missing availability
-navigation failures
+    Confirm the unified MyG scraper is robust end to end against:
+        403
+        404 (fix applied, confirming run may still be needed)
+        resource exhaustion
+        categories with different page counts
+        missing availability
+        navigation failures
 
 Open items to verify
 
-CATEGORIES in myg_scraper.py has no tvs entry, although TVs are listed as done above. Confirm whether TVs were scraped by an earlier script or still need adding to the config.
-Oxygen's own listings are internally inconsistent in naming (see section 12a) and may contain near-duplicate listings for the same product — relevant for the later normalization/matching phase.
-Oxygen's out-of-stock availability path (detect_availability() returning "Out of stock") is unverified — nothing on the site is currently out of stock. Revisit later, or check a different category.
+    CATEGORIES in myg_scraper.py has no tvs entry, although TVs are listed
+    as done above. Confirm whether TVs were scraped by an earlier script
+    or still need adding to the config.
+
+    Oxygen's own listings are internally inconsistent in naming and may
+    contain near-duplicate listings for the same product. This is relevant
+    to the later normalization/matching phase.
+
+    Oxygen's out-of-stock availability path remains unverified because
+    the tested category had no currently out-of-stock products.
+
+    Pittappillil's 55 subcategory URLs were not individually spot-checked
+    one by one; the scraper has nevertheless been confirmed running
+    successfully end to end.
+
+    Nandilath G Mart has been built and full-page tested successfully.
+    Its WooCommerce product cards use .wd-product, product names/URLs
+    from .wd-entities-title a, current prices from the discounted
+    <ins> price when present, and /page/N/ pagination.
 
 Next major work
 
-MyG, Oxygen, and Pittappillil are now stable.
+    The four active retailer scrapers are now the data-collection layer.
+    Do not add Croma yet.
 
-Pittappillil has been tested successfully and is complete for the current MVP scraper scope.
+    Next phase:
+        Four retailer raw data
+        ↓
+        Data Cleaning
+        ↓
+        Normalization
+        ↓
+        Duplicate Handling
+        ↓
+        PostgreSQL
 
-Next major work:
-Nandilath G-Mart
-↓
-Croma
-↓
-PostgreSQL
+    The architecture must remain scalable so future retailers can plug
+    into the same common listing model without retailer-specific logic
+    leaking into later phases.
 
-Hardest Parts
+21. Hardest Parts
 
 The main difficult areas are expected to be:
 Product matching
@@ -879,29 +1037,29 @@ Allowing one retailer to fail without stopping the entire update process.
 22. What Quote Yard Should Eventually Do
 
 Retailer Websites
-|
-v
+       |
+       v
 Scrapers
-|
-v
+       |
+       v
 Data Normalization
-|
-v
+       |
+       v
 Product Matching
-|
-v
+       |
+       v
 PostgreSQL
-|
-v
+       |
+       v
 FastAPI
-|
-v
+       |
+       v
 React
-|
-v
+       |
+       v
 User Search
-|
-v
+       |
+       v
 Price Comparison
 
 Example final experience:
@@ -910,11 +1068,11 @@ User searches:
 
 Samsung Galaxy S25
 
-    ↓
+        ↓
 
 Quote Yard finds the relevant product
 
-    ↓
+        ↓
 
 Samsung Galaxy S25 256GB
 
@@ -923,7 +1081,7 @@ Oxygen        ₹40,499
 Pittappillil  ₹40,999
 Croma         ₹41,999
 
-    ↓
+        ↓
 
 Price history
 Availability
@@ -933,16 +1091,40 @@ Product details
 The goal is to build a working end-to-end price comparison system first, then progressively improve matching, data quality, automation and UX.
 23. Immediate Next Step
 
-MyG, Oxygen, and Pittappillil scraper work is complete for the current MVP scope.
+MyG, Oxygen, Pittappillil and Nandilath G Mart are now the four active
+retailers in Quote Yard's data-collection layer. Croma is intentionally
+deferred.
 
-Pittappillil has been tested successfully and is working correctly.
+Next step: move from retailer scraping into Phase 2 — Data Processing:
 
-Next step:
-Build the Nandilath G-Mart scraper.
+    Raw JSON from four retailers
+        ↓
+    Data Cleaning
+        ↓
+    Normalization
+        ↓
+    Duplicate Handling
+        ↓
+    PostgreSQL
 
-After Nandilath G-Mart:
-Croma
-↓
-PostgreSQL
+The common scraper output should remain retailer-independent:
 
-Do not make unrelated scraper changes while building the next retailer.
+{
+    "name": "...",
+    "price": 39999,
+    "url": "...",
+    "availability": "In stock",
+    "shop": "...",
+    "category": "...",
+    "subcategory": "..."
+}
+
+Retailer-specific HTML, selectors, pagination, price formats and
+availability logic stay inside each scraper. The downstream processing
+layer should work against the common model so future retailers such as
+Croma can be added without redesigning the system.
+
+Do not make additional scraper changes to MyG, Oxygen, Pittappillil or
+Nandilath G Mart unless a real bug or data-quality requirement appears.
+The next major development focus is now the scalable data-processing
+layer.
