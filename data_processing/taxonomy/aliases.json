@@ -1,0 +1,578 @@
+{
+  "version": "1.0",
+  "taxonomy_version": "1.0",
+  "null_subcategory_key": "__none__",
+  "mappings": {
+    "Nandilath G Mart": {
+      "Air Conditioners": {
+        "Air Coolers": {
+          "status": "mapped",
+          "product_type": "Air Cooler"
+        },
+        "Inverter AC": {
+          "status": "mapped",
+          "product_type": "Air Conditioner"
+        }
+      },
+      "Fan": {
+        "Ceiling Fan": {
+          "status": "mapped",
+          "product_type": "Ceiling Fan"
+        },
+        "Pedestal Fan": {
+          "status": "mapped",
+          "product_type": "Pedestal Fan"
+        },
+        "Wall Fan": {
+          "status": "mapped",
+          "product_type": "Wall Fan"
+        }
+      },
+      "Home Appliances": {
+        "Battery": {
+          "status": "mapped",
+          "product_type": "Battery"
+        },
+        "Inverters": {
+          "status": "mapped",
+          "product_type": "Inverter"
+        },
+        "Stabilizer": {
+          "status": "mapped",
+          "product_type": "Voltage Stabilizer"
+        },
+        "Vacuum Cleaner": {
+          "status": "mapped",
+          "product_type": "Vacuum Cleaner"
+        },
+        "Water Heaters": {
+          "status": "mapped",
+          "product_type": "Water Heater"
+        },
+        "Water Purifiers": {
+          "status": "mapped",
+          "product_type": "Water Purifier"
+        }
+      },
+      "Home Audio": {
+        "Home Theater": {
+          "status": "mapped",
+          "product_type": "Home Theater"
+        },
+        "Sound Bars": {
+          "status": "mapped",
+          "product_type": "Soundbar"
+        },
+        "Speakers": {
+          "status": "mapped",
+          "product_type": "Speaker"
+        }
+      },
+      "Kitchen Appliances": {
+        "Air Fryer": {
+          "status": "mapped",
+          "product_type": "Air Fryer"
+        },
+        "Blender and Juicers": {
+          "status": "mapped",
+          "product_type": "Blender & Juicer"
+        },
+        "Chimney": {
+          "status": "mapped",
+          "product_type": "Chimney"
+        },
+        "Cook Hob": {
+          "status": "mapped",
+          "product_type": "Hob"
+        },
+        "Cooktop": {
+          "status": "mapped",
+          "product_type": "Gas Stove",
+          "note": "Sample is a gas stove; check whether Cooktop also has hobs"
+        },
+        "Cookware": {
+          "status": "mapped",
+          "product_type": "Other Kitchen & Home Item",
+          "note": "Non-electric, per decision"
+        },
+        "Dishwasher": {
+          "status": "mapped",
+          "product_type": "Dishwasher"
+        },
+        "Gas stove": {
+          "status": "mapped",
+          "product_type": "Gas Stove"
+        },
+        "Induction cooker": {
+          "status": "mapped",
+          "product_type": "Induction Cooker"
+        },
+        "Kettle": {
+          "status": "mapped",
+          "product_type": "Electric Kettle"
+        },
+        "Microwave Oven": {
+          "status": "mapped",
+          "product_type": "Microwave Oven"
+        },
+        "Mixer Grinders": {
+          "status": "mapped",
+          "product_type": "Mixer Grinder"
+        },
+        "Soda Maker": {
+          "status": "mapped",
+          "product_type": "Soda Maker"
+        },
+        "Wet Grinders": {
+          "status": "mapped",
+          "product_type": "Wet Grinder"
+        }
+      },
+      "LED TV": {
+        "Non-Smart LED TV": {
+          "status": "mapped",
+          "product_type": "Television",
+          "note": "Smart vs non-smart becomes an attribute later"
+        },
+        "Smart LED TV": {
+          "status": "mapped",
+          "product_type": "Television"
+        }
+      },
+      "Laptop": {
+        "Laptop": {
+          "status": "mapped",
+          "product_type": "Laptop"
+        }
+      },
+      "Mobiles & Laptops": {
+        "Accessories": {
+          "status": "unmapped",
+          "product_type": null,
+          "note": "Misfiled: sample is a refrigerator"
+        },
+        "Smart Phones": {
+          "status": "mapped",
+          "product_type": "Mobile Phone"
+        }
+      },
+      "Printer": {
+        "Printer": {
+          "status": "mapped",
+          "product_type": "Printer"
+        }
+      },
+      "Refrigerators": {
+        "Commercial Refrigerators": {
+          "status": "mapped",
+          "product_type": "Commercial Refrigerator"
+        },
+        "Multi Door": {
+          "status": "mapped",
+          "product_type": "Refrigerator",
+          "note": "Door style becomes an attribute later"
+        },
+        "Side by side": {
+          "status": "mapped",
+          "product_type": "Refrigerator",
+          "note": "Door style becomes an attribute later"
+        },
+        "Single Door": {
+          "status": "mapped",
+          "product_type": "Refrigerator",
+          "note": "Door style becomes an attribute later"
+        }
+      },
+      "Washing Machines": {
+        "Clothes Dryer": {
+          "status": "mapped",
+          "product_type": "Clothes Dryer"
+        },
+        "Front loading": {
+          "status": "mapped",
+          "product_type": "Washing Machine",
+          "note": "Load type becomes an attribute later"
+        },
+        "Semi Automatic": {
+          "status": "mapped",
+          "product_type": "Washing Machine",
+          "note": "Load type becomes an attribute later"
+        },
+        "Top loading": {
+          "status": "mapped",
+          "product_type": "Washing Machine",
+          "note": "Load type becomes an attribute later"
+        },
+        "Washer Dryer": {
+          "status": "mapped",
+          "product_type": "Washer Dryer"
+        }
+      }
+    },
+    "Oxygen": {
+      "Battery": {
+        "__none__": {
+          "status": "mapped",
+          "product_type": "Battery"
+        }
+      },
+      "Gadgets": {
+        "__none__": {
+          "status": "unmapped",
+          "product_type": null,
+          "note": "Truly mixed bucket (earbuds etc.)"
+        }
+      },
+      "Inverter": {
+        "__none__": {
+          "status": "mapped",
+          "product_type": "Inverter"
+        }
+      },
+      "Kitchen Appliances": {
+        "__none__": {
+          "status": "parent_only",
+          "product_type": null,
+          "category": "Kitchen Appliances",
+          "note": "Mixed kitchen products"
+        }
+      },
+      "LED TV": {
+        "__none__": {
+          "status": "mapped",
+          "product_type": "Television"
+        }
+      },
+      "Laptops": {
+        "__none__": {
+          "status": "mapped",
+          "product_type": "Laptop"
+        }
+      },
+      "Mobiles": {
+        "__none__": {
+          "status": "mapped",
+          "product_type": "Mobile Phone"
+        }
+      },
+      "Monitors": {
+        "__none__": {
+          "status": "mapped",
+          "product_type": "Monitor"
+        }
+      },
+      "Printers": {
+        "__none__": {
+          "status": "mapped",
+          "product_type": "Printer"
+        }
+      },
+      "Refrigerators": {
+        "__none__": {
+          "status": "mapped",
+          "product_type": "Refrigerator"
+        }
+      },
+      "Washing Machines": {
+        "__none__": {
+          "status": "mapped",
+          "product_type": "Washing Machine"
+        }
+      }
+    },
+    "Pittappillil": {
+      "Air Quality and Circulation": {
+        "Ceiling Fan": {
+          "status": "mapped",
+          "product_type": "Ceiling Fan"
+        },
+        "Cooler": {
+          "status": "mapped",
+          "product_type": "Air Cooler"
+        },
+        "Pedestal Fan": {
+          "status": "mapped",
+          "product_type": "Pedestal Fan"
+        },
+        "Table Fan": {
+          "status": "mapped",
+          "product_type": "Table Fan"
+        },
+        "Wall Fan": {
+          "status": "mapped",
+          "product_type": "Wall Fan"
+        }
+      },
+      "Home Appliances": {
+        "Chest Freezers": {
+          "status": "mapped",
+          "product_type": "Chest Freezer"
+        },
+        "Dish Washer": {
+          "status": "mapped",
+          "product_type": "Dishwasher"
+        },
+        "Refrigerator": {
+          "status": "mapped",
+          "product_type": "Refrigerator"
+        },
+        "Split AC": {
+          "status": "mapped",
+          "product_type": "Air Conditioner"
+        },
+        "Television": {
+          "status": "mapped",
+          "product_type": "Television"
+        },
+        "Washer Dryers/Dryers": {
+          "status": "mapped",
+          "product_type": "Washer Dryer",
+          "note": "Only 1 record; may mix dryers and washer-dryers"
+        },
+        "Washing Machines": {
+          "status": "mapped",
+          "product_type": "Washing Machine"
+        }
+      },
+      "Home Audio": {
+        "Home Theatre": {
+          "status": "mapped",
+          "product_type": "Home Theater"
+        },
+        "Sound Bar": {
+          "status": "mapped",
+          "product_type": "Soundbar"
+        }
+      },
+      "Kitchen Appliances": {
+        "Air Fryer": {
+          "status": "mapped",
+          "product_type": "Air Fryer"
+        },
+        "Barbeque": {
+          "status": "mapped",
+          "product_type": "Other Kitchen & Home Item",
+          "note": "Non-kitchen-appliance item, per decision"
+        },
+        "Biriyani Pot": {
+          "status": "mapped",
+          "product_type": "Other Kitchen & Home Item",
+          "note": "Non-kitchen-appliance item, per decision"
+        },
+        "Casserole": {
+          "status": "mapped",
+          "product_type": "Other Kitchen & Home Item",
+          "note": "Non-kitchen-appliance item, per decision"
+        },
+        "Chimney & Hob": {
+          "status": "parent_only",
+          "product_type": null,
+          "category": "Kitchen Appliances",
+          "note": "Mixes chimneys and hobs; names could split later"
+        },
+        "Cloth Dryer": {
+          "status": "mapped",
+          "product_type": "Other Kitchen & Home Item",
+          "note": "Non-kitchen-appliance item, per decision"
+        },
+        "Cooking Range": {
+          "status": "mapped",
+          "product_type": "Cooking Range"
+        },
+        "Cookware Set": {
+          "status": "mapped",
+          "product_type": "Other Kitchen & Home Item",
+          "note": "Non-kitchen-appliance item, per decision"
+        },
+        "Electric Kettle": {
+          "status": "mapped",
+          "product_type": "Electric Kettle"
+        },
+        "Emergency Light": {
+          "status": "mapped",
+          "product_type": "Other Kitchen & Home Item",
+          "note": "Non-kitchen-appliance item, per decision"
+        },
+        "Food Processor": {
+          "status": "mapped",
+          "product_type": "Food Processor"
+        },
+        "Gas Stove": {
+          "status": "mapped",
+          "product_type": "Gas Stove"
+        },
+        "Home Inverters & Batteries": {
+          "status": "parent_only",
+          "product_type": null,
+          "category": "Power & Backup",
+          "note": "Mixes inverters and batteries"
+        },
+        "Induction Cooker": {
+          "status": "mapped",
+          "product_type": "Induction Cooker"
+        },
+        "Iron Box": {
+          "status": "mapped",
+          "product_type": "Iron"
+        },
+        "Ironing Board": {
+          "status": "mapped",
+          "product_type": "Other Kitchen & Home Item",
+          "note": "Non-kitchen-appliance item, per decision"
+        },
+        "Microwave Oven": {
+          "status": "mapped",
+          "product_type": "Microwave Oven"
+        },
+        "Mixer Grinders": {
+          "status": "mapped",
+          "product_type": "Mixer Grinder",
+          "note": "Sample looks like a spice grinder; check"
+        },
+        "Noodle Maker": {
+          "status": "mapped",
+          "product_type": "Noodle Maker"
+        },
+        "Oven Toaster Grills": {
+          "status": "mapped",
+          "product_type": "Oven Toaster Grill"
+        },
+        "Pressure Cooker": {
+          "status": "mapped",
+          "product_type": "Other Kitchen & Home Item",
+          "note": "Non-kitchen-appliance item, per decision"
+        },
+        "Rice Cooker": {
+          "status": "mapped",
+          "product_type": "Rice Cooker"
+        },
+        "Soda Maker": {
+          "status": "mapped",
+          "product_type": "Soda Maker"
+        },
+        "Vacuum Cleaners": {
+          "status": "mapped",
+          "product_type": "Vacuum Cleaner"
+        },
+        "Voltage Stabilizer": {
+          "status": "mapped",
+          "product_type": "Voltage Stabilizer"
+        },
+        "Water Cooler": {
+          "status": "mapped",
+          "product_type": "Water Dispenser"
+        },
+        "Water Dispenser": {
+          "status": "mapped",
+          "product_type": "Water Dispenser"
+        },
+        "Water Heater": {
+          "status": "mapped",
+          "product_type": "Water Heater"
+        },
+        "Water Purifier": {
+          "status": "mapped",
+          "product_type": "Water Purifier"
+        },
+        "Wet Grinder": {
+          "status": "mapped",
+          "product_type": "Wet Grinder"
+        }
+      },
+      "Mobiles, Laptops and More": {
+        "Laptops": {
+          "status": "mapped",
+          "product_type": "Laptop"
+        },
+        "Mobile Accessories": {
+          "status": "parent_only",
+          "product_type": null,
+          "category": "Accessories",
+          "note": "Sample is a bluetooth speaker; may be misfiled"
+        },
+        "Mobile Phones": {
+          "status": "mapped",
+          "product_type": "Mobile Phone"
+        },
+        "Smart Watch": {
+          "status": "mapped",
+          "product_type": "Smart Watch"
+        }
+      }
+    },
+    "myG": {
+      "Accessories": {
+        "__none__": {
+          "status": "parent_only",
+          "product_type": null,
+          "category": "Accessories"
+        }
+      },
+      "Air Conditioners": {
+        "__none__": {
+          "status": "mapped",
+          "product_type": "Air Conditioner"
+        }
+      },
+      "Home & Kitchen": {
+        "__none__": {
+          "status": "unmapped",
+          "product_type": null,
+          "note": "Truly mixed bucket"
+        }
+      },
+      "Home Automation": {
+        "__none__": {
+          "status": "parent_only",
+          "product_type": null,
+          "category": "Home Automation"
+        }
+      },
+      "Mobiles": {
+        "__none__": {
+          "status": "mapped",
+          "product_type": "Mobile Phone",
+          "note": "Includes feature phones"
+        }
+      },
+      "Personal Care": {
+        "__none__": {
+          "status": "parent_only",
+          "product_type": null,
+          "category": "Personal Care"
+        }
+      },
+      "Refrigerators": {
+        "__none__": {
+          "status": "mapped",
+          "product_type": "Refrigerator"
+        }
+      },
+      "Small Appliances": {
+        "__none__": {
+          "status": "unmapped",
+          "product_type": null,
+          "note": "Truly mixed; sample is a TV stabilizer"
+        }
+      },
+      "TV": {
+        "__none__": {
+          "status": "mapped",
+          "product_type": "Television"
+        }
+      },
+      "Tablets": {
+        "__none__": {
+          "status": "mapped",
+          "product_type": "Tablet"
+        }
+      },
+      "Washing Machines": {
+        "__none__": {
+          "status": "mapped",
+          "product_type": "Washing Machine"
+        }
+      }
+    }
+  }
+}

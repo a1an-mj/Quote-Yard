@@ -8,26 +8,45 @@ __pycache__/
 *.py[cod]
 *$py.class
 
+# Python tooling caches
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+.coverage
+htmlcov/
+*.egg-info/
+
 # Environment variables / secrets
 .env
 .env.*
 !.env.example
 
 # Node / React
-frontend/node_modules/
+node_modules/
 frontend/dist/
 frontend/build/
+npm-debug.log*
+*.tsbuildinfo
 
 # Vite
 frontend/.vite/
 
-# Scraped/generated data
-data/myg_products.json
-data/myg_products_parsed.json
-data/myg_laptops.json
+# Playwright artifacts
+test-results/
+playwright-report/
+
+# Regenerable pipeline output
+cleaned_data/
+cleaned_data.tmp/
+normalized_data/
+normalized_data.tmp/
+branded_data/
+branded_data.tmp/
+reports/
 
 # Archives
 *.zip
+*.tar.gz
 
 # IDE
 .vscode/
@@ -39,7 +58,3 @@ Thumbs.db
 
 # Logs
 *.log
-# Regenerable pipeline output
-cleaned_data/
-reports/
-*.tar.gz

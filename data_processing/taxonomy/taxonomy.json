@@ -1,0 +1,78 @@
+{
+  "version": "1.0",
+  "categories": {
+    "Accessories": [],
+    "Air & Cooling": [
+      "Air Conditioner",
+      "Air Cooler",
+      "Ceiling Fan",
+      "Pedestal Fan",
+      "Table Fan",
+      "Wall Fan"
+    ],
+    "Computers": [
+      "Laptop",
+      "Monitor",
+      "Printer"
+    ],
+    "Home Appliances": [
+      "Iron",
+      "Vacuum Cleaner",
+      "Water Dispenser",
+      "Water Heater",
+      "Water Purifier"
+    ],
+    "Home Audio": [
+      "Home Theater",
+      "Soundbar",
+      "Speaker"
+    ],
+    "Home Automation": [],
+    "Kitchen Appliances": [
+      "Air Fryer",
+      "Blender & Juicer",
+      "Chimney",
+      "Cooking Range",
+      "Dishwasher",
+      "Electric Kettle",
+      "Food Processor",
+      "Gas Stove",
+      "Hob",
+      "Induction Cooker",
+      "Microwave Oven",
+      "Mixer Grinder",
+      "Noodle Maker",
+      "Oven Toaster Grill",
+      "Rice Cooker",
+      "Soda Maker",
+      "Wet Grinder"
+    ],
+    "Large Appliances": [
+      "Chest Freezer",
+      "Clothes Dryer",
+      "Commercial Refrigerator",
+      "Refrigerator",
+      "Washer Dryer",
+      "Washing Machine"
+    ],
+    "Mobiles & Tablets": [
+      "Mobile Phone",
+      "Tablet"
+    ],
+    "Other Kitchen & Home": [
+      "Other Kitchen & Home Item"
+    ],
+    "Personal Care": [],
+    "Power & Backup": [
+      "Battery",
+      "Inverter",
+      "Voltage Stabilizer"
+    ],
+    "Televisions": [
+      "Television"
+    ],
+    "Wearables": [
+      "Smart Watch"
+    ]
+  }
+}
