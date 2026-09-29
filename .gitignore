@@ -39,3 +39,7 @@ Thumbs.db
 
 # Logs
 *.log
+# Regenerable pipeline output
+cleaned_data/
+reports/
+*.tar.gz
