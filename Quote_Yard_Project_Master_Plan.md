@@ -781,6 +781,9 @@ Test once
 
 # 18. **DEVELOPMENT ENVIRONMENT**
 
+
+Setup: pip install -r requirements-dev.txt, then playwright install chromium (the browser is downloaded separately and is only needed for the scrapers).
+
 | | |
 |---|---|
 | **OS** | Arch Linux |
