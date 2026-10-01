@@ -1,9 +1,9 @@
 {
   "version": "1.0",
-  "start_only": ["HP", "Nothing", "Vu", "Noise", "Urban"],
+  "start_only": ["HP", "Nothing", "Vu", "Noise", "Urban","Google", "Apple", "Sharp", "Lifelong"],
   "brands": {
     "Samsung": [], "Apple": [], "LG": [], "Sony": [], "Panasonic": [],
-    "realme": ["realmetws"], "Redmi": [], "Xiaomi": [], "Poco": [], "OnePlus": ["one plus"],
+    "realme": ["realmetws"], "Xiaomi": ["redmi", "mi", "poco"], "OnePlus": ["one plus"],
     "Oppo": [], "Vivo": [], "iQOO": [], "Motorola": [], "Nokia": [],
     "Nothing": [], "CMF": [], "Google": [], "Infinix": [], "Tecno": [],
     "Lava": [], "Itel": [], "Honor": [], "Lenovo": [], "HP": [],
@@ -24,9 +24,9 @@
     "Tefal": [], "Faber": [], "Elica": [], "Hafele": [],
     "Pureflames": [], "Sujata": [], "Elgi": ["elgiultra"], "Wonderchef": [],
     "Borosil": [], "Hawkins": [], "Lifelong": [], "Morphy Richards": ["morphy"],
-    "Geepas": [], "Luker": [], "Solarium": [], "Dace": [],
+    "Geepas": [], "Luker": [], "Dace": [],
     "Asian": [], "Sowbaghya": [], "Baltra": [], "Inalsa": [],
-    "Kelvinator": [], "Toshiba": [], "Sharp": [], "Mi": [],"Impex": [], "MY PARF": [], "Greenchef": [], "Nolta": [],
+    "Kelvinator": [], "Toshiba": [], "Sharp": [],"Impex": [], "MY PARF": [], "Greenchef": [], "Nolta": [],
     "Mr Plus": [], "Optima": [], "BPL": [], "Fujifilm": ["fufifilm"],
     "Liebherr": [], "iBELL": [], "SanDisk": [], "Royalford": [],
     "Dyson": [], "VZY": [], "Portronics": [], "Lapcare": [],

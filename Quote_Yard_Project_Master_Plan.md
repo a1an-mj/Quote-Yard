@@ -78,10 +78,10 @@ Normalization (Phase 2B)
 Brand Extraction (Phase 2C)
    |
    v
-Product Matching
+PostgreSQL loader (Phase 3)
    |
    v
-PostgreSQL
+Product Matching (Phase 5)
    |
    v
 FastAPI
@@ -138,7 +138,7 @@ One of the **hardest parts** of Quote Yard. The system must distinguish:
 | Variant | Storage | RAM (where applicable) |
 | Color (where reliable) | Category-specific identifiers | |
 
-> Product matching stays **separate** from scraping, from normalization and from brand extraction.
+> Product matching stays **separate** from scraping, from normalization and from brand extraction. Matching must treat `brand_status: "review"` (and `unknown`) as "brand not trustworthy".
 
 ## 🗄️ **3.4 Database**
 
@@ -159,7 +159,7 @@ Canonical Product
    +---- Croma listing
 ```
 
-A listing may belong to **more than one category** (see Section 19a findings), so the schema needs a listing ↔ category join table rather than a single category column. The loading rule is decided in [Section 19b](#19b-phase-2b-normalization-): one listing per `(shop, url)`, one join-table row per distinct `(category, product_type)` seen for that URL.
+A listing may belong to **more than one category** (see Section 19a findings), so the schema needs a listing ↔ category join table rather than a single category column. The loading rule is decided in [Section 19b](#19b-phase-2b-normalization-): one listing per `(shop, url)`, one join-table row per distinct raw category pair seen for that URL. The full draft schema is in [Section 23](#23-immediate-next-step).
 
 ## ⚙️ **3.5 Backend**
 
@@ -270,7 +270,7 @@ Landing -> Sign Up / Login -> Dashboard -> Search -> Product Results -> Product 
 | **Database** | PostgreSQL |
 | **Scraping** | Python, Playwright, Chromium |
 | **Scheduling** | APScheduler |
-| **Development** | Git, GitHub |
+| **Development** | Git, GitHub, pytest |
 
 > Deployment is not finalized yet. An **Asus VivoBook** may be used as an experimental / self-hosted server later.
 
@@ -313,14 +313,15 @@ quote-yard/
 ├── cleaned_data/           # Phase 2A output (gitignored, regenerable)
 ├── normalized_data/        # Phase 2B output (gitignored, regenerable)
 ├── branded_data/           # Phase 2C output (gitignored, regenerable)
-├── reports/                # Cleaning / brand reports (gitignored, regenerable)
+├── reports/                # Cleaning / normalization / brand reports (gitignored, regenerable)
 ├── data_processing/
 │   ├── __init__.py
 │   ├── cleaner.py
 │   ├── run_cleaning.py
 │   ├── normalizer.py
 │   ├── run_normalization.py
-│   ├── brands.json         # Phase 2C brand list (versioned, hand-made)
+│   ├── review_normalized.py    # read-only review report over normalized_data/
+│   ├── brands.json             # Phase 2C brand list (versioned, hand-made)
 │   ├── brand_extractor.py
 │   ├── run_branding.py
 │   └── taxonomy/           # Phase 2B mapping files (versioned, hand-made)
@@ -332,6 +333,7 @@ quote-yard/
 ├── frontend/
 ├── scrapers/
 ├── tests/
+│   ├── test_normalizer.py
 │   └── test_brands.py
 ├── utils/
 ├── .git/
@@ -347,6 +349,8 @@ quote-yard/
 | **Main branch** | `main` |
 
 **`.gitignore` must include** all regenerable output: `cleaned_data/`, `normalized_data/`, `normalized_data.tmp/`, `branded_data/`, `branded_data.tmp/`, `reports/` and `*.tar.gz`. (The `.tmp/` directories are staging folders used while a run is in progress.)
+
+**Import style:** the runners use `from normalizer import ...` and `from brand_extractor import ...`, so run them as `python data_processing/run_normalization.py` (not `python -m ...`). The tests add `data_processing/` to `sys.path`.
 
 ---
 
@@ -429,7 +433,7 @@ Some pages return `403 Forbidden`. Example: `/mobile-phones/page-10/`.
 
 The scraper stops that category cleanly.
 
-> ⚠️ **Suspected data-completeness issue:** in the Phase 2B worksheet, 8 of myG's 11 categories have exactly **108** records (9 pages × 12 products), which matches the page-10 403. These categories are probably **truncated**, not complete. See Section 20, open item 6.
+> ⚠️ **Confirmed data-completeness issue:** 8 of myG's 11 categories have exactly **108** records (9 pages × 12 products), which matches the page-10 403. The Phase 2B normalized output shows the same counts. These categories are probably **truncated**, not complete. See Section 20, open item 6.
 
 ## 🕳️ **404 Not Found**
 
@@ -783,6 +787,7 @@ Test once
 | **Python** | 3.14.6 |
 | **Environment** | `.venv` |
 | **Tools** | Playwright, Chromium |
+| **Dev tools** | pytest (run as `python -m pytest`) |
 
 Playwright reported Arch Linux is not officially supported and downloaded a fallback Ubuntu 24.04 Chromium build, but the browser works.
 
@@ -810,8 +815,8 @@ Four active retailers are available for the core pipeline. **Croma is intentiona
 
 | Phase | Name | What gets built |
 |:-----:|------|-----------------|
-| **2** | **Data Processing** | 2A Cleaning ✅ · 2B Normalization ✅ (built, reviewed, verified) · Duplicate handling ✅ decided (DB) · 2C Brand extraction 🚧 built, first run and review pending |
-| **3** | **PostgreSQL** | Schema, SQLAlchemy models, retailer records, product records, listings, prices, price history |
+| **2** | **Data Processing** ✅ | 2A Cleaning ✅ · 2B Normalization ✅ (built, tested, reviewed) · 2C Brand extraction ✅ (98.9% matched, 10 `review`, 23 unknown) · Duplicate handling ✅ decided (handled in the DB loader) |
+| **3** | **PostgreSQL** ⏳ next | Schema (draft in Section 23), SQLAlchemy models, retailers, listings, listing ↔ category join table, price history |
 | **4** | **FastAPI** | Product endpoints, search, product detail, comparison, price history |
 | **5** | **Product Matching** | Match retailer listings into canonical products |
 | **6** | **React Integration** | Connect frontend to FastAPI |
@@ -896,13 +901,13 @@ brand extraction (Phase 2C)
 product matching (Phase 5)
 ```
 
-**Pipeline:** `cleaned_data/*.json` → `normalizer.py` → `normalized_data/*.json`
+**Pipeline:** `cleaned_data/*.json` → `normalizer.py` → `normalized_data/*.json` + `reports/normalization_report.json`
 
 ### Design decisions
 
 - **Mapping key is the full tuple** `(retailer, raw_category, raw_subcategory)`, not category alone. Retailer categories are navigation, not product type (e.g. Pittappillil's "Mobiles, Laptops and More" holds phones, laptops and watches).
 - **Product type first, parent derived.** A type like `Air Fryer` belongs to exactly one parent (`Kitchen Appliances`). Type names are globally unique, so the parent is always looked up from the type.
-- **Null subcategory** uses the sentinel key `__none__`. Fallback order: full tuple, then unmapped. Retailers that give a real subcategory (Nandilath "Laptop", "Printer") use that real value as the key.
+- **Null subcategory** uses the sentinel key `__none__`. Retailers that give a real subcategory (Nandilath "Laptop", "Printer") use that real value as the key.
 - **Explicit mappings only.** No heuristics such as `.lower().rstrip("s")`. Lookup keys are casefolded, so capitalization variants (`Gas stove` / `Gas Stove`) do not need separate entries.
 - **Mapping status per row:**
   - `mapped`: category tells us the exact product type
@@ -914,30 +919,29 @@ product matching (Phase 5)
 
 > **MVP decision (unmapped coverage):** 80% of records (2,389 of 2,975) are fully mapped. The remaining 20% (346 `parent_only`, 240 `unmapped`) **pass through unchanged** for the MVP. Causes: mixed retailer buckets (myG Home & Kitchen, myG Small Appliances, Oxygen Gadgets, Pittappillil Chimney & Hob, Home Inverters & Batteries) and one misfiled Nandilath record. A name-based rule layer (`mapping_status: "rule_mapped"`, versioned separately) is **deferred**. Cheap wins later: an `Earbuds` type would let Oxygen Gadgets (23) map.
 
-> **Decision (duplicate handling):** `normalized_data/` **keeps every record**, including repeated URLs. Normalization stays a pure per-record transform. The Phase 3 loader creates **one listing per `(shop, url)`** and **one row in a listing ↔ category join table for each distinct `(category, product_type)`** seen for that URL.
+> **Decision (duplicate handling):** `normalized_data/` **keeps every record**, including repeated URLs. Normalization stays a pure per-record transform. The Phase 3 loader creates **one listing per `(shop, url)`** and **one row in a listing ↔ category join table per distinct raw category pair** seen for that URL (see Section 23 for why the join key is the raw pair).
 
-### Files (`data_processing/taxonomy/`)
+### Files
 
 | File | Purpose |
 |------|---------|
-| `taxonomy.json` | Canonical taxonomy v1.0: 14 parent categories, 48 product types |
-| `aliases.json` | Retailer tuple → status + product type (113 keys, all observed combinations). Stores `taxonomy_version`. |
-| `validate_taxonomy.py` | Checks types are unique and exist, statuses are consistent, and (given `cleaned_data/`) every observed tuple has a mapping |
-| `worksheet/…-filled.csv` | Snapshot of the review worksheet the JSON was generated from. **The JSON is the source of truth; the CSV is not regenerated.** |
+| `taxonomy/taxonomy.json` | Canonical taxonomy v1.0: 14 parent categories, 48 product types |
+| `taxonomy/aliases.json` | Nested `mappings[shop][category][subcategory]` → status + product type (113 keys, all observed combinations). Stores `taxonomy_version`. |
+| `taxonomy/validate_taxonomy.py` | Checks types are unique and exist, statuses are consistent, and (given `cleaned_data/`) every observed tuple has a mapping |
+| `taxonomy/worksheet/…-filled.csv` | Snapshot of the review worksheet the JSON was generated from. **The JSON is the source of truth; the CSV is not regenerated.** |
+| `normalizer.py` | `Normalizer` class. Builds a casefolded `(shop, category, subcategory)` index from the nested `aliases.json`, validates it at load time, and raises `MappingError` on unknown tuples. |
+| `run_normalization.py` | Reads `cleaned_data/*.json`, writes `normalized_data/*.json` and `reports/normalization_report.json`. Writes to `normalized_data.tmp/` and swaps it in only when there are zero errors, so a failed run never leaves partial output. |
+| `review_normalized.py` | Read-only review script. Prints counts per retailer and sample names per product type, comparison coverage, flagged-row checks and the `parent_only` / `unmapped` buckets. Writes `reports/normalization_review.txt`. |
+| `tests/test_normalizer.py` | 7 tests: mapped, `parent_only` and `unmapped` lookups, null subcategory, casefolding, unknown-tuple failure, no input mutation, idempotency, version mismatch, and every observed tuple in `cleaned_data/`. |
 
-**Run before every normalization:** `python data_processing/taxonomy/validate_taxonomy.py cleaned_data`
+**Run:**
 
-### Worksheet results
-
-| Status | Rows | Records |
-|--------|-----:|--------:|
-| mapped | 102 | 2,389 (80%) |
-| parent_only | 7 | 346 |
-| unmapped | 4 | 240 |
-| **Total** | **113** | **2,975** |
-
-`parent_only`: myG Accessories, Personal Care, Home Automation; Oxygen Kitchen Appliances; Pittappillil Chimney & Hob, Home Inverters & Batteries, Mobile Accessories.
-`unmapped`: myG Home & Kitchen, myG Small Appliances, Oxygen Gadgets, Nandilath "Mobiles & Laptops → Accessories" (misfiled; the sample is a refrigerator).
+```
+python data_processing/taxonomy/validate_taxonomy.py cleaned_data
+python data_processing/run_normalization.py
+python -m pytest tests/test_normalizer.py
+python data_processing/review_normalized.py
+```
 
 ### Normalized record
 
@@ -961,21 +965,46 @@ product matching (Phase 5)
 
 Raw values are kept next to canonical ones, so a wrong mapping can be redone **without re-scraping**.
 
+### Verified results (first real run)
+
+| Check | Result |
+|-------|--------|
+| Validator on `cleaned_data/` | 0 errors, 0 warnings |
+| Records in / normalized / errors | 2,975 / 2,975 / 0 |
+| `mapped` | 2,389 (80%) |
+| `parent_only` | 346 |
+| `unmapped` | 240 |
+| Unused alias keys | none |
+| `tests/test_normalizer.py` | 7 passed |
+
+Counts match the worksheet exactly.
+
+### Worksheet results
+
+| Status | Rows | Records |
+|--------|-----:|--------:|
+| mapped | 102 | 2,389 (80%) |
+| parent_only | 7 | 346 |
+| unmapped | 4 | 240 |
+| **Total** | **113** | **2,975** |
+
+`parent_only`: myG Accessories, Personal Care, Home Automation; Oxygen Kitchen Appliances; Pittappillil Chimney & Hob, Home Inverters & Batteries, Mobile Accessories.
+`unmapped`: myG Home & Kitchen, myG Small Appliances, Oxygen Gadgets, Nandilath "Mobiles & Laptops → Accessories" (misfiled; the sample is a refrigerator).
+
 ### Guardrails for `normalizer.py`
 
-1. **Unmapped-tuple detection:** a new retailer/category combination must never silently fall through. Fail or report it.
-2. **Determinism / idempotency:** the normalizer reads `raw_*` fields only; the same cleaned input always gives the same output, and re-running on normalized output changes nothing.
-3. **Coverage in both directions:** every observed tuple has a key, and every key is used (the validator warns on unused keys).
-4. **Version both files:** bump `version` in `taxonomy.json` and `taxonomy_version` in `aliases.json` together when a mapping changes.
+1. **Unmapped-tuple detection:** ✅ a new retailer/category combination never silently falls through. An unknown tuple raises `MappingError`, the run fails, and the previous output is not replaced.
+2. **Determinism / idempotency:** ✅ the normalizer reads `raw_*` fields when present; the same cleaned input always gives the same output, and re-running on normalized output changes nothing.
+3. **Coverage in both directions:** ✅ every observed tuple has a key (validator), and every key is used (`unused_alias_keys` in the report).
+4. **Version both files:** ✅ `Normalizer` refuses to load if `taxonomy.json` `version` differs from `aliases.json` `taxonomy_version`. Bump both together when a mapping changes.
 
-### Rows reviewed
+### Downstream note
 
-- Nandilath **Cooktop** (25)
-- Pittappillil **Mixer Grinders** (78)
-- Pittappillil **Chimney & Hob** (54)
-- Pittappillil **Home Inverters & Batteries** (12)
+`unmapped` records (240) pass through with `category: null` and `product_type: null`. `parent_only` records (346) have a category but a null `product_type`. The DB loader and search **must handle both**.
 
 ### Review results
+
+Rows reviewed: Nandilath **Cooktop** (25), Pittappillil **Mixer Grinders** (78), Pittappillil **Chimney & Hob** (54), Pittappillil **Home Inverters & Batteries** (12).
 
 **No mapping changes were needed, so the taxonomy version stays at 1.0.**
 
@@ -984,15 +1013,15 @@ Raw values are kept next to canonical ones, so a wrong mapping can be redone **w
 | Nandilath **Cooktop** (25) | Gas burner units, with about 4 possibly hobs. Stays mapped to Gas Stove. |
 | Pittappillil **Mixer Grinders** (78) | Clean. |
 | Pittappillil **Chimney & Hob** (54) | About 32 chimneys and 22 hobs. Stays `parent_only`; names could split it later. |
-| Pittappillil **Home Inverters & Batteries** (12) | 7 inverters and 5 batteries. Stays `parent_only`; names could split it later. |
+| Pittappillil **Home Inverters & Batteries** (12) | 7 inverters and 5 batteries (check "battery" before "inverter" if a rule is ever added). Stays `parent_only`. |
 
-**Type coverage:** 30 of 48 types have 2+ retailers (18 have one). Chimney and Hob show as Nandilath-only because Pittappillil's records are `parent_only`. Tablet is myG-only (108 records, likely truncated).
+**Type coverage:** 30 of 48 types have 2+ retailers (18 have one). By retailer count: 1 retailer = 18 types, 2 = 24, 3 = 2, 4 = 4. Chimney and Hob show as Nandilath-only because Pittappillil's records are `parent_only`. Tablet is myG-only (108 records, likely truncated). The other single-retailer types (Iron, Chest Freezer, Monitor and so on) are genuine assortment differences.
 
 ---
 
-## 🏷️ **19c. PHASE 2C: BRAND EXTRACTION** 🚧
+## 🏷️ **19c. PHASE 2C: BRAND EXTRACTION** ✅
 
-Adds `brand` and `brand_status` to each normalized record. Brand extraction is a separate step: it never changes category, product type or name, and it is not product matching.
+Adds `brand`, `brand_status` and `brand_candidates` to each normalized record. Brand extraction is a separate step: it never changes category, product type or name, and it is not product matching.
 
 **Pipeline:** `normalized_data/*.json` → `brand_extractor.py` → `branded_data/*.json` + `reports/brand_report.json`
 
@@ -1001,7 +1030,14 @@ Adds `brand` and `brand_status` to each normalized record. Brand extraction is a
 | Field | Values |
 |-------|--------|
 | `brand` | Canonical brand name from `brands.json`, or `null` |
-| `brand_status` | `matched` or `unknown` |
+| `brand_status` | `matched`, `unknown` or `review` |
+| `brand_candidates` | List of brands found in the name when status is `review`, else `null` |
+
+| Status | Meaning | `brand` |
+|--------|---------|---------|
+| `matched` | Exactly one brand found | the brand |
+| `unknown` | No brand in the list found | `null` |
+| `review` | Two or more different brands found (conflict) | `null` (candidates listed) |
 
 ```json
 {
@@ -1013,7 +1049,8 @@ Adds `brand` and `brand_status` to each normalized record. Brand extraction is a
   "taxonomy_version": "1.0",
 
   "brand": "Samsung",
-  "brand_status": "matched"
+  "brand_status": "matched",
+  "brand_candidates": null
 }
 ```
 
@@ -1021,30 +1058,68 @@ Adds `brand` and `brand_status` to each normalized record. Brand extraction is a
 
 - **Explicit list, no guessing.** `brands.json` maps each canonical brand name to its aliases. A name with no matching alias gets `brand: null`, `brand_status: "unknown"`, and is listed in the report.
 - **Whole-token matching** on the casefolded name with punctuation removed. An alias never matches inside another word.
-- **Earliest match in the name wins**, and the **longest alias wins ties** at the same position.
-- **Ambiguous aliases are `start_only`.** `HP`, `Nothing` and `Vu` only match at the start of the name, because names contain "1.5 HP" (air conditioner capacity) and ordinary words like "nothing".
-- **Sub-brands stay separate.** Redmi is not merged into Xiaomi until product matching needs otherwise.
+- **A match fully inside a longer match is dropped** ("Prestige" inside "TTK Prestige"), so it is not counted as a conflict.
+- **Conflicts go to `review`, not to a guess.** If two or more different brands remain after that, `brand` stays `null` and the brands are stored in `brand_candidates` (in the order they appear in the name). This replaces the earlier "earliest match wins" rule.
+- **`start_only` brands** match only at the start of the name: `HP`, `Nothing`, `Vu`, `Noise`, `Urban`, `Google`, `Apple`, `Sharp`, `Lifelong`. Reasons: "1.5 HP" is an air conditioner rating; "Active Noise Cancellation"; "Google TV" and "Google Assistant" are software, not the manufacturer (this alone removed 93 false conflicts on TVs); "Plain Apple Water Jug"; "Sharp Adjustable".
+- **The Xiaomi family is one brand.** `Redmi`, `Mi` and `Poco` are aliases of `Xiaomi`, so every product in the family carries the same `brand` value. **This reverses the earlier decision to keep sub-brands separate.** The product line stays in the name ("Redmi Note 14") for Phase 5 matching.
+- **Solarium is not a brand.** It is a Crompton product line; names contain "Crompton" and match through that word.
+- **Aliases fix retailer typos and short forms explicitly**, so the canonical spelling is what gets stored (e.g. `Fujifilm` ← "Fufifilm", `Elgi` ← "Elgiultra", `V-Guard` ← "V-GURAD", `Eureka Forbes` ← "Forbes"/"EForbes", `Morphy Richards` ← "Morphy", `realme` ← "realmetws", `Bosch` ← "B0SCH", `IFB` ← "IFBFF").
+- **The brand file rejects duplicate aliases.** Two brands claiming the same alias fails loudly at load time. JSON itself silently keeps the last of two identical keys, so never add a brand that already exists; edit its existing entry instead.
+- **Same-company conflicts are accepted into `review` for the MVP.** Eureka Forbes + Aquaguard (4) and Samsung + Symphony (2, from "Q-Symphony") are correct brands that land in `review`. `same_company` groups or `ignore_phrases` could fix them later if the volume grows.
 - **Read-only on everything else.** All existing fields pass through unchanged, and the same input always gives the same output.
 
 ### Files
 
 | File | Purpose |
 |------|---------|
-| `data_processing/brands.json` | Canonical brand → aliases (versioned, hand-made) |
-| `data_processing/brand_extractor.py` | Matching logic |
-| `data_processing/run_branding.py` | Runner: reads `normalized_data/`, writes `branded_data/` and `reports/brand_report.json` |
-| `tests/test_brands.py` | Tests for token matching, earliest/longest rules and `start_only` aliases |
+| `data_processing/brands.json` | Canonical brand → aliases, plus the `start_only` list (versioned, hand-made, version 1.1) |
+| `data_processing/brand_extractor.py` | `BrandExtractor` class: matching, `classify()` (brand, status, candidates), `enrich()`, brand-file validation |
+| `data_processing/run_branding.py` | Runner: reads `normalized_data/`, writes `branded_data/` (via a `.tmp` swap) and `reports/brand_report.json` (includes review groups) |
+| `tests/test_brands.py` | 12 tests: case and punctuation, brand not first word, aliases and longest match, `start_only`, unknown is `None`, purity/idempotency, duplicate alias rejected, conflict goes to `review`, Google mid-name ignored, nested alias is not a conflict, Xiaomi family is one brand, `brand_candidates` null unless `review` |
 
 ### Run
 
 ```
-python data_processing/run_branding.py
 python -m pytest tests/test_brands.py
+python data_processing/run_branding.py
 ```
 
-### Status
+### Results (accepted run)
 
-Built. **First run and review are pending.** The loop is: run, read the unknown brands in `reports/brand_report.json`, add them to `brands.json`, rerun, until the unknown count is small.
+| Metric | Value |
+|--------|------:|
+| Records | 2,975 |
+| Matched | 2,942 |
+| Review | 10 |
+| Unknown | 23 |
+| **Match rate** | **98.9%** |
+
+| Retailer | Matched | Review | Unknown |
+|----------|--------:|-------:|--------:|
+| Nandilath G Mart | 742 | 2 | 5 |
+| Oxygen | 237 | 0 | 8 |
+| Pittappillil | 865 | 7 | 6 |
+| myG | 1,098 | 1 | 4 |
+
+**Review groups (10 records):** Faber + LG (4; "LG" is a model code in "...FL LG 90 Chimney", so Faber is probably correct), Eureka Forbes + Aquaguard (4), Samsung + Symphony (2).
+
+Progress across iterations: 87.5% → 95.5% → 98.1% → 99.0% → 99.2% → 98.9%. The last dip is intended: 10 records moved from a guessed or uncertain brand to `review`. Before the `start_only` and Xiaomi changes there were 113 two-brand conflicts, 93 of them involving Google.
+
+### Review
+
+- **Wrong-match check done.** The top brands are LG, Samsung, V-Guard, Bosch and IFB, all plausible. Generic-word brands barely fire: Kent 2, Orient 6, Elgi 7, Dace 9, Mobilla 3, Noise 2, Asian 1, Cello 1, Meyer 1, Urban 1. Both Kent hits were real Kent products.
+- **Unused brands:** 20 entries matched nothing (mostly phone and accessory brands the retailers do not stock in this data, e.g. iQOO, Infinix, Itel, Lava, Honor, Boult, Fire-Boltt). Harmless; prune later if wanted.
+- **Remaining unknowns (23):** mostly one-off brands and product words. The `MR LED Smart TV` group (7) has not been inspected.
+
+> **MVP decision:** 98.9% matched is accepted. `unknown` and `review` records keep `brand: null` and are listed in `reports/brand_report.json`. New brands are added by editing `brands.json` and rerunning.
+
+> **Optional cleanup batch (not required):** Hykon, Vidiem, Everest, Kuhl, Fingers, Indus Valley, Aquaneeta as new brands, and aliases `Blueberry` ← "blueberrys". A few small brands added earlier (Lockify, GDOT, Ogera, Toxen, Heugor, Hapi, Onix) could not be confirmed online; they are kept because the retailer listing is the source of the name.
+
+### Known limits
+
+- Matching uses the product **name only**, so a brand word that is really part of a model name could mis-tag, or turn into a false `review`. The report's `brand_counts` and `review_groups` are the places to spot this.
+- It only sees brands that are in the list: "Spigen Case for Samsung Galaxy" would still be tagged Samsung. A "for / compatible with" context rule is not built.
+- Product words at the start of a name (`Mixer`, `Chimney`, `Inverter`, `Water`) show up as unknown leading tokens in the report even though the real brand is usually matched later in the name. Ignore those.
 
 ---
 
@@ -1068,15 +1143,24 @@ Built. **First run and review are pending.** The loop is: run, read the unknown 
 - 10 duplicate URL groups flagged, not removed
 - Cleaning report written to `reports/cleaning_report.json`
 
-**Normalization (Phase 2B):** built, reviewed, verified
+**Normalization (Phase 2B):** built, tested, reviewed, verified
 
 - Category and subcategory audit complete (27 category names, 85 subcategory values)
 - Mapping worksheet: 113 unique `(retailer, category, subcategory)` combinations, all classified
-- `taxonomy.json` v1.0 (14 categories, 48 product types) and `aliases.json` generated; `validate_taxonomy.py` passes
-- `normalizer.py` and `run_normalization.py` built; output in `normalized_data/`
-- Review of the four flagged rows complete; **no mapping changes needed, version stays 1.0**
-- **MVP decision:** 80% of records fully mapped; `parent_only` (346) and `unmapped` (240) pass through unchanged; rule-based layer deferred
+- `taxonomy.json` v1.0 (14 categories, 48 product types) and `aliases.json` generated; `validate_taxonomy.py` passes on real data (0 errors, 0 warnings)
+- `normalizer.py` and `run_normalization.py` built; 2,975 / 2,975 records normalized, 0 errors (2,389 mapped, 346 `parent_only`, 240 `unmapped`)
+- 7 tests passing; all four guardrails implemented
+- `review_normalized.py` built; review of the four flagged rows complete, **no mapping changes needed, version stays 1.0**
+- **MVP decision:** 80% of records fully mapped; `parent_only` and `unmapped` pass through unchanged; rule-based layer deferred
 - **Duplicate handling decided:** `normalized_data/` keeps repeated URLs; the Phase 3 loader builds one listing per `(shop, url)` plus a listing ↔ category join table
+
+**Brand extraction (Phase 2C):** built, tested, accepted
+
+- `brands.json` (v1.1), `brand_extractor.py`, `run_branding.py`, `tests/test_brands.py` (12 tests passing)
+- 2,942 matched, 10 `review`, 23 unknown (98.9% matched); wrong-match check done
+- `review` status added for multi-brand conflicts (`brand: null` plus `brand_candidates`)
+- Xiaomi family merged (Redmi, Mi, Poco); `Google`, `Apple`, `Sharp`, `Lifelong` made `start_only`
+- **MVP decision:** accept 98.9%; unknown and review records reported, not guessed
 
 **MyG**
 
@@ -1116,7 +1200,7 @@ Built. **First run and review are pending.** The loop is: run, read the unknown 
 
 ## 🚧 **Currently being finished**
 
-**Brand extraction (Phase 2C):** built (`brands.json`, `brand_extractor.py`, `run_branding.py`, `tests/test_brands.py`). First run and review of unknown brands pending.
+**Phase 3 schema (draft):** table design is drafted in Section 23; a few points await confirmation before any SQLAlchemy code is written.
 
 **MyG scraper robustness** (parallel track): confirm the unified MyG scraper is robust end to end against:
 
@@ -1134,16 +1218,19 @@ Built. **First run and review are pending.** The loop is: run, read the unknown 
 | 2 | **Oxygen naming:** listings are internally inconsistent and may contain near-duplicates (a Phase 5 matching problem). |
 | 3 | **Oxygen out-of-stock path:** unverified, because the tested category had no out-of-stock products. |
 | 4 | **Pittappillil subcategories:** 55 URLs are configured but only 48 subcategories appear in the data. Find which 7 returned nothing and confirm that is expected, not a silent scraper stop. |
-| 5 | ~~**Run the validator on real data**~~ ✅ Done as part of the Phase 2B verification. |
-| 6 | **myG truncation:** 8 of 11 myG categories have exactly 108 records, matching the page-10 403. These are probably incomplete, which affects price-comparison coverage (Tablet is myG-only, so its coverage is affected most). Investigate whether the 403 can be avoided (delays, headers, a new context per page range). Runs as a parallel track. |
-| 7 | **Unknown brands:** after the first `run_branding.py` run, review `reports/brand_report.json` and add missing brands to `brands.json`. |
+| 5 | ~~**Run the validator on real data**~~ ✅ Done: 0 errors, 0 warnings. |
+| 6 | **myG truncation:** 8 of 11 myG categories have exactly 108 records, matching the page-10 403 (confirmed again in the normalized output). These are probably incomplete, which affects price-comparison coverage (Tablet is myG-only, so it is affected most). Investigate whether the 403 can be avoided (delays, headers, a new context per page range). Runs as a parallel track; worth fixing before Phase 5. |
+| 7 | ~~**Unknown brands**~~ ✅ Accepted at 98.9% matched (23 unknown, 10 review). An optional cleanup batch is listed in Section 19c. |
+| 8 | **Unmapped coverage (20%):** 346 `parent_only` and 240 `unmapped` records. Accepted for the MVP. Revisit with a name-rule layer or an `Earbuds` type if it limits comparison coverage. |
+| 9 | **Brand `review` records (10):** resolved by hand or by a later rule. Only Faber + LG (4) is true ambiguity; Eureka Forbes + Aquaguard (4) and Samsung + Symphony (2) are correct brands flagged by design. |
+| 10 | **Availability values:** the set of values in `branded_data/` has not been listed yet. Check it before locking a CHECK constraint (Section 23). |
 
 ## ➡️ **Next major work**
 
-The four scrapers are now the data-collection layer. **Do not add Croma yet.**
+The four scrapers are the data-collection layer. **Do not add Croma yet.**
 
 ```
-Four retailer raw data -> Data Cleaning -> Normalization -> Brand Extraction -> PostgreSQL
+Four retailer raw data -> Cleaning -> Normalization -> Brand Extraction -> PostgreSQL
 ```
 
 The architecture must stay scalable so future retailers plug into the same common listing model **without retailer-specific logic leaking into later phases.**
@@ -1192,19 +1279,125 @@ Quote Yard finds the relevant product:
 
 # 23. **IMMEDIATE NEXT STEP**
 
-## ➡️ **Phase 2C: run and review brand extraction**
+## ➡️ **Phase 3: PostgreSQL schema and loader**
 
-Phases 2A and 2B are done (Sections 19a and 19b). Brand extraction is built (Section 19c); start from `normalized_data/`.
+Phase 2 is complete (Sections 19a, 19b, 19c). Start from `branded_data/`, not earlier layers.
 
-Order of work:
+**Before starting, close out Phase 2:**
 
-1. **Run:** `python data_processing/run_branding.py`
-2. **Review the unknown brands** in `reports/brand_report.json` and add them to `data_processing/brands.json` (aliases explicit and reviewable; ambiguous ones `start_only`)
-3. **Rerun** until the unknown count is small
-4. **Tests:** `python -m pytest tests/test_brands.py`
-5. **Phase 3: PostgreSQL.** Schema, SQLAlchemy models, and a loader that creates one listing per `(shop, url)` plus a listing ↔ category join row per distinct `(category, product_type)`
-6. **Product matching** (Phase 5, kept separate)
+1. Delete any leftover unused entries from `brands.json` (e.g. `"Panasonic Life"` if still present).
+2. Confirm `.gitignore` covers `cleaned_data/`, `normalized_data/`, `normalized_data.tmp/`, `branded_data/`, `branded_data.tmp/` and `reports/`.
+3. Commit `brands.json`, `brand_extractor.py`, `run_branding.py`, `review_normalized.py`, `normalizer.py`, `run_normalization.py` and both test files, then push.
 
-**Parallel track:** the myG truncation (Section 20, open item 6).
+### Draft schema (confirm before coding)
 
-Rules: mappings and brand aliases are explicit and reviewable (JSON files, not heuristics); unknown values are reported, never silently guessed; raw, cleaned and normalized layers stay untouched; `taxonomy.json` and `aliases.json` are versioned together.
+```
+retailers (1) ──< listings (1) ──< listing_categories
+                     │
+                     ├──< price_history
+                     │
+                     └──> canonical_products (nullable, empty until Phase 5)
+```
+
+**`retailers`** (seeded with the four shops)
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | serial PK | |
+| `name` | text, unique | exactly `myG`, `Oxygen`, `Pittappillil`, `Nandilath G Mart` |
+| `base_url` | text | |
+
+**`listings`**: one row per `(retailer, url)`
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | serial PK | |
+| `retailer_id` | FK → retailers | |
+| `url` | text | unique with `retailer_id` |
+| `name` | text | original name, untouched |
+| `brand` | text, nullable | |
+| `brand_status` | text | CHECK in `matched` / `unknown` / `review` |
+| `brand_candidates` | JSONB, nullable | only set when status is `review` |
+| `current_price` | integer | `NOT NULL`, `CHECK (current_price > 0)` |
+| `availability` | text | controlled set, CHECK to be locked after the value check (open item 10) |
+| `first_seen_at`, `last_seen_at` | timestamptz | |
+| `canonical_product_id` | FK, nullable | stays null until Phase 5 |
+| `taxonomy_version`, `brands_version` | text | so records can be reprocessed |
+
+**`listing_categories`**: the join table
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | serial PK | |
+| `listing_id` | FK → listings | |
+| `category` | text, nullable | canonical parent |
+| `product_type` | text, nullable | canonical type |
+| `mapping_status` | text | `mapped` / `parent_only` / `unmapped` |
+| `raw_category` | text | `NOT NULL` |
+| `raw_subcategory` | text, nullable | empty strings become NULL |
+
+**`price_history`**
+
+| Column | Type | Notes |
+|--------|------|-------|
+| `id` | bigserial PK | |
+| `listing_id` | FK → listings | |
+| `price` | integer | `NOT NULL`, positive |
+| `availability` | text | |
+| `recorded_at` | timestamptz | |
+
+**`canonical_products`**: created empty, filled in Phase 5 (`id`, `brand`, `name`, `category`, `product_type`, `created_at`).
+
+**Indexes and constraints**
+
+- `listings`: unique `(retailer_id, url)`; index on `brand`; index on `canonical_product_id`.
+- `listing_categories`: unique `(listing_id, raw_category, raw_subcategory)` with NULLs treated as equal (`UNIQUE NULLS NOT DISTINCT` on PostgreSQL 15+, or a unique index on `COALESCE(raw_subcategory, '')`). Indexes on `product_type` and `category`.
+- `price_history`: index on `(listing_id, recorded_at DESC)`.
+- Search: plain `ILIKE` on `listings.name` for now; add a `pg_trgm` index later if it gets slow.
+- `category` and `product_type` are plain text, not foreign keys to lookup tables. The JSON taxonomy stays the single source of truth, and `taxonomy_version` covers drift.
+
+### Loader rules
+
+1. **Order and dedupe:** read files in sorted filename order and records in file order. Dedupe the batch by `(retailer, url)`; the **first record in load order wins**, and a warning is logged if a later duplicate has a different name or price. An existing database row never decides which record wins; it is only updated by the winner of the current run.
+2. **Upsert** each winner into `listings` by `(retailer, url)`, updating price, availability and `last_seen_at`.
+3. **Categories:** insert one `listing_categories` row per distinct `(listing, raw_category, raw_subcategory)`. The join key is the **raw pair**, not the canonical `(category, product_type)`: Home Theater and Sound Bars both map to Soundbar, and keying on the canonical pair would lose which retailer category each came from. Raw values therefore live on the join row, not on the listing. Distinct types are still available with `SELECT DISTINCT product_type`.
+4. **Price history:** add a row on first sighting and whenever the price changes. Add a row for an availability change only between two known values; a change to or from `Unknown` counts as "no information" and records nothing. Rerunning the same data adds no rows (idempotent).
+5. **Never delete listings.** A listing missing from a scrape is not marked gone, because myG's truncated categories would falsely look removed. `last_seen_at` shows freshness.
+6. **Retailers:** look a shop up by its exact name and **fail on an unknown shop** instead of creating one. Adding Croma later means adding a retailer row on purpose.
+7. **Nulls:** accept null `category`, `product_type` and `brand` (586 records lack a product type or category; 33 lack a usable brand: 23 unknown and 10 review).
+8. **Brand fields:** store `brand_status` and `brand_candidates`. Phase 5 matching treats `review` and `unknown` as "brand not trustworthy".
+
+**Expected first load:** about 2,965 listings (2,975 records minus the 10 duplicate URL groups, assuming each group is two records; verify after loading), up to 2,975 `listing_categories` rows, and about 2,965 `price_history` rows. If the counts differ, check the duplicate groups.
+
+### Points still to confirm
+
+| # | Point | Proposal |
+|:-:|-------|----------|
+| 1 | `availability` values | Run the distinct-values check on `branded_data/`; if only `In stock` / `Unknown`, use a CHECK on `In stock` / `Out of stock` / `Unknown` and fail loudly on anything else |
+| 2 | History and `Unknown` | Changes to or from `Unknown` create no history row (as above) |
+| 3 | Duplicate URL rule | "First in load order, dedupe the batch before upserting" (as above) |
+| 4 | Migrations | Use `create_all` for now; move to Alembic once the schema starts changing |
+| 5 | `scrape_runs` table | Deferred to Phase 7 (scheduler) |
+
+**Availability check:**
+
+```bash
+python -c "
+import json,glob,collections
+c=collections.Counter(r['availability'] for f in glob.glob('branded_data/*.json') for r in json.load(open(f)))
+print(c)"
+```
+
+### Order of work
+
+1. Confirm the points above and lock the table design (columns, keys, indexes)
+2. Install PostgreSQL (use `psycopg` with SQLAlchemy 2.0)
+3. SQLAlchemy models and table creation
+4. Loader that reads `branded_data/*.json`
+5. Load and verify counts and null handling
+6. Phase 4: FastAPI endpoints
+7. Phase 5: product matching (kept separate)
+
+**Parallel track:** the myG truncation (Section 20, open item 6), which limits comparison coverage and is worth fixing before Phase 5.
+
+Rules: mappings and brand aliases are explicit and reviewable (JSON files, not heuristics); unmapped, unknown and review values are reported, never silently guessed; raw, cleaned, normalized and branded layers stay untouched by later steps; `taxonomy.json` and `aliases.json` are versioned together.

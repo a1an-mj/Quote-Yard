@@ -4,7 +4,7 @@ Quote Yard - Phase 2C brand runner.
 Usage:  python data_processing/run_branding.py
 Input:  normalized_data/*.json
 Output: branded_data/*.json, reports/brand_report.json
-Unknown brands are reported, not errors.
+Unknown and review records are reported, not errors.
 """
 
 from __future__ import annotations
@@ -43,12 +43,13 @@ def main() -> None:
         shutil.rmtree(TEMP_DIR)
     TEMP_DIR.mkdir(parents=True)
 
-    total = matched = 0
+    total = 0
+    status_counts: Counter = Counter()
     by_shop: dict[str, Counter] = defaultdict(Counter)
     brand_counts: Counter = Counter()
     unknown_tokens: Counter = Counter()
     unknown_samples: dict[str, list[str]] = defaultdict(list)
-    unknown_by_shop: Counter = Counter()
+    review_groups: dict[tuple, dict] = {}
 
     for path in files:
         records = json.loads(path.read_text(encoding="utf-8"))
@@ -57,13 +58,21 @@ def main() -> None:
             enriched = extractor.enrich(record)
             out.append(enriched)
             total += 1
-            shop = record["shop"]
-            by_shop[shop][enriched["brand_status"]] += 1
-            if enriched["brand"]:
-                matched += 1
+            status = enriched["brand_status"]
+            status_counts[status] += 1
+            by_shop[record["shop"]][status] += 1
+
+            if status == "matched":
                 brand_counts[enriched["brand"]] += 1
+            elif status == "review":
+                key = tuple(enriched["brand_candidates"])
+                group = review_groups.setdefault(
+                    key, {"count": 0, "samples": []}
+                )
+                group["count"] += 1
+                if len(group["samples"]) < 3:
+                    group["samples"].append(record["name"][:80])
             else:
-                unknown_by_shop[shop] += 1
                 words = fold(record["name"]).split()
                 token = words[0] if words else "(empty)"
                 unknown_tokens[token] += 1
@@ -71,15 +80,21 @@ def main() -> None:
                     unknown_samples[token].append(record["name"][:80])
         write_json(TEMP_DIR / path.name, out)
 
-    unknown = total - matched
+    matched = status_counts["matched"]
     report = {
         "brands_version": extractor.version,
         "records": total,
         "matched": matched,
-        "unknown": unknown,
+        "review": status_counts["review"],
+        "unknown": status_counts["unknown"],
         "match_rate": round(matched / total, 4),
         "by_shop": {s: dict(c) for s, c in sorted(by_shop.items())},
         "brand_counts": dict(brand_counts.most_common()),
+        "review_groups": [
+            {"candidates": list(k), **v}
+            for k, v in sorted(review_groups.items(),
+                               key=lambda kv: -kv[1]["count"])
+        ],
         "unknown_leading_tokens": [
             {"token": t, "count": c, "samples": unknown_samples[t]}
             for t, c in unknown_tokens.most_common(60)
@@ -92,13 +107,18 @@ def main() -> None:
         shutil.rmtree(OUTPUT_DIR)
     TEMP_DIR.rename(OUTPUT_DIR)
 
-    print(f"Records: {total}  Matched: {matched}  Unknown: {unknown} "
-          f"({matched / total:.1%} matched)")
-    for shop, counter in sorted(by_shop.items()):
-        print(f"  {shop:<18} matched {counter['matched']:>4}  "
-              f"unknown {counter['unknown']:>4}")
+    print(f"Records: {total}  Matched: {matched}  "
+          f"Review: {status_counts['review']}  "
+          f"Unknown: {status_counts['unknown']}  ({matched / total:.1%} matched)")
+    for shop, c in sorted(by_shop.items()):
+        print(f"  {shop:<18} matched {c['matched']:>4}  "
+              f"review {c['review']:>3}  unknown {c['unknown']:>4}")
+    if review_groups:
+        print("\nReview groups (brand conflicts, brand left null):")
+        for key, g in sorted(review_groups.items(), key=lambda kv: -kv[1]["count"]):
+            print(f"  {g['count']:>3}  {' + '.join(key):<30} e.g. {g['samples'][0]}")
     print("\nTop unknown leading tokens:")
-    for token, count in unknown_tokens.most_common(25):
+    for token, count in unknown_tokens.most_common(15):
         print(f"  {count:>4}  {token:<16} e.g. {unknown_samples[token][0]}")
     print(f"\nUnused brands in list: {len(extractor.unused_brands())}")
     print(f"Output: {OUTPUT_DIR}\nReport: {REPORT_FILE}")

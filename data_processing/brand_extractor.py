@@ -1,12 +1,18 @@
 """
 Quote Yard - Phase 2C brand extraction.
 
-Explicit brand list only (brands.json). Never guesses: no match means
-brand = None, brand_status = "unknown".
+Explicit brand list only (brands.json). Never guesses.
 
-Matching: casefold, strip punctuation, whole-token search. The earliest
-match in the name wins; the longest alias wins ties. Brands listed in
-"start_only" match only at the start of the name (e.g. "HP" vs "1.5 HP").
+Matching: casefold, strip punctuation, whole-token search. Brands listed
+in "start_only" match only at the start of the name (e.g. "HP" vs "1.5 HP").
+A match fully inside a longer match is dropped ("Prestige" inside
+"TTK Prestige").
+
+Outcome per name:
+  no brand found        -> brand None,  status "unknown"
+  exactly one brand     -> brand set,   status "matched"
+  two or more brands    -> brand None,  status "review",
+                           brand_candidates = brands in name order
 Reads only `name`, so it is deterministic and idempotent.
 """
 
@@ -64,27 +70,53 @@ class BrandExtractor:
         self.brand_names = set(brands)
         self.used: set[str] = set()
 
-    def extract(self, name: str) -> str | None:
+    def _matches(self, name: str) -> list[tuple[int, int, str]]:
+        """All kept matches as (start, end, brand), ordered by position."""
         text = f" {fold(name)} "
-        best: tuple[int, int] | None = None
-        best_brand: str | None = None
+        found = []
         for alias, brand, start_only in self.aliases:
             pos = text.find(f" {alias} ")
             if pos == -1 or (start_only and pos != 0):
                 continue
-            rank = (pos, -len(alias))
-            if best is None or rank < best:
-                best, best_brand = rank, brand
-        if best_brand:
-            self.used.add(best_brand)
-        return best_brand
+            found.append((pos + 1, pos + 1 + len(alias), brand))
+
+        def inside_longer(m):
+            return any(
+                o is not m
+                and o[0] <= m[0]
+                and m[1] <= o[1]
+                and (o[1] - o[0]) > (m[1] - m[0])
+                for o in found
+            )
+
+        return sorted(m for m in found if not inside_longer(m))
+
+    def classify(self, name: str) -> tuple[str | None, str, list[str]]:
+        """Return (brand, status, candidates)."""
+        candidates: list[str] = []
+        for _, _, brand in self._matches(name):
+            if brand not in candidates:
+                candidates.append(brand)
+
+        self.used.update(candidates)
+
+        if not candidates:
+            return None, "unknown", []
+        if len(candidates) == 1:
+            return candidates[0], "matched", candidates
+        return None, "review", candidates
+
+    def extract(self, name: str) -> str | None:
+        """The brand when exactly one is found, else None."""
+        return self.classify(name)[0]
 
     def enrich(self, product: dict) -> dict:
-        """Return a new dict with brand and brand_status added."""
-        brand = self.extract(product.get("name", ""))
+        """Return a new dict with brand, brand_status, brand_candidates."""
+        brand, status, candidates = self.classify(product.get("name", ""))
         result = dict(product)
         result["brand"] = brand
-        result["brand_status"] = "matched" if brand else "unknown"
+        result["brand_status"] = status
+        result["brand_candidates"] = candidates if status == "review" else None
         return result
 
     def unused_brands(self) -> list[str]:
