@@ -20,8 +20,9 @@
 | 8 | [MyG Scraper](#8-current-myg-scraper) | 19a | [Phase 2A: Data Cleaning](#19a-phase-2a-data-cleaning-) |
 | 9 | [MyG Price Cleaning](#9-myg-price-cleaning) | 19b | [Phase 2B: Normalization](#19b-phase-2b-normalization-) |
 | 10 | [MyG Pagination](#10-myg-pagination) | 19c | [Phase 2C: Brand Extraction](#19c-phase-2c-brand-extraction-) |
-| 11 | [MyG Edge Cases](#11-myg-navigation-edge-cases) | 20 | [Current Status](#20-current-status) |
-| 12 | [Resource Mgmt / Oxygen / Pittappillil](#12-myg-resource-management) | 21 | [Hardest Parts](#21-hardest-parts) |
+| 11 | [MyG Edge Cases](#11-myg-navigation-edge-cases) | 19d | [Phase 3: PostgreSQL](#19d-phase-3-postgresql-) |
+| 12 | [Resource Mgmt / Oxygen / Pittappillil](#12-myg-resource-management) | 20 | [Current Status](#20-current-status) |
+| | | 21 | [Hardest Parts](#21-hardest-parts) |
 | | | 22 | [Final Goal](#22-what-quote-yard-should-eventually-do) |
 | | | 23 | [Immediate Next Step](#23-immediate-next-step) |
 
@@ -78,13 +79,13 @@ Normalization (Phase 2B)
 Brand Extraction (Phase 2C)
    |
    v
-PostgreSQL loader (Phase 3)
+PostgreSQL loader (Phase 3)       <- done
+   |
+   v
+FastAPI (Phase 4)                 <- next
    |
    v
 Product Matching (Phase 5)
-   |
-   v
-FastAPI
    |
    v
 React Frontend
@@ -145,9 +146,7 @@ One of the **hardest parts** of Quote Yard. The system must distinguish:
 | | |
 |---|---|
 | **Database** | PostgreSQL |
-| **ORM** | SQLAlchemy |
-
-**Future concepts:** Retailers · Products · Product Variants · Categories · Retailer Listings · Prices · Price History
+| **ORM** | SQLAlchemy 2 (psycopg 3 driver) |
 
 ```
 Canonical Product
@@ -159,7 +158,7 @@ Canonical Product
    +---- Croma listing
 ```
 
-A listing may belong to **more than one category** (see Section 19a findings), so the schema needs a listing ↔ category join table rather than a single category column. The loading rule is decided in [Section 19b](#19b-phase-2b-normalization-): one listing per `(shop, url)`, one join-table row per distinct raw category pair seen for that URL. The full draft schema is in [Section 23](#23-immediate-next-step).
+The Phase 3 schema is built and loaded: `retailers`, `listings`, `listing_categories`, `price_history` and an empty `canonical_products` table reserved for Phase 5. See [Section 19d](#19d-phase-3-postgresql-).
 
 ## ⚙️ **3.5 Backend**
 
@@ -178,6 +177,8 @@ React -> FastAPI -> SQLAlchemy -> PostgreSQL
 | GET | `/products/{id}/prices` |
 | GET | `/search?q=samsung` |
 | GET | `/compare/{product_id}` |
+
+The concrete Phase 4 endpoint list (listings-based, since canonical products do not exist yet) is in [Section 23](#23-immediate-next-step).
 
 ## 🔍 **3.6 Search**
 
@@ -266,8 +267,8 @@ Landing -> Sign Up / Login -> Dashboard -> Search -> Product Results -> Product 
 | Layer | Technology |
 |-------|------------|
 | **Frontend** | React, Vite, Tailwind CSS, React Router |
-| **Backend** | Python, FastAPI, SQLAlchemy |
-| **Database** | PostgreSQL |
+| **Backend** | Python, FastAPI, SQLAlchemy 2 |
+| **Database** | PostgreSQL (driver: psycopg 3) |
 | **Scraping** | Python, Playwright, Chromium |
 | **Scheduling** | APScheduler |
 | **Development** | Git, GitHub, pytest |
@@ -330,12 +331,22 @@ quote-yard/
 │       ├── validate_taxonomy.py
 │       └── worksheet/
 │           └── quote-yard-normalization-mapping-worksheet-filled.csv
+├── db/                     # Phase 3: database layer
+│   ├── __init__.py
+│   ├── session.py          # engine / connection URL
+│   ├── models.py           # SQLAlchemy models and constraints
+│   ├── create_tables.py    # create tables + seed the four retailers
+│   └── loader.py           # branded_data/ -> PostgreSQL
 ├── frontend/
 ├── scrapers/
 ├── tests/
 │   ├── test_normalizer.py
-│   └── test_brands.py
+│   ├── test_brands.py
+│   ├── test_db_models.py
+│   └── test_loader.py
 ├── utils/
+├── requirements.txt
+├── requirements-dev.txt
 ├── .git/
 ├── .gitignore
 └── .venv/
@@ -348,9 +359,13 @@ quote-yard/
 | **GitHub** | `git@github.com:a1an-mj/Quote-Yard.git` |
 | **Main branch** | `main` |
 
-**`.gitignore` must include** all regenerable output: `cleaned_data/`, `normalized_data/`, `normalized_data.tmp/`, `branded_data/`, `branded_data.tmp/`, `reports/` and `*.tar.gz`. (The `.tmp/` directories are staging folders used while a run is in progress.)
+> **Check:** a recent sketch of the repo showed `scrapers/` as folders (`myg/`, `oxygen/`, ...) while Sections 8 to 13 describe single files such as `scrapers/myg_scraper.py`. Confirm the real layout and update the commands in Sections 12 and 13 if the scrapers were reorganized.
 
-**Import style:** the runners use `from normalizer import ...` and `from brand_extractor import ...`, so run them as `python data_processing/run_normalization.py` (not `python -m ...`). The tests add `data_processing/` to `sys.path`.
+**`.gitignore` must include** all regenerable output: `cleaned_data/`, `normalized_data/`, `normalized_data.tmp/`, `branded_data/`, `branded_data.tmp/`, `reports/`, `*.tar.gz` and `.venv/`. (The `.tmp/` directories are staging folders used while a run is in progress.)
+
+**Import / run style:**
+- `data_processing/` runners use `from normalizer import ...` and `from brand_extractor import ...`, so run them **by path**: `python data_processing/run_normalization.py`. The tests add `data_processing/` to `sys.path`.
+- The `db/` package uses package imports, so run it **as a module from the repo root**: `python -m db.create_tables`, `python -m db.loader`.
 
 ---
 
@@ -661,7 +676,7 @@ Each product is tagged with both fields:
 | Air Quality and Circulation | 5 | `pittappillil_air_quality.json` |
 | Mobiles, Laptops and More | 4 | `pittappillil_mobiles_laptops.json` |
 
-This gives **5 files instead of 55**, while keeping the subcategory on every product. It maps directly onto the category → subcategory hierarchy planned for PostgreSQL.
+This gives **5 files instead of 55**, while keeping the subcategory on every product. It maps directly onto the category → subcategory hierarchy used in PostgreSQL.
 
 ### **Pittappillil CLI**
 
@@ -753,7 +768,7 @@ Saving **replaces** the existing JSON snapshot. It does **not** append.
 | New scrape | Phone A, Phone C |
 | **Result** | **Phone A, Phone C** |
 
-This is intentional for the current snapshot stage. Later, PostgreSQL will store price history separately.
+This is intentional for the JSON snapshot stage. Price history is kept in PostgreSQL (`price_history`), built up by the loader on every run.
 
 ---
 
@@ -781,16 +796,28 @@ Test once
 
 # 18. **DEVELOPMENT ENVIRONMENT**
 
-
-Setup: pip install -r requirements-dev.txt, then playwright install chromium (the browser is downloaded separately and is only needed for the scrapers).
-
 | | |
 |---|---|
 | **OS** | Arch Linux |
 | **Python** | 3.14.6 |
 | **Environment** | `.venv` |
+| **Database** | PostgreSQL, local database `quote_yard` (Unix-socket connection as the current OS user) |
 | **Tools** | Playwright, Chromium |
 | **Dev tools** | pytest (run as `python -m pytest`) |
+
+**Setup on a fresh machine:**
+
+```
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements-dev.txt
+playwright install chromium        # the browser is downloaded separately; only the scrapers need it
+createdb quote_yard
+python -m db.create_tables
+```
+
+**Requirements files:** `requirements.txt` (runtime: playwright, SQLAlchemy, psycopg[binary]) and `requirements-dev.txt` (adds pytest). Add FastAPI / uvicorn in Phase 4 and APScheduler in Phase 7.
+
+**Database URL:** read from the environment variable `QUOTE_YARD_DATABASE_URL`; the default is `postgresql+psycopg:///quote_yard`.
 
 Playwright reported Arch Linux is not officially supported and downloaded a fallback Ubuntu 24.04 Chromium build, but the browser works.
 
@@ -818,12 +845,12 @@ Four active retailers are available for the core pipeline. **Croma is intentiona
 
 | Phase | Name | What gets built |
 |:-----:|------|-----------------|
-| **2** | **Data Processing** ✅ | 2A Cleaning ✅ · 2B Normalization ✅ (built, tested, reviewed) · 2C Brand extraction ✅ (98.9% matched, 10 `review`, 23 unknown) · Duplicate handling ✅ decided (handled in the DB loader) |
-| **3** | **PostgreSQL** ⏳ next | Schema (draft in Section 23), SQLAlchemy models, retailers, listings, listing ↔ category join table, price history |
-| **4** | **FastAPI** | Product endpoints, search, product detail, comparison, price history |
-| **5** | **Product Matching** | Match retailer listings into canonical products |
+| **2** | **Data Processing** ✅ | 2A Cleaning ✅ · 2B Normalization ✅ · 2C Brand extraction ✅ (98.9% matched, 10 `review`, 23 unknown) · Duplicate handling ✅ (done in the loader) |
+| **3** | **PostgreSQL** ✅ | Schema, SQLAlchemy models, retailers seeded, loader, price history. 2,965 listings loaded; reruns are idempotent. |
+| **4** | **FastAPI** ⏳ next | Listing search and filters, listing detail, price history, browse by product type / brand, interim same-type comparison |
+| **5** | **Product Matching** | Match retailer listings into canonical products (fills `canonical_products`) |
 | **6** | **React Integration** | Connect frontend to FastAPI |
-| **7** | **Scheduler** | Automate retailer scraping and DB updates |
+| **7** | **Scheduler** | Automate retailer scraping and DB updates (scrape → clean → normalize → brand → load) |
 | **8** | **Deployment** | Choose environment, move from development to a stable server |
 
 ---
@@ -922,7 +949,7 @@ product matching (Phase 5)
 
 > **MVP decision (unmapped coverage):** 80% of records (2,389 of 2,975) are fully mapped. The remaining 20% (346 `parent_only`, 240 `unmapped`) **pass through unchanged** for the MVP. Causes: mixed retailer buckets (myG Home & Kitchen, myG Small Appliances, Oxygen Gadgets, Pittappillil Chimney & Hob, Home Inverters & Batteries) and one misfiled Nandilath record. A name-based rule layer (`mapping_status: "rule_mapped"`, versioned separately) is **deferred**. Cheap wins later: an `Earbuds` type would let Oxygen Gadgets (23) map.
 
-> **Decision (duplicate handling):** `normalized_data/` **keeps every record**, including repeated URLs. Normalization stays a pure per-record transform. The Phase 3 loader creates **one listing per `(shop, url)`** and **one row in a listing ↔ category join table per distinct raw category pair** seen for that URL (see Section 23 for why the join key is the raw pair).
+> **Decision (duplicate handling):** `normalized_data/` **keeps every record**, including repeated URLs. Normalization stays a pure per-record transform. The Phase 3 loader creates **one listing per `(shop, url)`** and **one row in `listing_categories` per distinct raw category pair** seen for that URL. ✅ Implemented in Phase 3.
 
 ### Files
 
@@ -1003,7 +1030,7 @@ Counts match the worksheet exactly.
 
 ### Downstream note
 
-`unmapped` records (240) pass through with `category: null` and `product_type: null`. `parent_only` records (346) have a category but a null `product_type`. The DB loader and search **must handle both**.
+`unmapped` records (240) pass through with `category: null` and `product_type: null`. `parent_only` records (346) have a category but a null `product_type`. The database and API **must handle both** (the `listing_categories` columns are nullable for this reason).
 
 ### Review results
 
@@ -1075,7 +1102,7 @@ Adds `brand`, `brand_status` and `brand_candidates` to each normalized record. B
 
 | File | Purpose |
 |------|---------|
-| `data_processing/brands.json` | Canonical brand → aliases, plus the `start_only` list (versioned, hand-made, version 1.1) |
+| `data_processing/brands.json` | Canonical brand → aliases, plus the `start_only` list (versioned, hand-made). Its `version` is stored on every listing as `brands_version`. |
 | `data_processing/brand_extractor.py` | `BrandExtractor` class: matching, `classify()` (brand, status, candidates), `enrich()`, brand-file validation |
 | `data_processing/run_branding.py` | Runner: reads `normalized_data/`, writes `branded_data/` (via a `.tmp` swap) and `reports/brand_report.json` (includes review groups) |
 | `tests/test_brands.py` | 12 tests: case and punctuation, brand not first word, aliases and longest match, `start_only`, unknown is `None`, purity/idempotency, duplicate alias rejected, conflict goes to `review`, Google mid-name ignored, nested alias is not a conflict, Xiaomi family is one brand, `brand_candidates` null unless `review` |
@@ -1126,6 +1153,115 @@ Progress across iterations: 87.5% → 95.5% → 98.1% → 99.0% → 99.2% → 98
 
 ---
 
+## 🗄️ **19d. PHASE 3: POSTGRESQL** ✅
+
+Loads `branded_data/` into PostgreSQL. The database stores listings, their canonical and raw categories, and a price history that grows with every load.
+
+```
+branded_data/*.json  ->  db/loader.py  ->  PostgreSQL (quote_yard)
+```
+
+### Schema
+
+```
+retailers (1) ──< listings (1) ──< listing_categories
+                     │
+                     ├──< price_history
+                     │
+                     └──> canonical_products (nullable, empty until Phase 5)
+```
+
+**`retailers`**: `id`, `name` (unique), `base_url`. Seeded with exactly `myG`, `Oxygen`, `Pittappillil`, `Nandilath G Mart`. The loader fails on an unknown shop instead of creating one. (`base_url` is still empty.)
+
+**`listings`**: one row per `(retailer_id, url)`.
+
+| Column | Notes |
+|--------|-------|
+| `id`, `retailer_id`, `url`, `name` | `(retailer_id, url)` is unique; `name` is the original name, untouched |
+| `brand`, `brand_status`, `brand_candidates` | `brand_status` in `matched` / `unknown` / `review`; `brand_candidates` is JSONB, set only for `review` |
+| `current_price` | integer rupees, `NOT NULL`, `> 0` |
+| `availability` | `In stock` / `Out of stock` / `Unknown` (CHECK constraint) |
+| `first_seen_at`, `last_seen_at` | timestamptz |
+| `canonical_product_id` | nullable FK, stays null until Phase 5 |
+| `taxonomy_version`, `brands_version` | recorded so rows can be reprocessed later |
+
+Constraint rules in the database itself: `brand_status = 'matched'` exactly when `brand` is set; `brand_status = 'review'` exactly when `brand_candidates` is set.
+
+**`listing_categories`**: one row per distinct `(listing, raw_category, raw_subcategory)`.
+
+| Column | Notes |
+|--------|-------|
+| `category`, `product_type` | canonical values, both nullable (`unmapped` / `parent_only`) |
+| `mapping_status` | `mapped` / `parent_only` / `unmapped` |
+| `raw_category` | `NOT NULL` |
+| `raw_subcategory` | nullable; empty strings become NULL |
+
+Uniqueness uses a unique index on `(listing_id, raw_category, COALESCE(raw_subcategory, ''))`, so two NULL subcategories count as the same row on every PostgreSQL version.
+
+**`price_history`**: `id`, `listing_id`, `price` (`> 0`), `availability`, `recorded_at`; index on `(listing_id, recorded_at DESC)`.
+
+**`canonical_products`**: created empty (`id`, `brand`, `name`, `category`, `product_type`, `created_at`); filled in Phase 5.
+
+`category` and `product_type` are plain text, not foreign keys to lookup tables. The JSON taxonomy stays the single source of truth, and `taxonomy_version` covers drift. Tables are created with `create_all`; move to Alembic once the schema starts changing.
+
+### Why the category join key is the raw pair
+
+Home Theater and Sound Bars both map to Soundbar. Keying on the canonical `(category, product_type)` would merge them and lose which retailer category each came from. Keying on the raw pair keeps the provenance, and `SELECT DISTINCT product_type` still gives the distinct canonical types. For the same reason the raw values live on the join row, not on the listing (a URL in two subcategories has two raw pairs).
+
+### Loader rules (`db/loader.py`)
+
+1. **All or nothing.** Every record is validated first (shop, URL, name, positive integer price, availability, statuses, brand/candidates consistency). Any invalid record fails the whole load and nothing is written. The load runs in one transaction.
+2. **Order and dedupe.** Files are read in sorted filename order and records in file order. Records are deduped by `(shop, url)`; the **first record in load order wins**, and a warning is logged if a later duplicate differs in name or price. An existing database row never decides which record wins.
+3. **Categories.** Every distinct raw pair seen for a URL becomes one `listing_categories` row; changed canonical values on an existing pair are updated.
+4. **Price history.** A row is added on first sighting, on any price change, and when a **known** availability differs from the **last known** availability. `Unknown` is never treated as a change, and the first known value after a run of `Unknown` is still recorded.
+5. **Never delete listings.** A listing missing from a scrape is not marked gone, because myG's truncated categories would falsely look removed. `last_seen_at` shows freshness.
+6. **Idempotent.** Re-running the same data inserts nothing and adds no history rows; it only refreshes `last_seen_at`.
+7. **Dry run.** `python -m db.loader --dry-run` does everything and rolls back.
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `db/session.py` | Engine and connection URL (`QUOTE_YARD_DATABASE_URL`, default `postgresql+psycopg:///quote_yard`) |
+| `db/models.py` | SQLAlchemy models, check constraints, indexes |
+| `db/create_tables.py` | Creates the tables and seeds the four retailers (safe to repeat) |
+| `db/loader.py` | The loader described above |
+| `tests/test_db_models.py` | 6 tests: valid listing, duplicate `(retailer, url)`, bad availability, zero price, review requires candidates, duplicate NULL-subcategory category. Each test rolls back; they skip if PostgreSQL is unreachable. |
+| `tests/test_loader.py` | 16 tests: first load, rerun adds nothing, price change, `Unknown` availability, duplicate URL (first wins, categories merged), same pair twice, re-mapping, review candidates, unknown shop, 7 invalid-record cases |
+
+### Run
+
+```
+python -m db.create_tables
+python -m pytest tests/test_db_models.py tests/test_loader.py -v
+python -m db.loader --dry-run
+python -m db.loader
+```
+
+### Results
+
+| Check | Result |
+|-------|--------|
+| Records read | 2,975 |
+| Unique `(shop, url)` | 2,965 (matches 2,975 minus the 10 duplicate URL groups) |
+| `listings` | 2,965 |
+| `listing_categories` | 2,975 (every duplicate sat under a different raw category) |
+| `price_history` | 2,965 (one first-sighting row each) |
+| Duplicate-URL warnings | 0 (the duplicates agree on name and price) |
+| Reruns (dry run, load, load again) | 0 inserted, 0 history rows, 0 category changes |
+| Tests | 6 (models) + 16 (loader) passed |
+
+Whole project: 41 tests (7 normalizer, 12 brands, 6 models, 16 loader).
+
+### Known limits
+
+- `base_url` on `retailers` is empty; fill it in when the API needs it.
+- Availability is only `In stock` or `Unknown` in current data (2,796 / 179). The out-of-stock path is allowed by the schema but unexercised (see open item 3).
+- `price_history` only grows when the loader runs. Price history is therefore only as good as the scrape schedule (Phase 7).
+- Full-text / fuzzy search is not set up; plain `ILIKE` is the plan for Phase 4. Add a `pg_trgm` index if it gets slow.
+
+---
+
 # 20. **CURRENT STATUS**
 
 ## ✅ **Completed / substantially completed**
@@ -1155,15 +1291,22 @@ Progress across iterations: 87.5% → 95.5% → 98.1% → 99.0% → 99.2% → 98
 - 7 tests passing; all four guardrails implemented
 - `review_normalized.py` built; review of the four flagged rows complete, **no mapping changes needed, version stays 1.0**
 - **MVP decision:** 80% of records fully mapped; `parent_only` and `unmapped` pass through unchanged; rule-based layer deferred
-- **Duplicate handling decided:** `normalized_data/` keeps repeated URLs; the Phase 3 loader builds one listing per `(shop, url)` plus a listing ↔ category join table
 
 **Brand extraction (Phase 2C):** built, tested, accepted
 
-- `brands.json` (v1.1), `brand_extractor.py`, `run_branding.py`, `tests/test_brands.py` (12 tests passing)
+- `brands.json`, `brand_extractor.py`, `run_branding.py`, `tests/test_brands.py` (12 tests passing)
 - 2,942 matched, 10 `review`, 23 unknown (98.9% matched); wrong-match check done
 - `review` status added for multi-brand conflicts (`brand: null` plus `brand_candidates`)
 - Xiaomi family merged (Redmi, Mi, Poco); `Google`, `Apple`, `Sharp`, `Lifelong` made `start_only`
 - **MVP decision:** accept 98.9%; unknown and review records reported, not guessed
+
+**PostgreSQL (Phase 3):** built, tested, loaded
+
+- Schema with database-level constraints (price, availability, brand status, review/candidates pairing, NULL-safe category uniqueness)
+- `db/loader.py`: validated, transactional, first-record-wins dedupe, idempotent, with a dry-run mode
+- 2,965 listings, 2,975 listing_categories, 2,965 price_history rows loaded; reruns add nothing
+- 22 DB tests passing (6 models, 16 loader)
+- `requirements.txt` and `requirements-dev.txt` created; Playwright's Chromium is installed separately (`playwright install chromium`)
 
 **MyG**
 
@@ -1203,7 +1346,7 @@ Progress across iterations: 87.5% → 95.5% → 98.1% → 99.0% → 99.2% → 98
 
 ## 🚧 **Currently being finished**
 
-**Phase 3 schema (draft):** table design is drafted in Section 23; a few points await confirmation before any SQLAlchemy code is written.
+**Phase 4 design:** the endpoint list and response shapes are drafted in Section 23 and need a few decisions before code is written.
 
 **MyG scraper robustness** (parallel track): confirm the unified MyG scraper is robust end to end against:
 
@@ -1219,21 +1362,23 @@ Progress across iterations: 87.5% → 95.5% → 98.1% → 99.0% → 99.2% → 98
 |:-:|------|
 | 1 | **MyG TVs:** the cleaned data contains a myG `TV` category (108 records), but `CATEGORIES` in `myg_scraper.py` has no `tvs` entry. Confirm whether an earlier script scraped them or whether the config needs updating, so a re-scrape does not lose them. |
 | 2 | **Oxygen naming:** listings are internally inconsistent and may contain near-duplicates (a Phase 5 matching problem). |
-| 3 | **Oxygen out-of-stock path:** unverified, because the tested category had no out-of-stock products. |
+| 3 | **Out-of-stock path:** unverified end to end. Current data has only `In stock` and `Unknown`; Oxygen's tested category had nothing out of stock. |
 | 4 | **Pittappillil subcategories:** 55 URLs are configured but only 48 subcategories appear in the data. Find which 7 returned nothing and confirm that is expected, not a silent scraper stop. |
 | 5 | ~~**Run the validator on real data**~~ ✅ Done: 0 errors, 0 warnings. |
 | 6 | **myG truncation:** 8 of 11 myG categories have exactly 108 records, matching the page-10 403 (confirmed again in the normalized output). These are probably incomplete, which affects price-comparison coverage (Tablet is myG-only, so it is affected most). Investigate whether the 403 can be avoided (delays, headers, a new context per page range). Runs as a parallel track; worth fixing before Phase 5. |
 | 7 | ~~**Unknown brands**~~ ✅ Accepted at 98.9% matched (23 unknown, 10 review). An optional cleanup batch is listed in Section 19c. |
 | 8 | **Unmapped coverage (20%):** 346 `parent_only` and 240 `unmapped` records. Accepted for the MVP. Revisit with a name-rule layer or an `Earbuds` type if it limits comparison coverage. |
 | 9 | **Brand `review` records (10):** resolved by hand or by a later rule. Only Faber + LG (4) is true ambiguity; Eureka Forbes + Aquaguard (4) and Samsung + Symphony (2) are correct brands flagged by design. |
-| 10 | **Availability values:** the set of values in `branded_data/` has not been listed yet. Check it before locking a CHECK constraint (Section 23). |
+| 10 | ~~**Availability values**~~ ✅ Checked: only `In stock` (2,796) and `Unknown` (179). Constraint locked to `In stock` / `Out of stock` / `Unknown`. |
+| 11 | **Scraper layout:** a repo sketch showed `scrapers/` as folders while this plan describes single files. Confirm and update Sections 7, 12 and 13 if reorganized. |
+| 12 | **End-to-end pipeline command:** there is no single command yet that runs scrape → clean → normalize → brand → load. Needed for Phase 7. |
 
 ## ➡️ **Next major work**
 
 The four scrapers are the data-collection layer. **Do not add Croma yet.**
 
 ```
-Four retailer raw data -> Cleaning -> Normalization -> Brand Extraction -> PostgreSQL
+Four retailer raw data -> Cleaning -> Normalization -> Brand Extraction -> PostgreSQL -> FastAPI
 ```
 
 The architecture must stay scalable so future retailers plug into the same common listing model **without retailer-specific logic leaking into later phases.**
@@ -1282,125 +1427,80 @@ Quote Yard finds the relevant product:
 
 # 23. **IMMEDIATE NEXT STEP**
 
-## ➡️ **Phase 3: PostgreSQL schema and loader**
+## ➡️ **Phase 4: FastAPI**
 
-Phase 2 is complete (Sections 19a, 19b, 19c). Start from `branded_data/`, not earlier layers.
+Phase 3 is complete (Section 19d): 2,965 listings are in PostgreSQL. Phase 4 puts a read-only HTTP API on top of them.
 
-**Before starting, close out Phase 2:**
+**Before starting, close out Phase 3:**
 
-1. Delete any leftover unused entries from `brands.json` (e.g. `"Panasonic Life"` if still present).
-2. Confirm `.gitignore` covers `cleaned_data/`, `normalized_data/`, `normalized_data.tmp/`, `branded_data/`, `branded_data.tmp/` and `reports/`.
-3. Commit `brands.json`, `brand_extractor.py`, `run_branding.py`, `review_normalized.py`, `normalizer.py`, `run_normalization.py` and both test files, then push.
+1. Commit `db/`, `tests/test_db_models.py`, `tests/test_loader.py`, `requirements.txt`, `requirements-dev.txt` and the updated plan, then push.
+2. Confirm `.venv/` and all generated data folders are in `.gitignore`.
 
-### Draft schema (confirm before coding)
+### Scope: what the API can honestly offer today
+
+Canonical products do not exist until Phase 5, so the Phase 4 API is **listings-based**. There is no `/products` or `/compare/{product_id}` yet. What it does offer:
+
+| Method | Endpoint | Purpose |
+|--------|----------|---------|
+| GET | `/health` | Service and database check |
+| GET | `/retailers` | The four retailers with listing counts |
+| GET | `/listings` | Search and filter (see below), paginated |
+| GET | `/listings/{id}` | One listing with all its category rows |
+| GET | `/listings/{id}/prices` | Price history for one listing |
+| GET | `/product-types` | Types with listing counts per retailer |
+| GET | `/brands` | Brands with listing counts |
+| GET | `/product-types/{type}/listings` | Listings of one type, sorted by price, with the cheapest per retailer (an **interim, rough comparison** before Phase 5 matching) |
+
+**`/listings` filters:** `q` (name, `ILIKE`), `retailer`, `category`, `product_type`, `brand`, `min_price`, `max_price`, `availability`, plus `sort` (`price_asc`, `price_desc`, `name`, `newest`), `limit` (default 20, max 100) and `offset`.
+
+### Design decisions to settle first
+
+| # | Question | Proposal |
+|:-:|----------|----------|
+| 1 | Pagination | `limit` / `offset`, response includes `total` |
+| 2 | Search | Plain `ILIKE` on `listings.name` (multi-word `q` means every word must match); add a `pg_trgm` index only if slow |
+| 3 | Null handling | `brand`, `category` and `product_type` can be null in responses; unmapped and unknown listings stay searchable by name |
+| 4 | Brand trust | Responses expose `brand_status` so the frontend can treat `review` / `unknown` differently |
+| 5 | Interim comparison | Same product type is **not** the same product; label the endpoint as "type comparison" and do not present it as a price match |
+| 6 | Response models | Pydantic models in `api/schemas.py`; never return ORM objects directly |
+| 7 | Database access | One session per request via a FastAPI dependency; read-only |
+| 8 | CORS | Allow the React dev origin (Vite, `http://localhost:5173`) |
+| 9 | Config | Reuse `QUOTE_YARD_DATABASE_URL` |
+| 10 | Tests | FastAPI `TestClient` against the real database inside a rolled-back transaction, like the DB tests |
+
+### Planned layout
 
 ```
-retailers (1) ──< listings (1) ──< listing_categories
-                     │
-                     ├──< price_history
-                     │
-                     └──> canonical_products (nullable, empty until Phase 5)
+api/
+├── __init__.py
+├── main.py        # app, CORS, router registration
+├── deps.py        # session dependency
+├── schemas.py     # Pydantic response models
+└── routes/
+    ├── listings.py
+    ├── catalog.py     # retailers, product types, brands
+    └── health.py
+tests/
+└── test_api.py
 ```
 
-**`retailers`** (seeded with the four shops)
-
-| Column | Type | Notes |
-|--------|------|-------|
-| `id` | serial PK | |
-| `name` | text, unique | exactly `myG`, `Oxygen`, `Pittappillil`, `Nandilath G Mart` |
-| `base_url` | text | |
-
-**`listings`**: one row per `(retailer, url)`
-
-| Column | Type | Notes |
-|--------|------|-------|
-| `id` | serial PK | |
-| `retailer_id` | FK → retailers | |
-| `url` | text | unique with `retailer_id` |
-| `name` | text | original name, untouched |
-| `brand` | text, nullable | |
-| `brand_status` | text | CHECK in `matched` / `unknown` / `review` |
-| `brand_candidates` | JSONB, nullable | only set when status is `review` |
-| `current_price` | integer | `NOT NULL`, `CHECK (current_price > 0)` |
-| `availability` | text | controlled set, CHECK to be locked after the value check (open item 10) |
-| `first_seen_at`, `last_seen_at` | timestamptz | |
-| `canonical_product_id` | FK, nullable | stays null until Phase 5 |
-| `taxonomy_version`, `brands_version` | text | so records can be reprocessed |
-
-**`listing_categories`**: the join table
-
-| Column | Type | Notes |
-|--------|------|-------|
-| `id` | serial PK | |
-| `listing_id` | FK → listings | |
-| `category` | text, nullable | canonical parent |
-| `product_type` | text, nullable | canonical type |
-| `mapping_status` | text | `mapped` / `parent_only` / `unmapped` |
-| `raw_category` | text | `NOT NULL` |
-| `raw_subcategory` | text, nullable | empty strings become NULL |
-
-**`price_history`**
-
-| Column | Type | Notes |
-|--------|------|-------|
-| `id` | bigserial PK | |
-| `listing_id` | FK → listings | |
-| `price` | integer | `NOT NULL`, positive |
-| `availability` | text | |
-| `recorded_at` | timestamptz | |
-
-**`canonical_products`**: created empty, filled in Phase 5 (`id`, `brand`, `name`, `category`, `product_type`, `created_at`).
-
-**Indexes and constraints**
-
-- `listings`: unique `(retailer_id, url)`; index on `brand`; index on `canonical_product_id`.
-- `listing_categories`: unique `(listing_id, raw_category, raw_subcategory)` with NULLs treated as equal (`UNIQUE NULLS NOT DISTINCT` on PostgreSQL 15+, or a unique index on `COALESCE(raw_subcategory, '')`). Indexes on `product_type` and `category`.
-- `price_history`: index on `(listing_id, recorded_at DESC)`.
-- Search: plain `ILIKE` on `listings.name` for now; add a `pg_trgm` index later if it gets slow.
-- `category` and `product_type` are plain text, not foreign keys to lookup tables. The JSON taxonomy stays the single source of truth, and `taxonomy_version` covers drift.
-
-### Loader rules
-
-1. **Order and dedupe:** read files in sorted filename order and records in file order. Dedupe the batch by `(retailer, url)`; the **first record in load order wins**, and a warning is logged if a later duplicate has a different name or price. An existing database row never decides which record wins; it is only updated by the winner of the current run.
-2. **Upsert** each winner into `listings` by `(retailer, url)`, updating price, availability and `last_seen_at`.
-3. **Categories:** insert one `listing_categories` row per distinct `(listing, raw_category, raw_subcategory)`. The join key is the **raw pair**, not the canonical `(category, product_type)`: Home Theater and Sound Bars both map to Soundbar, and keying on the canonical pair would lose which retailer category each came from. Raw values therefore live on the join row, not on the listing. Distinct types are still available with `SELECT DISTINCT product_type`.
-4. **Price history:** add a row on first sighting and whenever the price changes. Add a row for an availability change only between two known values; a change to or from `Unknown` counts as "no information" and records nothing. Rerunning the same data adds no rows (idempotent).
-5. **Never delete listings.** A listing missing from a scrape is not marked gone, because myG's truncated categories would falsely look removed. `last_seen_at` shows freshness.
-6. **Retailers:** look a shop up by its exact name and **fail on an unknown shop** instead of creating one. Adding Croma later means adding a retailer row on purpose.
-7. **Nulls:** accept null `category`, `product_type` and `brand` (586 records lack a product type or category; 33 lack a usable brand: 23 unknown and 10 review).
-8. **Brand fields:** store `brand_status` and `brand_candidates`. Phase 5 matching treats `review` and `unknown` as "brand not trustworthy".
-
-**Expected first load:** about 2,965 listings (2,975 records minus the 10 duplicate URL groups, assuming each group is two records; verify after loading), up to 2,975 `listing_categories` rows, and about 2,965 `price_history` rows. If the counts differ, check the duplicate groups.
-
-### Points still to confirm
-
-| # | Point | Proposal |
-|:-:|-------|----------|
-| 1 | `availability` values | Run the distinct-values check on `branded_data/`; if only `In stock` / `Unknown`, use a CHECK on `In stock` / `Out of stock` / `Unknown` and fail loudly on anything else |
-| 2 | History and `Unknown` | Changes to or from `Unknown` create no history row (as above) |
-| 3 | Duplicate URL rule | "First in load order, dedupe the batch before upserting" (as above) |
-| 4 | Migrations | Use `create_all` for now; move to Alembic once the schema starts changing |
-| 5 | `scrape_runs` table | Deferred to Phase 7 (scheduler) |
-
-**Availability check:**
-
-```bash
-python -c "
-import json,glob,collections
-c=collections.Counter(r['availability'] for f in glob.glob('branded_data/*.json') for r in json.load(open(f)))
-print(c)"
-```
+New runtime dependencies: `fastapi`, `uvicorn`, `pydantic` (installed with FastAPI). Run with `uvicorn api.main:app --reload`; interactive docs appear at `/docs`.
 
 ### Order of work
 
-1. Confirm the points above and lock the table design (columns, keys, indexes)
-2. Install PostgreSQL (use `psycopg` with SQLAlchemy 2.0)
-3. SQLAlchemy models and table creation
-4. Loader that reads `branded_data/*.json`
-5. Load and verify counts and null handling
-6. Phase 4: FastAPI endpoints
-7. Phase 5: product matching (kept separate)
+1. Confirm the endpoint list and the decisions above
+2. Install dependencies and add them to `requirements.txt`
+3. App skeleton, session dependency, `/health`
+4. Schemas and the catalog endpoints (`/retailers`, `/product-types`, `/brands`)
+5. `/listings` with filters, sorting and pagination
+6. `/listings/{id}`, `/listings/{id}/prices`, `/product-types/{type}/listings`
+7. Tests, then try everything in the browser at `/docs`
 
-**Parallel track:** the myG truncation (Section 20, open item 6), which limits comparison coverage and is worth fixing before Phase 5.
+### After Phase 4
 
-Rules: mappings and brand aliases are explicit and reviewable (JSON files, not heuristics); unmapped, unknown and review values are reported, never silently guessed; raw, cleaned, normalized and branded layers stay untouched by later steps; `taxonomy.json` and `aliases.json` are versioned together.
+- **Phase 5: product matching.** Fill `canonical_products` and set `listings.canonical_product_id`; the real `/products` and `/compare` endpoints then replace the interim type comparison. Treat `review` and `unknown` brands as "brand not trustworthy".
+- **Parallel track, worth doing before Phase 5:** the myG truncation (open item 6). Until it is fixed, myG-heavy types such as Tablet cannot be compared properly.
+- **Phase 6:** connect the React prototype to the API.
+- **Phase 7:** one pipeline command (open item 12) plus APScheduler, so price history builds up daily.
+
+Rules: mappings and brand aliases are explicit and reviewable (JSON files, not heuristics); unmapped, unknown and review values are reported, never silently guessed; raw, cleaned, normalized and branded layers stay untouched by later steps; `taxonomy.json` and `aliases.json` are versioned together; the loader never deletes listings.
