@@ -1,5 +1,5 @@
 {
-  "version": "1.0",
+  "version": "1.1",
   "start_only": ["HP", "Nothing", "Vu", "Noise", "Urban","Google", "Apple", "Sharp", "Lifelong"],
   "brands": {
     "Samsung": [], "Apple": [], "LG": [], "Sony": [], "Panasonic": [],

@@ -21,7 +21,8 @@
 | 9 | [MyG Price Cleaning](#9-myg-price-cleaning) | 19b | [Phase 2B: Normalization](#19b-phase-2b-normalization-) |
 | 10 | [MyG Pagination](#10-myg-pagination) | 19c | [Phase 2C: Brand Extraction](#19c-phase-2c-brand-extraction-) |
 | 11 | [MyG Edge Cases](#11-myg-navigation-edge-cases) | 19d | [Phase 3: PostgreSQL](#19d-phase-3-postgresql-) |
-| 12 | [Resource Mgmt / Oxygen / Pittappillil](#12-myg-resource-management) | 20 | [Current Status](#20-current-status) |
+| 12 | [Resource Mgmt / Oxygen / Pittappillil](#12-myg-resource-management) | 19e | [Phase 4: FastAPI](#19e-phase-4-fastapi-) |
+| | | 20 | [Current Status](#20-current-status) |
 | | | 21 | [Hardest Parts](#21-hardest-parts) |
 | | | 22 | [Final Goal](#22-what-quote-yard-should-eventually-do) |
 | | | 23 | [Immediate Next Step](#23-immediate-next-step) |
@@ -82,10 +83,13 @@ Brand Extraction (Phase 2C)
 PostgreSQL loader (Phase 3)       <- done
    |
    v
-FastAPI (Phase 4)                 <- next
+FastAPI (Phase 4)                 <- done
    |
    v
-Product Matching (Phase 5)
+Product Matching (Phase 5)        <- next
+   |
+   v
+Accounts + watchlist (Phase 4A)   <- after Phase 5
    |
    v
 React Frontend
@@ -178,7 +182,7 @@ React -> FastAPI -> SQLAlchemy -> PostgreSQL
 | GET | `/search?q=samsung` |
 | GET | `/compare/{product_id}` |
 
-The concrete Phase 4 endpoint list (listings-based, since canonical products do not exist yet) is in [Section 23](#23-immediate-next-step).
+The built Phase 4 endpoints (listings-based, since canonical products do not exist yet) are in [Section 19e](#19e-phase-4-fastapi-).
 
 ## 🔍 **3.6 Search**
 
@@ -231,7 +235,8 @@ Update PostgreSQL
 **Prototype flow:**
 
 ```
-Landing -> Sign Up / Login -> Dashboard -> Search -> Product Results -> Product Comparison
+Landing (1-2 featured deals, no search bar) -> click a deal -> Sign Up / Login
+   -> Dashboard (search, filters, listings, per-retailer comparison, watchlist, account)
 ```
 
 ---
@@ -337,13 +342,31 @@ quote-yard/
 │   ├── models.py           # SQLAlchemy models and constraints
 │   ├── create_tables.py    # create tables + seed the four retailers
 │   └── loader.py           # branded_data/ -> PostgreSQL
+├── api/                    # Phase 4: read-only HTTP API (FastAPI)
+│   ├── __init__.py
+│   ├── main.py             # app, /api/v1 prefix, CORS, rate limiting
+│   ├── deps.py             # read-only engine (statement timeout) + session dependency
+│   ├── schemas.py          # Pydantic response models
+│   ├── filters.py          # shared listing filters (EXISTS-based, escaped search)
+│   ├── ratelimit.py        # in-process sliding-window rate limiter
+│   └── routes/
+│       ├── __init__.py
+│       ├── health.py
+│       ├── catalog.py      # retailers, product types, brands
+│       └── listings.py     # list, summary, detail, prices
 ├── frontend/
 ├── scrapers/
 ├── tests/
+│   ├── conftest.py              # switches the rate limiter off for the shared test app
 │   ├── test_normalizer.py
 │   ├── test_brands.py
 │   ├── test_db_models.py
-│   └── test_loader.py
+│   ├── test_loader.py
+│   ├── test_api_health.py
+│   ├── test_api_catalog.py
+│   ├── test_api_listings.py
+│   ├── test_api_summary_detail.py
+│   └── test_api_ratelimit.py
 ├── utils/
 ├── requirements.txt
 ├── requirements-dev.txt
@@ -803,7 +826,7 @@ Test once
 | **Environment** | `.venv` |
 | **Database** | PostgreSQL, local database `quote_yard` (Unix-socket connection as the current OS user) |
 | **Tools** | Playwright, Chromium |
-| **Dev tools** | pytest (run as `python -m pytest`) |
+| **Dev tools** | pytest (run as `python -m pytest`), httpx2 (the API test client; Starlette prefers it over httpx) |
 
 **Setup on a fresh machine:**
 
@@ -815,7 +838,9 @@ createdb quote_yard
 python -m db.create_tables
 ```
 
-**Requirements files:** `requirements.txt` (runtime: playwright, SQLAlchemy, psycopg[binary]) and `requirements-dev.txt` (adds pytest). Add FastAPI / uvicorn in Phase 4 and APScheduler in Phase 7.
+**Requirements files:** `requirements.txt` (runtime: playwright, SQLAlchemy, psycopg[binary], fastapi, uvicorn) and `requirements-dev.txt` (adds pytest and httpx2). Phase 4A adds an argon2 password-hashing package (or uses the standard-library `scrypt`) and sends email through SMTP (standard-library `smtplib`); APScheduler arrives in Phase 7.
+
+**Run the API:** `uvicorn api.main:app --reload`, then open `http://127.0.0.1:8000/api/v1/docs`. **Run all tests:** `python -m pytest tests -q` (103 pass).
 
 **Database URL:** read from the environment variable `QUOTE_YARD_DATABASE_URL`; the default is `postgresql+psycopg:///quote_yard`.
 
@@ -847,11 +872,13 @@ Four active retailers are available for the core pipeline. **Croma is intentiona
 |:-----:|------|-----------------|
 | **2** | **Data Processing** ✅ | 2A Cleaning ✅ · 2B Normalization ✅ · 2C Brand extraction ✅ (98.9% matched, 10 `review`, 23 unknown) · Duplicate handling ✅ (done in the loader) |
 | **3** | **PostgreSQL** ✅ | Schema, SQLAlchemy models, retailers seeded, loader, price history. 2,965 listings loaded; reruns are idempotent. |
-| **4** | **FastAPI** ⏳ next | Listing search and filters, listing detail, price history, browse by product type / brand, interim same-type comparison |
-| **5** | **Product Matching** | Match retailer listings into canonical products (fills `canonical_products`) |
+| **4** | **FastAPI foundation + basic protection** ✅ | `/api/v1` read-only API: listing search and filters, per-retailer summary, listing detail, price history, browse by product type / brand. Read-only DB connection, statement timeout, pagination caps, CORS, rate limiting. 62 API tests. |
+| **5** | **Product Matching** ⏳ next | Match retailer listings into canonical products (fills `canonical_products`), starting with mobile phones: a read-only extraction report first, then conservative matching (brand, model, RAM and storage must agree; ambiguous cases go to a review report). Then `/products` and `/compare` endpoints. |
+| **4A** | **Accounts, watchlist and public deal teaser** (after Phase 5) | Open registration with **email verification by OTP**, token-based sessions (opaque token in an httpOnly cookie), secure password hashing, abuse protection; the full platform requires login; personal watchlist; public landing page with 1-2 verified deals generated from real matches (no search bar); dashboard. About six days including email verification. |
 | **6** | **React Integration** | Connect frontend to FastAPI |
 | **7** | **Scheduler** | Automate retailer scraping and DB updates (scrape → clean → normalize → brand → load) |
 | **8** | **Deployment** | Choose environment, move from development to a stable server |
+| **9** | **Vendor accounts and local shop deals** (future, not in the current sprint) | Vendor registration and review, weekly offers with validity periods, stored separately from scraped data and linked to canonical products; verified vendors, scraped listings and vendor offers shown distinctly. See Section 23. |
 
 ---
 
@@ -899,7 +926,7 @@ Cleaning is deliberately separate from normalization. It validates and tidies re
 
 - **Subcategory is inconsistent:** myG (1,103) and Oxygen (245) have none; Nandilath and Pittappillil have them (1,627 records total).
 - **Availability `None` means the scraper could not tell**, not out of stock.
-- **Duplicate URLs are mostly Nandilath products listed under several subcategories** (e.g. a soundbar under Home Theater and Sound Bars). Dedupe by URL would lose category data. The DB design must allow one listing to belong to multiple categories.
+- **Duplicate URLs are all Nandilath products listed under several subcategories** (e.g. a soundbar under Home Theater and Sound Bars; confirmed after loading: 749 Nandilath records became 739 listings, the other retailers have none). Dedupe by URL would lose category data. The DB design must allow one listing to belong to multiple categories.
 - **Category names vary across and within retailers** (Mobiles / Mobiles & Laptops, TV / LED TV, Printer / Printers, Gas stove / Gas Stove, Dishwasher / Dish Washer, Home Theatre / Home Theater). Handled in Phase 2B.
 
 ### Repo rules
@@ -1102,7 +1129,7 @@ Adds `brand`, `brand_status` and `brand_candidates` to each normalized record. B
 
 | File | Purpose |
 |------|---------|
-| `data_processing/brands.json` | Canonical brand → aliases, plus the `start_only` list (versioned, hand-made). Its `version` is stored on every listing as `brands_version`. |
+| `data_processing/brands.json` | Canonical brand → aliases, plus the `start_only` list (versioned, hand-made). Its `version` is stored on every listing as `brands_version`. Current version `1.1` (bumped after the `review` / Xiaomi / `start_only` changes); bump it with every edit. |
 | `data_processing/brand_extractor.py` | `BrandExtractor` class: matching, `classify()` (brand, status, candidates), `enrich()`, brand-file validation |
 | `data_processing/run_branding.py` | Runner: reads `normalized_data/`, writes `branded_data/` (via a `.tmp` swap) and `reports/brand_report.json` (includes review groups) |
 | `tests/test_brands.py` | 12 tests: case and punctuation, brand not first word, aliases and longest match, `start_only`, unknown is `None`, purity/idempotency, duplicate alias rejected, conflict goes to `review`, Google mid-name ignored, nested alias is not a conflict, Xiaomi family is one brand, `brand_candidates` null unless `review` |
@@ -1171,7 +1198,16 @@ retailers (1) ──< listings (1) ──< listing_categories
                      └──> canonical_products (nullable, empty until Phase 5)
 ```
 
-**`retailers`**: `id`, `name` (unique), `base_url`. Seeded with exactly `myG`, `Oxygen`, `Pittappillil`, `Nandilath G Mart`. The loader fails on an unknown shop instead of creating one. (`base_url` is still empty.)
+**`retailers`**: `id`, `name` (unique), `base_url`. Seeded with exactly `myG`, `Oxygen`, `Pittappillil`, `Nandilath G Mart`. The loader fails on an unknown shop instead of creating one. `base_url` is the retailer's origin (scheme + host, no trailing slash), seeded by `create_tables.py` and only filled when empty:
+
+| Retailer | `base_url` |
+|----------|------------|
+| myG | `https://www.myg.in` |
+| Oxygen | `https://www.oxygendigitalshop.com` |
+| Pittappillil | `https://www.pittappillilonline.com` |
+| Nandilath G Mart | `https://nandilathgmart.com` |
+
+Every one of the 2,965 loaded listing URLs starts with its retailer's origin (one origin per retailer).
 
 **`listings`**: one row per `(retailer_id, url)`.
 
@@ -1224,7 +1260,7 @@ Home Theater and Sound Bars both map to Soundbar. Keying on the canonical `(cate
 |------|---------|
 | `db/session.py` | Engine and connection URL (`QUOTE_YARD_DATABASE_URL`, default `postgresql+psycopg:///quote_yard`) |
 | `db/models.py` | SQLAlchemy models, check constraints, indexes |
-| `db/create_tables.py` | Creates the tables and seeds the four retailers (safe to repeat) |
+| `db/create_tables.py` | Creates the tables and seeds the four retailers with their `base_url`; fills an empty `base_url` but never overwrites one (safe to repeat) |
 | `db/loader.py` | The loader described above |
 | `tests/test_db_models.py` | 6 tests: valid listing, duplicate `(retailer, url)`, bad availability, zero price, review requires candidates, duplicate NULL-subcategory category. Each test rolls back; they skip if PostgreSQL is unreachable. |
 | `tests/test_loader.py` | 16 tests: first load, rerun adds nothing, price change, `Unknown` availability, duplicate URL (first wins, categories merged), same pair twice, re-mapping, review candidates, unknown shop, 7 invalid-record cases |
@@ -1248,17 +1284,97 @@ python -m db.loader
 | `listing_categories` | 2,975 (every duplicate sat under a different raw category) |
 | `price_history` | 2,965 (one first-sighting row each) |
 | Duplicate-URL warnings | 0 (the duplicates agree on name and price) |
+| Listings per retailer | myG 1,103 · Nandilath G Mart 739 · Oxygen 245 · Pittappillil 878 (all 10 duplicate URLs were Nandilath: 749 records became 739 listings) |
 | Reruns (dry run, load, load again) | 0 inserted, 0 history rows, 0 category changes |
 | Tests | 6 (models) + 16 (loader) passed |
+| `brands_version` | `1.1` on all 2,965 listings (bumped after the first load; the loader updated the stored version without adding any rows) |
 
 Whole project: 41 tests (7 normalizer, 12 brands, 6 models, 16 loader).
 
 ### Known limits
 
-- `base_url` on `retailers` is empty; fill it in when the API needs it.
 - Availability is only `In stock` or `Unknown` in current data (2,796 / 179). The out-of-stock path is allowed by the schema but unexercised (see open item 3).
 - `price_history` only grows when the loader runs. Price history is therefore only as good as the scrape schedule (Phase 7).
 - Full-text / fuzzy search is not set up; plain `ILIKE` is the plan for Phase 4. Add a `pg_trgm` index if it gets slow.
+
+---
+
+## 🔌 **19e. PHASE 4: FASTAPI** ✅
+
+A **read-only** HTTP API over the loaded data, under `/api/v1`. Interactive docs at `/api/v1/docs`.
+
+```
+React -> FastAPI -> SQLAlchemy -> PostgreSQL
+```
+
+### Endpoints
+
+Canonical products do not exist until Phase 5, so the API is **listings-based**. There is no `/products` or `/compare/{product_id}` yet.
+
+| Method | Endpoint (under `/api/v1`) | Purpose |
+|--------|----------------------------|---------|
+| GET | `/health` | API and database check |
+| GET | `/retailers` | Name, `base_url`, listing count |
+| GET | `/listings` | Search and filter, paginated, with `total` |
+| GET | `/listings/summary` | Per-retailer count, min / max price and cheapest listing for the same filters (an interim, rough comparison; it does not claim the listings are the same product) |
+| GET | `/listings/{id}` | One listing with its retailer and all category rows |
+| GET | `/listings/{id}/prices` | Price history, oldest first |
+| GET | `/product-types` | Types with listing counts, total and per retailer |
+| GET | `/brands` | Brands with listing counts |
+
+**`/listings` filters:** `q`, `retailer`, `category`, `product_type`, `brand`, `min_price`, `max_price`, `availability`, `seen_since`. **Sort:** `price_asc`, `price_desc`, `name`. **Paging:** `limit` (default 20, max 100) and `offset`.
+
+### Design decisions
+
+- **`/listings/summary` replaced the earlier "type comparison" idea.** The cheapest Mobile Phone at each shop is only each shop's cheapest phone (a feature phone at 1,099 rupees on myG), so a type-level minimum is not a comparison. The summary applies the same filters as the search, so adding `q` or `brand` compares like with like. It lists **every** retailer, with zeros where nothing matches.
+- **`/api/v1` prefix** on every route, so Phase 5 can change response shapes without breaking the React app.
+- **Synchronous routes and SQLAlchemy.** FastAPI runs plain `def` routes in a thread pool; no async driver is needed at this scale.
+- **Search:** every word in `q` must appear in the name (`ILIKE`, ANDed), with `%` and `_` in user input escaped literally. About 3,000 rows need no index.
+- **`EXISTS`, not `JOIN`, for category filters.** 10 listings sit under two category rows, so a join would return duplicates. Category and type must match on the same category row.
+- **Stable ordering:** every sort adds `id` as a tie-breaker, so pages do not shuffle.
+- **Prices** are integer rupees. `brand`, `category` and `product_type` can be null in responses. `brand_status` is always included so the frontend can treat `review` / `unknown` differently.
+- **Freshness:** `last_seen_at` is returned and `seen_since` filters on it, because the loader never deletes listings.
+- **Route order matters:** `/listings/summary` is declared before `/listings/{listing_id}`, or "summary" would be read as an id (a test guards it). Ids outside the 32-bit range return 422.
+
+### Basic protection (built)
+
+| Protection | How |
+|------------|-----|
+| Read-only database access | The API engine sets `default_transaction_read_only=on`, so any write fails (tested). For deployment, also use a separate SELECT-only database role. |
+| Query timeout | `statement_timeout` of 5 seconds on the API engine (tested) |
+| Pagination caps and validation | `limit` max 100; `q` max 100 characters and 8 words; inverted price ranges and unknown values return 422 |
+| CORS | `GET` only, from the origins in `QUOTE_YARD_CORS_ORIGINS` (default `http://localhost:5173`) |
+| Rate limiting | Own in-process sliding-window limiter (`api/ratelimit.py`, no dependencies): per client address, default 120 requests per minute, set with `QUOTE_YARD_RATE_LIMIT` (`0` turns it off). `/health` is exempt. Over the limit: `429` with `Retry-After`, and CORS headers are still present so the React app can read it. At most 10,000 clients are tracked. It is **per process** and resets on restart, which is fine for one worker. Behind a reverse proxy, start uvicorn with `--proxy-headers --forwarded-allow-ips=<proxy address>` so visitors are counted separately. |
+| Input safety | All values are parameterized; no raw SQL from user input |
+
+### Files
+
+| File | Purpose |
+|------|---------|
+| `api/main.py` | App factory, `/api/v1` prefix, CORS, rate-limit middleware |
+| `api/deps.py` | Read-only engine with statement timeout, session dependency |
+| `api/schemas.py` | Pydantic response models (ORM objects are never returned directly) |
+| `api/filters.py` | Shared listing filters, used by `/listings` and `/listings/summary` |
+| `api/ratelimit.py` | The limiter and its ASGI middleware |
+| `api/routes/` | `health.py`, `catalog.py`, `listings.py` |
+| `tests/conftest.py` | Turns the limiter off for the shared test app; the rate-limit tests build their own apps |
+
+### Results
+
+| Check | Result |
+|-------|--------|
+| API tests | 62 (health 6, catalog 6, listings 19, summary/detail/prices 17, rate limiting 14) |
+| Whole project | **103 tests pass** |
+| Live `/listings` total | 2,965 |
+| Live filter checks | Oxygen refrigerators 34 · myG televisions 108 · Oxygen phones 58 (all match the retailer record counts) |
+| Live `/listings/summary?product_type=Mobile Phone` | 277 = myG 108 + Oxygen 58 + Pittappillil 28 + Nandilath 83 |
+
+### Known limits
+
+- **No relevance ranking:** a search for "samsung" sorted by price can list cheap accessories first.
+- **The same phone appears under different names** (Oxygen "REDMI A7 (Sky Blue, 64 GB)" and Nandilath "Redmi A7 (3GB RAM/64GB Storage, Sky Blue)", both at 12,999 rupees). That is the Phase 5 matching problem; the summary shows both, unmatched.
+- **Price history is one point per listing** until the scheduler (Phase 7) runs.
+- The rate limiter is per process; use a shared store only if the API ever runs as several workers.
 
 ---
 
@@ -1306,7 +1422,15 @@ Whole project: 41 tests (7 normalizer, 12 brands, 6 models, 16 loader).
 - `db/loader.py`: validated, transactional, first-record-wins dedupe, idempotent, with a dry-run mode
 - 2,965 listings, 2,975 listing_categories, 2,965 price_history rows loaded; reruns add nothing
 - 22 DB tests passing (6 models, 16 loader)
+- Retailer `base_url` seeded; all 2,965 listing URLs match their retailer's origin
 - `requirements.txt` and `requirements-dev.txt` created; Playwright's Chromium is installed separately (`playwright install chromium`)
+
+**FastAPI (Phase 4):** built, tested, verified against live data
+
+- Eight read-only endpoints under `/api/v1` (health, retailers, listings with filters / sorting / paging, per-retailer summary, listing detail, price history, product types, brands)
+- Read-only database connection, 5-second statement timeout, pagination caps, GET-only CORS, in-process rate limiting
+- 62 API tests; **103 tests pass across the project**; live counts match the retailer record counts
+- `httpx2` replaces `httpx` for the test client (Starlette 1.x prefers it)
 
 **MyG**
 
@@ -1346,7 +1470,7 @@ Whole project: 41 tests (7 normalizer, 12 brands, 6 models, 16 loader).
 
 ## 🚧 **Currently being finished**
 
-**Phase 4 design:** the endpoint list and response shapes are drafted in Section 23 and need a few decisions before code is written.
+**Phase 5 (product matching):** next. The first step is a read-only extraction report over the 277 mobile-phone listings (brand, model, RAM, storage, colour), before any matching code or schema change. Phase 4A (accounts) follows after Phase 5.
 
 **MyG scraper robustness** (parallel track): confirm the unified MyG scraper is robust end to end against:
 
@@ -1365,13 +1489,19 @@ Whole project: 41 tests (7 normalizer, 12 brands, 6 models, 16 loader).
 | 3 | **Out-of-stock path:** unverified end to end. Current data has only `In stock` and `Unknown`; Oxygen's tested category had nothing out of stock. |
 | 4 | **Pittappillil subcategories:** 55 URLs are configured but only 48 subcategories appear in the data. Find which 7 returned nothing and confirm that is expected, not a silent scraper stop. |
 | 5 | ~~**Run the validator on real data**~~ ✅ Done: 0 errors, 0 warnings. |
-| 6 | **myG truncation:** 8 of 11 myG categories have exactly 108 records, matching the page-10 403 (confirmed again in the normalized output). These are probably incomplete, which affects price-comparison coverage (Tablet is myG-only, so it is affected most). Investigate whether the 403 can be avoided (delays, headers, a new context per page range). Runs as a parallel track; worth fixing before Phase 5. |
+| 6 | **myG truncation:** 8 of 11 myG categories have exactly 108 records (9 pages x 12), matching the 403 at page 10 (seen again in the normalized output and in live API counts). The cause is not yet known, and the fix depends on it. Planned tests, one at a time: **A** open `/mobile-phones/page-9/`, `page-10/` and `page-11/` in a normal browser (if page 10 loads, the block targets the automated browser; if it is blocked there too, the site caps pagination depth); **B** run `python scrapers/myg_scraper.py --only mobiles --max-pages 12` to see where it stops; **C** check whether sorting (price ascending / descending) or filters change the URL, since each view can expose up to 108 products. Check `robots.txt` and the site's terms first, and do not spoof headers or rotate identities to evade a block. If the cap is deliberate, ask myG for a product or price feed. Until it is fixed, make no "cheapest" claim in categories where myG coverage could change the answer. Runs in parallel; does not block Phase 5. |
 | 7 | ~~**Unknown brands**~~ ✅ Accepted at 98.9% matched (23 unknown, 10 review). An optional cleanup batch is listed in Section 19c. |
 | 8 | **Unmapped coverage (20%):** 346 `parent_only` and 240 `unmapped` records. Accepted for the MVP. Revisit with a name-rule layer or an `Earbuds` type if it limits comparison coverage. |
 | 9 | **Brand `review` records (10):** resolved by hand or by a later rule. Only Faber + LG (4) is true ambiguity; Eureka Forbes + Aquaguard (4) and Samsung + Symphony (2) are correct brands flagged by design. |
 | 10 | ~~**Availability values**~~ ✅ Checked: only `In stock` (2,796) and `Unknown` (179). Constraint locked to `In stock` / `Out of stock` / `Unknown`. |
 | 11 | **Scraper layout:** a repo sketch showed `scrapers/` as folders while this plan describes single files. Confirm and update Sections 7, 12 and 13 if reorganized. |
 | 12 | **End-to-end pipeline command:** there is no single command yet that runs scrape → clean → normalize → brand → load. Needed for Phase 7. |
+| 13 | **Loader URL-origin warning (proposed, undecided):** warn, not fail, when a record's URL does not start with its retailer's `base_url`. Catches a scraper pointing at the wrong site; a warning rather than an error in case a retailer uses a second domain. Small change plus one test. |
+| 14 | **Phase 4A open questions:** is the React frontend part of the sprint? Confirm the token form (opaque token in an httpOnly cookie, not JWT); whether a CAPTCHA provider is acceptable for open sign-up; which email provider and sending domain to use for OTP (needs SPF and DKIM records for deliverability). See Section 23. |
+| 15 | ~~**`brands_version`**~~ ✅ Bumped to `1.1`; all 2,965 listings carry it (the loader updated the version without adding rows). Bump it with every edit to `brands.json`. |
+| 16 | **Public deals:** with matching now before accounts, the teaser is generated from Phase 5 matches and price history; hand-curated deals remain only as a manual override. Until Phase 5 exists there is no honest way to compute a deal (one price point per listing, no stored list prices). |
+| 17 | **Platform gating changes the public API:** requiring login for search and listings means the Phase 4 routes (currently open) gain an authentication dependency, and their tests use an authenticated client. Free open sign-up is a speed bump for scrapers, not a barrier. |
+| 18 | **Phase 5 open questions:** confirm the phones-only start; whether colour is part of the match key (proposed: no); how to treat `review` / `unknown` brand listings (proposed: excluded from matching). See Section 23. |
 
 ## ➡️ **Next major work**
 
@@ -1427,80 +1557,211 @@ Quote Yard finds the relevant product:
 
 # 23. **IMMEDIATE NEXT STEP**
 
-## ➡️ **Phase 4: FastAPI**
+## ➡️ **Phase 5: product matching (starting with mobile phones)**
 
-Phase 3 is complete (Section 19d): 2,965 listings are in PostgreSQL. Phase 4 puts a read-only HTTP API on top of them.
+Phases 1 to 4 are complete (Sections 19a to 19e): 2,965 listings are loaded and served by the read-only API, and 103 tests pass.
 
-**Before starting, close out Phase 3:**
+**Order decision:** Phase 5 (matching) runs **before** Phase 4A (accounts). Matching is the core of a price comparison site, and it lets the public deal teaser be computed from real matches instead of hand-picked ones. Accounts then protect a platform that already compares prices.
 
-1. Commit `db/`, `tests/test_db_models.py`, `tests/test_loader.py`, `requirements.txt`, `requirements-dev.txt` and the updated plan, then push.
-2. Confirm `.venv/` and all generated data folders are in `.gitignore`.
+**Housekeeping:** ✅ `brands.json` is version `1.1` and all 2,965 listings carry it (verified). If not already done, commit the Phase 4 work (`api/`, the new tests, `requirements*.txt`, `brands.json`, this plan) and push.
 
-### Scope: what the API can honestly offer today
+### Why mobile phones first
 
-Canonical products do not exist until Phase 5, so the Phase 4 API is **listings-based**. There is no `/products` or `/compare/{product_id}` yet. What it does offer:
+- 277 listings are typed `Mobile Phone`: myG 108, Oxygen 58, Pittappillil 28, Nandilath 83. It is the largest overlap across the four retailers.
+- Names carry brand, model, RAM and storage, but in four different formats:
 
-| Method | Endpoint | Purpose |
-|--------|----------|---------|
-| GET | `/health` | Service and database check |
-| GET | `/retailers` | The four retailers with listing counts |
-| GET | `/listings` | Search and filter (see below), paginated |
-| GET | `/listings/{id}` | One listing with all its category rows |
-| GET | `/listings/{id}/prices` | Price history for one listing |
-| GET | `/product-types` | Types with listing counts per retailer |
-| GET | `/brands` | Brands with listing counts |
-| GET | `/product-types/{type}/listings` | Listings of one type, sorted by price, with the cheapest per retailer (an **interim, rough comparison** before Phase 5 matching) |
+| Retailer | Example name |
+|----------|--------------|
+| Oxygen | `REDMI A7 (Sky Blue, 64 GB) (3 GB RAM)` |
+| Nandilath G Mart | `Redmi A7 (3GB RAM/64GB Storage, Sky Blue)` |
+| myG | `realme 16 Pro+ 5G \| 12 GB \| 256 GB \| Master Gold` |
+| Pittappillil | `MOTOROLA SMART G06 POWER 4G (4+64GB) PANTONE LAUREL OAK` |
 
-**`/listings` filters:** `q` (name, `ILIKE`), `retailer`, `category`, `product_type`, `brand`, `min_price`, `max_price`, `availability`, plus `sort` (`price_asc`, `price_desc`, `name`, `newest`), `limit` (default 20, max 100) and `offset`.
+- The two Redmi A7 listings are the same phone at the same price (12,999 rupees); today the API shows them as unrelated.
+- Appliances, TVs and laptops usually carry a model code, so they can follow once phones work.
 
-### Design decisions to settle first
+**Limit of the starting set:** myG is truncated at 108 records (open item 6), so a match shows only what is in the data. No "cheapest" claim without coverage.
+
+### Approach (proposed; to settle after the extraction report)
+
+| Step | Detail |
+|------|--------|
+| 1. Extraction report (read-only) | A script parses brand, model, RAM, storage and colour from the 277 names and reports how many parse cleanly, which formats occur, and which names are ambiguous. **No database writes and no matching yet.** |
+| 2. Match key | `(brand, model, RAM, storage)`: all four must agree. Colour is not part of the key at first (retailers spell colours differently, and one phone in two colours is still one product). Anything ambiguous goes to a **review report**, never forced, the same approach as brand conflicts. |
+| 3. Rules | Explicit patterns only, deterministic and idempotent, versioned (`matching_version`). Category-specific parsing is added now because matching is the real requirement that Section 15 asks for. Listings with `review` or `unknown` brand are excluded from matching. |
+| 4. Verification | A hand-check of a sample of matched groups (for example 20) with **zero wrong matches** before anything is written to the database |
+| 5. Schema | `canonical_products` is empty today, so it can be recreated with the extra columns (model, RAM, storage, match key); `listings.canonical_product_id` already exists. Consider Alembic once the schema starts changing. |
+| 6. Writing matches | A separate runner sets `canonical_product_id`; the API itself stays read-only |
+| 7. API | `/products`, `/products/{id}`, `/products/{id}/prices` and `/compare/{product_id}` replace the interim per-retailer summary for matched products |
+
+Matching stays **separate** from scraping, normalization and brand extraction (Section 3.3).
+
+### Open questions
 
 | # | Question | Proposal |
 |:-:|----------|----------|
-| 1 | Pagination | `limit` / `offset`, response includes `total` |
-| 2 | Search | Plain `ILIKE` on `listings.name` (multi-word `q` means every word must match); add a `pg_trgm` index only if slow |
-| 3 | Null handling | `brand`, `category` and `product_type` can be null in responses; unmapped and unknown listings stay searchable by name |
-| 4 | Brand trust | Responses expose `brand_status` so the frontend can treat `review` / `unknown` differently |
-| 5 | Interim comparison | Same product type is **not** the same product; label the endpoint as "type comparison" and do not present it as a price match |
-| 6 | Response models | Pydantic models in `api/schemas.py`; never return ORM objects directly |
-| 7 | Database access | One session per request via a FastAPI dependency; read-only |
-| 8 | CORS | Allow the React dev origin (Vite, `http://localhost:5173`) |
-| 9 | Config | Reuse `QUOTE_YARD_DATABASE_URL` |
-| 10 | Tests | FastAPI `TestClient` against the real database inside a rolled-back transaction, like the DB tests |
+| 1 | Start with mobile phones only? | Yes |
+| 2 | Is colour part of the match key? | No, kept as a listing attribute |
+| 3 | `review` / `unknown` brand listings? | Excluded from matching |
 
-### Planned layout
+### Parallel track: the myG 108-record cap
 
-```
-api/
-├── __init__.py
-├── main.py        # app, CORS, router registration
-├── deps.py        # session dependency
-├── schemas.py     # Pydantic response models
-└── routes/
-    ├── listings.py
-    ├── catalog.py     # retailers, product types, brands
-    └── health.py
-tests/
-└── test_api.py
-```
+The scraper stops at page 10 because myG returns 403. The cause decides the fix, so test one thing at a time (open item 6): open pages 9, 10 and 11 in a normal browser; run the scraper with `--max-pages 12`; check whether sorting or filters expose more products. Check `robots.txt` and the terms first. Do not spoof headers or rotate identities to evade a block; if the cap is deliberate, ask myG for a product or price feed. After any re-scrape, the pipeline order is `myg_scraper.py` then `run_cleaning.py`, `run_normalization.py`, `run_branding.py` and `python -m db.loader`; the loader only adds or updates, so nothing needs deleting first.
 
-New runtime dependencies: `fastapi`, `uvicorn`, `pydantic` (installed with FastAPI). Run with `uvicorn api.main:app --reload`; interactive docs appear at `/docs`.
+---
 
-### Order of work
+## ➡️ **Phase 4A: accounts, watchlist and the public deal teaser** (after Phase 5)
 
-1. Confirm the endpoint list and the decisions above
-2. Install dependencies and add them to `requirements.txt`
-3. App skeleton, session dependency, `/health`
-4. Schemas and the catalog endpoints (`/retailers`, `/product-types`, `/brands`)
-5. `/listings` with filters, sorting and pagination
-6. `/listings/{id}`, `/listings/{id}/prices`, `/product-types/{type}/listings`
-7. Tests, then try everything in the browser at `/docs`
+Phase 4A adds accounts and the first user-facing features on top of the API. **Vendor accounts are out of scope** (see "Future" below). The five-day plan below now needs about one more day for email verification; how the sprint is scheduled relative to Phase 5 is still to be planned.
 
-### After Phase 4
+**Before starting:** install a password-hashing package (`pip install argon2-cffi`; if it has no Python 3.14 wheel, use the standard-library `hashlib.scrypt`).
 
-- **Phase 5: product matching.** Fill `canonical_products` and set `listings.canonical_product_id`; the real `/products` and `/compare` endpoints then replace the interim type comparison. Treat `review` and `unknown` brands as "brand not trustworthy".
-- **Parallel track, worth doing before Phase 5:** the myG truncation (open item 6). Until it is fixed, myG-heavy types such as Tablet cannot be compared properly.
-- **Phase 6:** connect the React prototype to the API.
-- **Phase 7:** one pipeline command (open item 12) plus APScheduler, so price history builds up daily.
+### Product flow (decided)
 
-Rules: mappings and brand aliases are explicit and reviewable (JSON files, not heuristics); unmapped, unknown and review values are reported, never silently guessed; raw, cleaned, normalized and branded layers stay untouched by later steps; `taxonomy.json` and `aliases.json` are versioned together; the loader never deletes listings.
+1. **Public landing page:** one or two featured deals, **no search bar**. A visitor who clicks a deal is sent to login / registration before seeing full product details.
+2. **After login, the dashboard:** search bar, product listings, filters, per-retailer price comparison, account details and personal watchlist.
+3. **Watchlist:** registered users save products, view them later and remove them.
+4. **Truthful deals:** public previews use verified prices and genuine product matches. Nothing is advertised as "cheapest" unless the data supports the claim.
+
+### Decisions
+
+| # | Decision | Status |
+|:-:|----------|--------|
+| 1 | First user features: public deal teaser + personal watchlist | Decided |
+| 2 | Registration: **open sign-up** with email and password | Decided |
+| 3 | The full platform (search, listings, summary, catalog, watchlist) **requires login**; public access is limited to the landing page's deal teaser | Decided |
+| 4 | Token-based authentication and secure password hashing | Decided (token form proposed below) |
+| 5 | **Email verification by OTP** (changed from "later") | Decided (details proposed below) |
+| 6 | Basic protection against automated registration and login abuse | Decided (measures proposed below) |
+| 7 | Vendor accounts and local shop deals: a separate future phase | Decided |
+| 8 | Phase 5 (matching) comes before Phase 4A | Decided |
+
+### Email verification by OTP (proposed details)
+
+| Rule | Proposal |
+|------|----------|
+| Code | 6 digits from Python's `secrets`, stored hashed, never in plain text |
+| Lifetime | 10 minutes, single use; a new code cancels the old one |
+| Guessing | 5 wrong attempts invalidate the code |
+| Sending limits | 60-second resend cooldown; sends capped per email address and per IP per hour (this also stops the site being used to spam someone's inbox) |
+| Unverified accounts | Cannot use the platform until the code is entered |
+| Reuse | The same mechanism later handles "forgot password" (until then an admin command resets passwords) |
+| Development and tests | A "console" backend prints the code in the terminal; tests use a fake sender |
+| Production | SMTP settings from environment variables. Real delivery needs a provider and your own domain with SPF and DKIM records, or the codes land in spam. Choose before real users sign up. |
+
+### Proposed refinements (to confirm)
+
+| Topic | Proposal |
+|-------|----------|
+| Token form | An **opaque random token**, not JWT. Only its SHA-256 hash is stored in the database, so a database leak does not expose live sessions. It is delivered in an **httpOnly, SameSite=Lax cookie** (`Secure` in production), so page scripts cannot read it; this is safer than keeping a token in `localStorage`. The same token table can later serve `Authorization: Bearer` clients. 14-day expiry; logout revokes it. |
+| CSRF | A required custom header on every state-changing request, and CORS with credentials from the configured origins only |
+| Password hashing | argon2id (`argon2-cffi`), or `scrypt` from the standard library. Length 10 to 128 characters, no composition rules, must differ from the email address |
+| Login protection | Generic error ("invalid email or password"), equal response time for unknown emails, a short per-account backoff after repeated failures (in memory, resets on restart), and a stricter rate limit on `/auth/login` |
+| Registration protection | A stricter per-IP rate limit on `/auth/register`, a daily cap on new accounts per IP, a hidden honeypot field, and optionally a CAPTCHA (a free provider such as Cloudflare Turnstile). Email verification adds a further barrier. |
+| After login | A per-user rate limit in addition to the per-IP one, so a bot cannot farm accounts to scrape the gated data |
+
+### What changes in the existing API
+
+- A `require_user` dependency is added to the catalog and listings routers (and, after Phase 5, the products routes). `/health` and `/public/deals` stay open.
+- Catalog and listing routes keep the **read-only** database connection. The rule becomes: **only the auth, watchlist and deal-admin code writes, through a separate connection, and only to the new tables.** For deployment, use two database roles (read-only, and write on the new tables only).
+- The 62 existing API tests switch to an authenticated test client (a dependency override), and new tests prove that anonymous requests to every gated route return 401.
+
+### The public deal teaser
+
+With Phase 5 done first, deals are **generated from real matches**, not hand-picked:
+
+| Rule | Detail |
+|------|--------|
+| Source | One canonical product matched across 2 or more retailers; prices come live from the matched listings and are never typed in. A hand-picked deal remains possible only as a manual override, with `verified_by` and `verified_at` recorded |
+| Claims are generated from the data | For example "12,999 at Oxygen, 13,499 at Nandilath: save 500". The saving is the difference **between the listed retailers**, not against a list price (the scrapers do not store list prices) |
+| "Cheapest" wording | Only as "cheapest of the N retailers listed here", and only when every tracked retailer that stocks the product is included. Never "cheapest in Kerala" |
+| Auto-hide | A deal disappears when any matched listing is out of stock, was last seen more than 3 days ago, or the saving falls below a minimum |
+| Coverage caveat | While myG is truncated at 108 records, do not claim "cheapest" in categories where myG coverage could change the answer |
+| Public payload | Product name, retailer names, prices, saving and `checked_at`. **No retailer URLs**; full details and links appear after login |
+| Later | With daily scrapes (Phase 7), real price drops can also qualify as deals |
+
+### Watchlist
+
+- `PUT /me/watchlist/{listing_id}` adds (repeating it is harmless), `DELETE` removes, `GET /me/watchlist` lists with the current price and availability. After Phase 5 a watchlist item can also point at a canonical product.
+- `price_when_saved` is stored with each item, so a later "dropped since you saved it" view needs no schema change.
+
+### Schema (new tables only; `create_all` adds them, listing tables are untouched)
+
+| Table | Main columns |
+|-------|--------------|
+| `users` | `id`, `email` (case-folded, unique), `password_hash`, `is_active`, `email_verified_at`, `created_at`, `last_login_at` |
+| `email_codes` | `id`, `user_id`, `code_hash`, `purpose` (verify / reset later), `expires_at`, `attempts`, `used_at`, `created_at` |
+| `sessions` | `id`, `user_id`, `token_hash` (unique), `created_at`, `expires_at`, `revoked_at`. The model is named `UserSession`, to avoid clashing with SQLAlchemy's `Session` |
+| `watchlist_items` | `user_id`, `listing_id`, `price_when_saved`, `created_at`; unique `(user_id, listing_id)` |
+| `featured_deals` | `id`, `canonical_product_id`, `is_active`, `is_manual`, `verified_by`, `verified_at`, `created_at` |
+
+### Endpoints (under `/api/v1`)
+
+| Method | Endpoint | Access |
+|--------|----------|--------|
+| GET | `/public/deals` | Public: 1 to 2 verified deals, no search |
+| POST | `/auth/register` | Public, rate limited, abuse protected; sends the OTP |
+| POST | `/auth/verify-email` | Public, rate limited, attempt limited |
+| POST | `/auth/resend-code` | Public, cooldown and caps |
+| POST | `/auth/login` | Public, stricter rate limit; verified accounts only |
+| POST | `/auth/logout` | Logged in |
+| GET | `/auth/me` | Logged in (401 otherwise) |
+| GET / PUT / DELETE | `/me/watchlist`, `/me/watchlist/{listing_id}` | Logged in |
+| all catalog, listing and product routes | | Now require login |
+
+Admin tools: `python -m db.users` (list, deactivate, set-password) and `python -m db.deals` (create manual, list, deactivate).
+
+### Six-day plan (five days plus email verification)
+
+| Day | Work |
+|:---:|------|
+| 1 | Models (`users`, `sessions`), password hashing, register / login / logout / me, token cookie and CSRF header, tests |
+| 2 | Email OTP: code generation and hashing, mail backends (console, fake, SMTP), verify and resend endpoints, send limits, tests |
+| 3 | Abuse protections (auth rate limits, per-IP registration cap, honeypot, login backoff), gate the catalog and listing routes, per-user rate limit, update the API tests, `db.users` tool |
+| 4 | Watchlist endpoints; `featured_deals` generation and `/public/deals` with the truthfulness rules; tests |
+| 5 | Frontend: landing page with the deal teaser, register / verify / login pages, dashboard shell connected to the API |
+| 6 | Dashboard: search, filters, per-retailer comparison, watchlist, account; end-to-end checks; plan update |
+
+Days 5 and 6 assume the React prototype can be wired up that quickly; if the frontend is not in this sprint, they become backend hardening and API documentation.
+
+**Dashboard wording:** until matching covers a category, the per-retailer comparison comes from `/listings/summary` and is labeled "per retailer, not matched products", consistent with the truthfulness rule.
+
+### Open questions
+
+1. Is the React frontend part of the sprint, or only the backend?
+2. Confirm the token form (opaque token in an httpOnly cookie, not JWT).
+3. Is a third-party CAPTCHA acceptable for open sign-up?
+4. Which email provider and sending domain for OTP?
+
+---
+
+## 🏪 **Future: Phase 9, vendor accounts and local shop deals** (not in the current sprint)
+
+Vendors should eventually be able to: register their shops with business identification details; keep a vendor profile (shop information, contact details); submit weekly deals, promotional offers, prices and validity periods; and manage or update what they submitted. Approved offers appear **alongside** scraped retailer data in listings and price comparisons.
+
+**Principles:**
+
+| Principle | Detail |
+|-----------|--------|
+| Separate storage | Vendor offers live in their own tables (not in `listings`), so scraped data is never mixed with submitted data |
+| Validated and matched | An offer is linked to the correct **canonical product** (needs Phase 5) and validated (price, dates, product) before it can appear in a comparison |
+| Reviewed identity | A vendor's identity and business details are reviewed before any of their offers are published; offers can also be reviewed before going live |
+| Three visible sources | Customers can tell where a price comes from: **scraped retailer listing**, **verified-vendor offer**, or **vendor-submitted (unreviewed, not published)** |
+| Validity | Offers carry start and end dates and expire automatically; weekly deals are the default rhythm |
+| Separate accounts | Vendor accounts are a separate system from customer accounts, not a flag on `users` |
+| Audit trail | Changes to offers and review decisions are recorded |
+| Business data | Business identification details (for example a GST number, to be decided) are sensitive; collect only what review needs and protect it |
+
+**Dependencies:** Phase 5 (canonical products), Phase 4A (authentication and verified email), and an admin review tool.
+
+**Design hooks to keep now:** when vendor offers arrive, price objects in API responses gain a `source` field so the frontend can label each price; `canonical_products` is already in the schema for the linkage.
+
+---
+
+### After Phase 5 and Phase 4A
+
+- **Phase 6:** connect the React prototype to the API, with authentication.
+- **Phase 7:** one pipeline command (open item 12) plus APScheduler, so price history builds up daily, watchlist price changes become meaningful and real price-drop deals become possible.
+- **Phase 9:** vendor accounts, once matching and accounts exist.
+
+Rules: mappings and brand aliases are explicit and reviewable (JSON files, not heuristics); unmapped, unknown and review values are reported, never silently guessed; raw, cleaned, normalized and branded layers stay untouched by later steps; `taxonomy.json` and `aliases.json` are versioned together; the loader never deletes listings; catalog and listing routes never write; matches are conservative and ambiguous cases are reported, not forced; deals and prices shown publicly must be verifiable from the data.
