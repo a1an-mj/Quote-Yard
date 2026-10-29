@@ -131,6 +131,19 @@ The loader never touches the links, so run the writer after every load.
 matches; reruns change nothing; SQL cross-check finds 0 non-phone links and
 0 brand mismatches.
 
+## Scheduling
+
+A **systemd user timer**, not APScheduler (the original plan). The timer
+needs no always-running Python process, catches up a run missed while the
+machine was off (`Persistent=true`), survives reboots, and logs to the
+journal; it is also the normal tool on the Linux server the app will move
+to. The service runs `python -m pipeline` from the repo's virtualenv at
+02:00 IST plus up to 15 minutes of random delay (a courtesy to the shops),
+at low CPU and I/O priority, with a 3 hour limit. Exit codes 1 and 2 mark
+the run failed, so `systemctl --user --failed` shows a retailer that needs
+attention. Verified under systemd before installing: the processing chain
+with the database, and a headless scrape.
+
 ## Frontend
 
 React, Vite, Tailwind, React Router. Neo-brutalist: bold chunky type,
@@ -149,7 +162,7 @@ mobile first, subtle animation.
 ## Technology choices
 
 React + FastAPI + PostgreSQL (SQLAlchemy 2, psycopg 3, Alembic) +
-Playwright + APScheduler (planned). Deterministic scraping (selectors, DOM),
+Playwright + a systemd timer for the daily run. Deterministic scraping (selectors, DOM),
 no AI extraction. No Kafka, RabbitMQ, Celery, Redis, Kubernetes, search
 engines or microservices until a real requirement appears. Search is plain
 `ILIKE` over about 3,000 rows; add `pg_trgm` if it gets slow.

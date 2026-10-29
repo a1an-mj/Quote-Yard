@@ -82,6 +82,20 @@ python -m db.match_writer                      # -> canonical products, listing 
 Read-only reports (written to `reports/`): `python data_processing/review_normalized.py`,
 `python -m matching.extract_phones`, `python -m matching.phone_matcher`.
 
+## Daily schedule
+
+```
+deploy/install-scheduler.sh            # install: runs the pipeline daily at 02:00
+deploy/install-scheduler.sh --remove   # uninstall
+systemctl --user list-timers quote-yard-pipeline.timer   # next and last run
+journalctl --user -u quote-yard-pipeline -e              # summary of the latest runs
+systemctl --user start quote-yard-pipeline               # run now
+```
+
+A run missed while the machine was off starts at the next boot or login.
+User timers only run while you are logged in; on a server run
+`loginctl enable-linger $USER` once. Per-stage logs are in `logs/`.
+
 ## Run the API
 
 ```
