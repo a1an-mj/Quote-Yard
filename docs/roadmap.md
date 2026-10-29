@@ -21,7 +21,7 @@ Last updated 2026-10-29.
 The order puts working price comparison in front of users before accounts,
 and gets price history growing early, since deals and alerts depend on it.
 
-### 1. One pipeline command, then the scheduler
+### Phase 6: Pipeline and scheduler (in progress)
 
 - ✅ `python -m pipeline`: scrape -> clean -> normalize -> brand -> load -> match. One retailer failing does not stop the others; empty or broken scrapes are restored from a backup; one run at a time; exit codes for the scheduler. 13 tests.
 - ✅ Comparisons use current offers only: `last_seen_at` comes from the scrape time, and `/products` / `/compare` count only listings from each retailer's latest, recent scrape.
@@ -30,18 +30,18 @@ and gets price history growing early, since deals and alerts depend on it.
 - Then APScheduler (daily, about 02:00) so `price_history` grows. Without it there is no price-drop data.
 - Re-check stale prices: Pittappillil's site showed the Motorola G06 Power at 13,999 while our data has 15,999.
 
-### 2. Connect the React frontend
+### Phase 7: React frontend
 
 - Search over products (matched) and listings (unmatched), product page with the comparison table and price history.
 - Unmatched categories use `/listings/summary`, labelled "per retailer, not matched products".
 - Visual direction is in [`decisions.md`](decisions.md#frontend).
 
-### 3. Coverage
+### Phase 8: Coverage
 
 - Matching for the next types. TVs, refrigerators, washing machines, ACs and laptops usually carry a manufacturer model code, which is a stronger key than phone names. When the second type is added, split the shared matcher core (brand gate, key, review report, writer) from the phone rules; not before.
 - Normalization coverage: 20% of records are `parent_only` / `unmapped` (issue 5).
 
-### 4. Accounts, watchlist, deals
+### Phase 9: Accounts, watchlist, deals
 
 Designed in [`accounts-and-vendors.md`](accounts-and-vendors.md). **Open decision:**
 the current design puts the whole site behind login. A comparison site is
@@ -50,19 +50,19 @@ and free sign-up barely slows scrapers (rate limits do that). Recommendation:
 keep browsing and comparison public; require an account for the watchlist
 and alerts.
 
-### 5. Deployment
+### Phase 10: Deployment
 
 Choose the host (an Asus VivoBook as a self-hosted server is an option).
 Use a SELECT-only database role for the API and a separate role for the
 writers. Behind a reverse proxy, run uvicorn with `--proxy-headers
 --forwarded-allow-ips=<proxy>` so the rate limiter sees real clients.
 
-**Steps 1 to 5 are the first release.**
+**Phases 6 to 10 complete the first release.**
 
 ### After the first release
 
-1. **myG 108-record cap** (issue 1), if it can be fixed within the site's rules. Confirmed again on the first pipeline run (2026-10-29): every myG category stopped at a 403 on page 10.
-2. **Vendor system**: shop accounts and local offers next to scraped prices ([`accounts-and-vendors.md`](accounts-and-vendors.md#vendors)). Needs accounts (step 4).
+- **Phase 11: myG 108-record cap** (issue 1), if it can be fixed within the site's rules. Confirmed again on the first pipeline run (2026-10-29): every myG category stopped at a 403 on page 10.
+- **Phase 12: Vendor system**: shop accounts and local offers next to scraped prices ([`accounts-and-vendors.md`](accounts-and-vendors.md#vendors)). Needs accounts (Phase 9).
 
 ### Later
 

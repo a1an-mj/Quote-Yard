@@ -1,6 +1,6 @@
 # Accounts, watchlist, deals, vendors (design proposals)
 
-Not built yet. Accounts are roadmap step 4 (first release); vendors come right after the first release.
+Not built yet. Accounts are Phase 9 (first release); vendors are Phase 12, after the first release.
 
 ## Accounts and watchlist
 
