@@ -1,6 +1,6 @@
 # Accounts, watchlist, deals, vendors (design proposals)
 
-Not built yet. Roadmap step 5 (accounts) and "later" (vendors).
+Not built yet. Roadmap step 4 (accounts) and "later" (vendors).
 
 ## Accounts and watchlist
 

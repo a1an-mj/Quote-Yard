@@ -90,9 +90,13 @@ Read-only, under `/api/v1`, docs at `/api/v1/docs`.
 | `/listings` | Search (`q`: every word must appear, `ILIKE`, input escaped) and filters: retailer, category, product_type, brand, price range, availability, `seen_since`; sort `price_asc` / `price_desc` / `name`; `limit` <= 100 |
 | `/listings/summary` | Per-retailer count, min/max and cheapest for the same filters. Interim: it does not claim the listings are the same product |
 | `/listings/{id}`, `/listings/{id}/prices` | Detail and price history |
+| `/products` | Matched products: `q` (every word in name, brand or model), brand, category, product_type, price range on the lowest price, `min_retailers` (2 = comparable only); sort `name` / `price_asc` / `price_desc` / `retailers`. Each with listing and retailer counts and min/max price. Products without listings are hidden. |
+| `/products/{id}`, `/products/{id}/prices` | Specs plus every offer (retailer, price, availability, `box_note`, URL, `last_seen_at`), cheapest first; price history per listing |
+| `/compare/{id}` | Best offer per retailer, cheapest first; `cheapest_listed` on every tie; `spread` between the listed retailers; `not_listed` = tracked retailers with no match in our data |
 
 - Category filters use `EXISTS`, not `JOIN` (10 listings have two category rows). Every sort adds `id` as a tie-breaker.
 - `/listings/summary` is declared before `/listings/{id}`; ids outside 32-bit return 422.
+- Products: an `Out of stock` listing never sets a product's price range or wins a comparison; within a retailer the best offer is the cheapest buyable one. `spread` is null with fewer than two buyable offers. `not_listed` means "not found in our data", never "not sold there".
 - Protection: `default_transaction_read_only=on` on the API engine, 5 s `statement_timeout`, `q` <= 100 chars / 8 words, GET-only CORS, in-process sliding-window rate limit (`api/ratelimit.py`, per process, `/health` exempt, 429 with `Retry-After`).
 
 ## Matching (`matching/`, `db/match_writer.py`)

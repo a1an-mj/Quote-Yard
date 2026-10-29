@@ -6,7 +6,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from api.ratelimit import RateLimiter, RateLimitMiddleware
-from api.routes import catalog, health, listings
+from api.routes import catalog, health, listings, products
 
 API_PREFIX = "/api/v1"
 DEFAULT_RATE_LIMIT = 120  # requests per minute, per client address
@@ -58,6 +58,7 @@ def create_app(rate_limit: int | None = None) -> FastAPI:
     app.include_router(health.router, prefix=API_PREFIX)
     app.include_router(catalog.router, prefix=API_PREFIX)
     app.include_router(listings.router, prefix=API_PREFIX)
+    app.include_router(products.router, prefix=API_PREFIX)
     return app
 
 

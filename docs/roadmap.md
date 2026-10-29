@@ -9,8 +9,8 @@ Last updated 2026-10-29.
 | Scrapers (4 retailers) | ✅ Working. myG is capped at 108 records in 8 of 11 categories (issue 1). Croma deferred. |
 | Cleaning, normalization, brand extraction | ✅ 2,975 records; 80% fully mapped to a product type; 98.9% brand matched |
 | PostgreSQL + loader | ✅ 2,965 listings, idempotent loads, price history (one point per listing so far) |
-| Read-only API | ✅ `/api/v1`: listings search, per-retailer summary, detail, price history, catalog |
-| Matching | 🟡 **Phones only**: 277 listings, 113 products, 32 at 2+ retailers, 0 wrong matches on a full hand check. Written to the database. About 9% of all listings are covered. |
+| Read-only API | ✅ `/api/v1`: listings search, per-retailer summary, detail, price history, catalog; **products and compare** for matched products |
+| Matching | ✅ **Phones, end to end**: 277 listings, 113 products, 32 at 2+ retailers, 0 wrong matches on a full hand check; in the database and the API. Other types not started (about 9% of all listings are matched). |
 | Test isolation | ✅ Tests use `quote_yard_test`, never the real database |
 | React frontend | ⬜ Prototype exists, not connected |
 | Scheduler | ⬜ Not started; there is no single pipeline command yet |
@@ -21,34 +21,25 @@ Last updated 2026-10-29.
 The order puts working price comparison in front of users before accounts,
 and gets price history growing early, since deals and alerts depend on it.
 
-### 1. Product API (finishes matching for phones)
-
-- `GET /products`: search and filter canonical products (brand, product type, price range), each with offer count, retailer count, min/max price.
-- `GET /products/{id}`: the product plus every linked listing (retailer, price, availability, `box_note`, `last_seen_at`, URL).
-- `GET /products/{id}/prices`: price history of its listings.
-- `GET /compare/{id}`: one row per retailer, cheapest listing first. "Cheapest" only as "cheapest of the retailers listed".
-- Products whose listings are all gone (orphans) are hidden. Box notes are shown next to the price.
-- Read-only connection, same caps and rate limit as the listing routes.
-
-### 2. One pipeline command, then the scheduler
+### 1. One pipeline command, then the scheduler
 
 - `python -m pipeline` (or similar): scrape -> clean -> normalize -> brand -> load -> match, one retailer failing does not stop the others, a summary at the end.
 - Then APScheduler (daily, about 02:00) so `price_history` grows. Without it there is no price-drop data.
 - Re-check stale prices: Pittappillil's site showed the Motorola G06 Power at 13,999 while our data has 15,999.
 
-### 3. Connect the React frontend
+### 2. Connect the React frontend
 
 - Search over products (matched) and listings (unmatched), product page with the comparison table and price history.
 - Unmatched categories use `/listings/summary`, labelled "per retailer, not matched products".
 - Visual direction is in [`decisions.md`](decisions.md#frontend).
 
-### 4. Coverage
+### 3. Coverage
 
 - myG 108-record cap (issue 1).
 - Matching for the next types. TVs, refrigerators, washing machines, ACs and laptops usually carry a manufacturer model code, which is a stronger key than phone names. When the second type is added, split the shared matcher core (brand gate, key, review report, writer) from the phone rules; not before.
 - Normalization coverage: 20% of records are `parent_only` / `unmapped` (issue 5).
 
-### 5. Accounts, watchlist, deals
+### 4. Accounts, watchlist, deals
 
 Designed in [`accounts-and-vendors.md`](accounts-and-vendors.md). **Open decision:**
 the current design puts the whole site behind login. A comparison site is
@@ -57,7 +48,7 @@ and free sign-up barely slows scrapers (rate limits do that). Recommendation:
 keep browsing and comparison public; require an account for the watchlist
 and alerts.
 
-### 6. Deployment
+### 5. Deployment
 
 Choose the host (an Asus VivoBook as a self-hosted server is an option).
 Use a SELECT-only database role for the API and a separate role for the
@@ -90,5 +81,5 @@ writers. Behind a reverse proxy, run uvicorn with `--proxy-headers
 | Phase 2 | Cleaning (2A), normalization with taxonomy v1.0 (2B), brand extraction with brands v1.1 (2C) |
 | Phase 3 | PostgreSQL schema, loader, price history |
 | Phase 4 | Read-only FastAPI with filters, summary, protection (timeout, caps, CORS, rate limit) |
-| Phase 5 (phones) | Extraction report, matcher v1.1, Alembic + migration `0001`, match writer; 32 cross-retailer products |
+| Phase 5 (phones) | Extraction report, matcher v1.1, Alembic + migration `0001`, match writer, `/products` and `/compare`; 32 cross-retailer products |
 | 2026-10-29 | `data/` removed from git (history still contains it); tests moved to `quote_yard_test`; this plan replaced `Quote_Yard_Project_Master_Plan.md` |

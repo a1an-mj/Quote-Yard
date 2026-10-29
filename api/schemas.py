@@ -102,3 +102,81 @@ class PricePoint(BaseModel):
 class PriceHistoryOut(BaseModel):
     listing_id: int
     points: list[PricePoint]
+
+
+# ---- Phase 5: canonical products --------------------------------------------
+
+class ProductSpecs(BaseModel):
+    model: str
+    network: str | None
+    ram_gb: int | None
+    storage_gb: int | None
+    package: str | None
+    ta_code: str | None
+
+
+class ProductOut(BaseModel):
+    id: int
+    name: str
+    brand: str
+    category: str | None
+    product_type: str | None
+    specs: ProductSpecs
+    listings: int
+    retailers: int
+    # Over listings that are not "Out of stock"; null when every listing is.
+    min_price: int | None
+    max_price: int | None
+    matching_version: str
+
+
+class ProductPage(BaseModel):
+    total: int
+    limit: int
+    offset: int
+    items: list[ProductOut]
+
+
+class OfferOut(BaseModel):
+    listing_id: int
+    retailer: RetailerRef
+    name: str
+    url: str
+    price: int
+    availability: str
+    box_note: str | None
+    last_seen_at: datetime
+
+
+class ProductDetail(ProductOut):
+    offers: list[OfferOut]
+
+
+class ListingPrices(BaseModel):
+    listing_id: int
+    retailer: RetailerRef
+    points: list[PricePoint]
+
+
+class ProductPriceHistory(BaseModel):
+    product_id: int
+    listings: list[ListingPrices]
+
+
+class RetailerOffer(BaseModel):
+    retailer: RetailerRef
+    best: OfferOut
+    offers: int
+    cheapest_listed: bool
+
+
+class CompareOut(BaseModel):
+    product: ProductOut
+    # One row per retailer that lists the product, cheapest first.
+    retailers: list[RetailerOffer]
+    # Tracked retailers with no linked listing. This means "not found in our
+    # data", not "not sold there".
+    not_listed: list[str]
+    # Difference between the best offers of the listed retailers; null with
+    # fewer than two retailers. Never against a list price.
+    spread: int | None

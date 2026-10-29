@@ -17,7 +17,8 @@ scrapers -> data/ -> clean -> normalize -> brand -> PostgreSQL (loader)
 | Nandilath G Mart | nandilathgmart.com | `scrapers/nandilath_scraper.py` |
 
 **Status (2026-10-29):** 2,965 listings loaded; mobile phones matched into
-113 products, 32 of them sold by 2+ retailers; 137 tests pass. What is next:
+113 products, 32 of them sold by 2+ retailers and served by `/products` and
+`/compare`; 163 tests pass. What is next:
 [`docs/roadmap.md`](docs/roadmap.md).
 
 ## Docs
