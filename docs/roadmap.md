@@ -81,7 +81,6 @@ writers. Behind a reverse proxy, run uvicorn with `--proxy-headers
 | 6 | **Brand review records (10)** | Faber + LG (4, real ambiguity), Eureka Forbes + Aquaguard (4), Samsung + Symphony (2). Resolve by hand or a `same_company` rule. Optional brand batch: Hykon, Vidiem, Everest, Kuhl, Fingers, Indus Valley, Aquaneeta, `Blueberry` <- "blueberrys". |
 | 7 | **Cleaning validator never fails** | 0 errors on real data. Check it can reject bad input; add per-category price warnings (not a flat ceiling). |
 | 8 | **Loader URL-origin warning** | Proposed: warn when a URL does not start with its retailer's `base_url`. |
-| 9 | **Repo leftovers** | `tests/test.py` is a Playwright scratch script (move to `scrapers/` or delete); `frontend/src/{components,pages,context,data}` is a stray folder from a brace-expansion `mkdir`. |
 
 ## Done (summary)
 
