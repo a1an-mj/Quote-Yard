@@ -9,7 +9,7 @@ Shared defensive behaviour: pages are opened by direct URL (never by
 clicking pagination), a safety cap of 100 pages, images / media / fonts
 blocked, a fresh page or context per category (avoids Chromium's
 `ERR_INSUFFICIENT_RESOURCES` on long runs), and 403 / 404 stop the category
-cleanly so products already collected are still saved. Oxygen,
+cleanly so products already collected are still saved. A page that does not load (timeout, `net::` error) is retried once after 5 seconds (`scrapers/navigation.py`); HTTP errors are never retried. Oxygen,
 Pittappillil and Nandilath also stop on 5xx, wrap each page in try/except,
 and stop when a page brings no new URLs.
 

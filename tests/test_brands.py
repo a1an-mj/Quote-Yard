@@ -85,3 +85,9 @@ def test_xiaomi_family_is_one_brand(ex):
 def test_candidates_none_unless_review(ex):
     r = ex.enrich({"name": "LG 260 L Refrigerator", "shop": "x"})
     assert r["brand_candidates"] is None
+
+def test_colour_named_like_a_brand_is_not_a_conflict(ex):
+    # "Blueberry" is a Samsung colour and a kitchen brand; the brand always leads the name.
+    assert ex.classify("Samsung Galaxy S26 FE 5G | 8 GB | 256 GB | Blueberry")[:2] == ("Samsung", "matched")
+    assert ex.extract("Blueberry Typhoon 16 2 in 1 Pedestral Fan") == "Blueberry"
+    assert ex.extract("Blueberrys Ultra Premium Wet Grinder") == "Blueberry"

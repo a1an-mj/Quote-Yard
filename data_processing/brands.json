@@ -1,6 +1,6 @@
 {
-  "version": "1.2",
-  "start_only": ["HP", "Nothing", "Vu", "Noise", "Urban","Google", "Apple", "Sharp", "Lifelong"],
+  "version": "1.3",
+  "start_only": ["HP", "Nothing", "Vu", "Noise", "Urban","Google", "Apple", "Sharp", "Lifelong", "Blueberry"],
   "brands": {
     "Samsung": [], "Apple": [], "LG": [], "Sony": [], "Panasonic": [],
     "realme": ["realmetws", "real me"], "Xiaomi": ["redmi", "mi", "poco"], "OnePlus": ["one plus"],
@@ -34,7 +34,7 @@
     "Sennheiser": [], "Midea": [], "Salpido": [], "Prabha": [],
     "Castor": [], "Tramontina": [], "HMD": [], "Electrolux": [],
     "Goodair": [], "Gadzo": [], "Trueview": [], "Seagate": [],
-    "Western Digital": ["wd"], "CP Plus": [], "Mr Butlers": [], "GoPro": [], "Lockify": [], "Blueberry": [],
+    "Western Digital": ["wd"], "CP Plus": [], "Mr Butlers": [], "GoPro": [], "Lockify": [], "Blueberry": ["blueberrys"],
     "Formenty": [], "GDOT": [], "Carysil": [], "Syscom": [],
     "Racold": [], "Urban": [], "Promate": [], "Hapi": [],
     "Yale": [], "Cello": [], "Ponmani": [], "Ogera": [],

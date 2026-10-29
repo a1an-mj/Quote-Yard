@@ -9,6 +9,8 @@ from urllib.parse import urljoin, urlparse, parse_qs, urlencode, urlunparse
 
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 
+from navigation import goto_with_retry
+
 
 # ============================================================
 # CONFIG
@@ -632,7 +634,8 @@ def scrape_page(
     )
 
     try:
-        response = page.goto(
+        response = goto_with_retry(
+            page,
             url,
             wait_until="domcontentloaded",
             timeout=30000,

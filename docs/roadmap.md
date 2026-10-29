@@ -26,7 +26,7 @@ and gets price history growing early, since deals and alerts depend on it.
 - ✅ `python -m pipeline`: scrape -> clean -> normalize -> brand -> load -> match. One retailer failing does not stop the others; empty or broken scrapes are restored from a backup; one run at a time; exit codes for the scheduler. 13 tests.
 - ✅ Comparisons use current offers only: `last_seen_at` comes from the scrape time, and `/products` / `/compare` count only listings from each retailer's latest, recent scrape.
 - ✅ Oxygen's `BRAND:SMART PHONES:MODEL 6/128 ...` names are matched (matching 1.2): 4 more cross-retailer products, unmatched phones 13 -> 7.
-- Small: "Blueberry" colour read as a brand on a myG Galaxy S26 FE; scrapers do not retry a page that times out once.
+- ✅ Small fixes: `Blueberry` is `start_only` (a Samsung colour was read as a brand) and `blueberrys` an alias (brands 1.3); every scraper retries a page that did not load once (`scrapers/navigation.py`).
 - ✅ Daily schedule: a systemd user timer runs `python -m pipeline` at 02:00 IST (`deploy/install-scheduler.sh`). Installed 2026-10-30; first scheduled run that night.
 - Re-check stale prices: Pittappillil's site showed the Motorola G06 Power at 13,999 while our data has 15,999.
 

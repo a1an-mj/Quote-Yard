@@ -19,6 +19,8 @@ from pathlib import Path
 
 from playwright.sync_api import Page, sync_playwright
 
+from navigation import goto_with_retry
+
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(message)s")
 log = logging.getLogger("myg_scraper")
 
@@ -174,7 +176,7 @@ def scrape_category(
         log.info("=" * 60)
         log.info("SCRAPING %s - PAGE %d: %s", category_label or "PRODUCTS", page_number, url)
 
-        response = page.goto(url, wait_until="domcontentloaded")
+        response = goto_with_retry(page, url, wait_until="domcontentloaded")
 
 
         # Page number doesn't exist (category has fewer pages).

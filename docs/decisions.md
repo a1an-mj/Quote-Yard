@@ -52,10 +52,10 @@ Adds `brand`, `brand_status` (`matched` / `unknown` / `review`) and
 
 - Whole-token matching on the casefolded name; a match inside a longer match is dropped ("Prestige" inside "TTK Prestige").
 - Two or more different brands -> `review` with the candidates listed; never a guess.
-- `start_only` brands match only as the first word (HP, Nothing, Vu, Noise, Urban, Google, Apple, Sharp, Lifelong): "1.5 HP" is an AC rating, "Google TV" is software. Google alone removed 93 false conflicts.
+- `start_only` brands match only as the first word (HP, Nothing, Vu, Noise, Urban, Google, Apple, Sharp, Lifelong, Blueberry): "1.5 HP" is an AC rating, "Google TV" is software, "Blueberry" is also a Samsung colour. Google alone removed 93 false conflicts.
 - Xiaomi, Redmi, Mi and Poco are one brand; the line stays in the name.
 - Aliases fix retailer typos explicitly (`Bosch` <- "B0SCH", `V-Guard` <- "V-GURAD"). Duplicate aliases fail at load time.
-- `brands.json` `version` (now 1.1) is stored on every listing; bump it with every edit.
+- `brands.json` `version` (now 1.3) is stored on every listing; bump it with every edit.
 
 Result: 2,942 matched, 10 review, 23 unknown (98.9%). Known limit: it reads
 the name only, so "Spigen case for Samsung Galaxy" is tagged Samsung.

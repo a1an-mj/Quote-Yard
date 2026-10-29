@@ -37,6 +37,8 @@ from playwright.sync_api import (
     sync_playwright,
 )
 
+from navigation import goto_with_retry
+
 
 BASE_URL = "https://www.oxygendigitalshop.com"
 
@@ -209,7 +211,8 @@ def scrape_page(
 
     logging.info("Opening %s", url)
 
-    response = page.goto(
+    response = goto_with_retry(
+        page,
         url,
         wait_until="domcontentloaded",
         timeout=DEFAULT_NAV_TIMEOUT,

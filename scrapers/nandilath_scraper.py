@@ -7,6 +7,8 @@ from typing import Optional
 
 from playwright.sync_api import sync_playwright, TimeoutError as PlaywrightTimeoutError
 
+from navigation import goto_with_retry
+
 
 # ============================================================
 # CONFIGURATION
@@ -471,7 +473,8 @@ def scrape_page(
     log.info("Opening: %s", url)
 
     try:
-        response = page.goto(
+        response = goto_with_retry(
+            page,
             url,
             wait_until="domcontentloaded",
             timeout=60000,
