@@ -77,6 +77,13 @@ def clean_file(
 
     records = load_json(input_path)
 
+    # When the scraper wrote this file. Scrapers save one file per category
+    # at the end of that category, and the pipeline restores a failed file
+    # with its old timestamp, so this is when the records were really seen.
+    scraped_at = datetime.fromtimestamp(
+        input_path.stat().st_mtime, timezone.utc
+    ).isoformat(timespec="seconds")
+
     cleaned_records = []
 
     errors = Counter()
@@ -94,6 +101,7 @@ def clean_file(
         if cleaned is None:
             continue
 
+        cleaned["scraped_at"] = scraped_at
         cleaned_records.append(cleaned)
 
         # Track availability.

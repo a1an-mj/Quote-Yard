@@ -19,12 +19,17 @@ Rules:
   KNOWN availability differs from the last known availability. "Unknown" is
   never treated as a change.
 - Listings are never deleted. An unknown shop fails the load.
+- last_seen_at is when a scraper saw the listing (the record's scraped_at,
+  stamped by the cleaner from the raw file's time), not when it was loaded:
+  a file that was not re-scraped keeps its old time, so its listings go
+  stale. Duplicates of a URL keep the latest scraped_at.
 """
 
 from __future__ import annotations
 
 import argparse
 import json
+from datetime import datetime
 from pathlib import Path
 
 from sqlalchemy import func, select
@@ -50,6 +55,17 @@ Entry = tuple[str, dict]  # (where, record)
 
 class LoadError(ValueError):
     """The input data cannot be loaded."""
+
+
+def parse_scraped_at(value) -> datetime | None:
+    """An ISO timestamp with a timezone, or None if it is not one."""
+    if not isinstance(value, str):
+        return None
+    try:
+        parsed = datetime.fromisoformat(value)
+    except ValueError:
+        return None
+    return parsed if parsed.tzinfo is not None else None
 
 
 def clean_sub(value) -> str | None:
@@ -94,6 +110,8 @@ def validate_entries(entries: list[Entry], known_shops: set[str]) -> None:
             problems.append("missing raw_category")
         if not rec.get("taxonomy_version"):
             problems.append("missing taxonomy_version")
+        if parse_scraped_at(rec.get("scraped_at")) is None:
+            problems.append(f"bad scraped_at {rec.get('scraped_at')!r} (rerun cleaning)")
 
         status = rec.get("brand_status")
         brand = rec.get("brand")
@@ -128,9 +146,12 @@ def build_batch(entries: list[Entry]) -> tuple[dict, list[str]]:
         key = (rec["shop"], rec["url"])
         pair = (rec["raw_category"].strip(), clean_sub(rec.get("raw_subcategory")))
         slot = batch.get(key)
+        seen_at = parse_scraped_at(rec["scraped_at"])
         if slot is None:
-            batch[key] = {"record": rec, "where": where, "pairs": {pair: rec}}
+            batch[key] = {"record": rec, "where": where, "pairs": {pair: rec},
+                          "scraped_at": seen_at}
             continue
+        slot["scraped_at"] = max(slot["scraped_at"], seen_at)
         first = slot["record"]
         if rec["name"] != first["name"] or rec["price"] != first["price"]:
             warnings.append(
@@ -201,9 +222,11 @@ def load_batch(session: Session, batch: dict, brands_version: str) -> dict:
             brands_version=brands_version,
         )
 
+        seen_at = slot["scraped_at"]
         listing = existing.get((retailer_id, url))
         if listing is None:
-            listing = Listing(retailer_id=retailer_id, url=url, **fields)
+            listing = Listing(retailer_id=retailer_id, url=url,
+                              first_seen_at=seen_at, last_seen_at=seen_at, **fields)
             session.add(listing)
             stats["listings_inserted"] += 1
             record_history = True
@@ -213,7 +236,9 @@ def load_batch(session: Session, batch: dict, brands_version: str) -> dict:
             )
             for key, value in fields.items():
                 setattr(listing, key, value)
-            listing.last_seen_at = func.now()
+            listing.last_seen_at = seen_at
+            if seen_at < listing.first_seen_at:
+                listing.first_seen_at = seen_at
             stats["listings_updated"] += 1
 
         if record_history:

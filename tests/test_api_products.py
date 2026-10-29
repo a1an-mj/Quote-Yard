@@ -1,4 +1,5 @@
 import sys
+from datetime import datetime, timedelta, timezone
 from pathlib import Path
 
 import pytest
@@ -63,7 +64,7 @@ def product(session, key="zed9", name="Testco Zed 9 5G [8 GB RAM, 128 GB]", bran
     return p
 
 
-def offer(session, p, shop, price, availability="In stock", box_note=None, n=[0]):
+def offer(session, p, shop, price, availability="In stock", box_note=None, days_ago=None, n=[0]):
     n[0] += 1
     listing = Listing(
         retailer_id=shop.id, url=f"https://{shop.name}/{n[0]}", name=f"{p.name} #{n[0]}",
@@ -71,6 +72,9 @@ def offer(session, p, shop, price, availability="In stock", box_note=None, n=[0]
         availability=availability, taxonomy_version="1.0", brands_version="1.1",
         canonical_product_id=p.id, box_note=box_note,
     )
+    if days_ago is not None:
+        listing.last_seen_at = listing.first_seen_at = (
+            datetime.now(timezone.utc) - timedelta(days=days_ago))
     listing.categories.append(ListingCategory(
         category="Mobiles & Tablets", product_type="Mobile Phone",
         mapping_status="mapped", raw_category="Mobiles"))
@@ -261,3 +265,64 @@ def test_compare_single_retailer_has_no_spread(ctx, shops):
     offer(s, p, shops[0], 100)
     body = get(client, f"/compare/{p.id}").json()
     assert body["spread"] is None and body["not_listed"] == ["ShopB", "ShopC"]
+
+
+# ---- freshness: only listings from the retailer's latest, recent scrape ----
+
+def test_listing_missing_from_latest_scrape_not_counted(ctx, shops):
+    client, s = ctx
+    a, b, _ = shops
+    p = product(s)
+    offer(s, p, a, 50, days_ago=1)   # ShopA's old sighting, cheap
+    offer(s, p, a, 300)              # ShopA's latest scrape
+    offer(s, p, b, 250)
+    item = get(client, "/products").json()["items"][0]
+    assert (item["listings"], item["min_price"]) == (2, 250)
+    rows = get(client, f"/compare/{p.id}").json()["retailers"]
+    assert [(r["retailer"]["name"], r["best"]["price"], r["offers"]) for r in rows] == [
+        ("ShopB", 250, 1), ("ShopA", 300, 1)]
+
+
+def test_retailer_whose_scrape_is_old_drops_out(ctx, shops):
+    client, s = ctx
+    a, b, _ = shops
+    p = product(s)
+    offer(s, p, a, 100, days_ago=5)  # ShopA has not been scraped for 5 days
+    offer(s, p, b, 200)
+    body = get(client, f"/compare/{p.id}").json()
+    assert [r["retailer"]["name"] for r in body["retailers"]] == ["ShopB"]
+    assert body["not_listed"] == ["ShopA", "ShopC"] and body["spread"] is None
+    assert get(client, "/products", min_retailers=2).json()["total"] == 0
+
+
+def test_same_scrape_run_spread_over_hours_is_current(ctx, shops):
+    client, s = ctx
+    a = shops[0]
+    p = product(s)
+    offer(s, p, a, 100)
+    offer(s, p, a, 90, days_ago=2 / 24)  # saved two hours before the retailer's newest file
+    assert get(client, "/products").json()["items"][0]["listings"] == 2
+
+
+def test_product_with_only_old_listings_hidden_but_detail_marks_them(ctx, shops):
+    client, s = ctx
+    a, b, _ = shops
+    p = product(s)
+    offer(s, p, a, 100, days_ago=5)
+    other = product(s, key="other", name="Testco Other")
+    offer(s, other, b, 1)
+    assert [i["name"] for i in get(client, "/products").json()["items"]] == ["Testco Other"]
+    body = get(client, f"/products/{p.id}").json()
+    assert body["listings"] == 0 and body["min_price"] is None
+    assert [(o["price"], o["current"]) for o in body["offers"]] == [(100, False)]
+
+
+def test_detail_lists_current_offers_first(ctx, shops):
+    client, s = ctx
+    a, b, _ = shops
+    p = product(s)
+    offer(s, p, a, 50, days_ago=1)
+    offer(s, p, a, 300)
+    offer(s, p, b, 250)
+    offers = get(client, f"/products/{p.id}").json()["offers"]
+    assert [(o["price"], o["current"]) for o in offers] == [(250, True), (300, True), (50, False)]

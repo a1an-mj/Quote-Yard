@@ -24,6 +24,8 @@ and gets price history growing early, since deals and alerts depend on it.
 ### 1. One pipeline command, then the scheduler
 
 - ✅ `python -m pipeline`: scrape -> clean -> normalize -> brand -> load -> match. One retailer failing does not stop the others; empty or broken scrapes are restored from a backup; one run at a time; exit codes for the scheduler. 13 tests.
+- ✅ Comparisons use current offers only: `last_seen_at` comes from the scrape time, and `/products` / `/compare` count only listings from each retailer's latest, recent scrape.
+- Oxygen's new name format (`BRAND:SMART PHONES:MODEL 3/64 ... (NEW)`) is not parsed by the matcher yet (about 8 phones unmatched). Also: "Blueberry" colour read as a brand on a myG Galaxy S26 FE; scrapers do not retry a page that times out once.
 - Then APScheduler (daily, about 02:00) so `price_history` grows. Without it there is no price-drop data.
 - Re-check stale prices: Pittappillil's site showed the Motorola G06 Power at 13,999 while our data has 15,999.
 

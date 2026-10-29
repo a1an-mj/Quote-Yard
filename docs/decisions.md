@@ -20,6 +20,7 @@ PostgreSQL. The displayed name is more reliable for variants than the URL
 - Validates required fields, positive integer price, http(s) URL; trims whitespace.
 - Missing availability becomes `Unknown`, never `Out of stock`: it means the scraper could not tell.
 - Keeps names, subcategories (no inventing) and duplicate URLs (flagged, not removed).
+- Stamps every record with `scraped_at`, the raw file's modification time: when the scraper saw it. A file that was not re-scraped (myG TVs) or that the pipeline restored keeps its old time.
 
 Result: 2,975 / 2,975 clean, 0 errors; 2,796 In stock, 179 Unknown. 10
 duplicate URL groups, all Nandilath products listed under two subcategories
@@ -75,7 +76,8 @@ retailers 1--< listings 1--< listing_categories
 **Loader rules** (`db/loader.py`): validate everything first, one
 transaction; files in sorted order, first record per `(shop, url)` wins;
 price history on first sighting, any price change, or a known availability
-that differs from the last known one (`Unknown` is never a change); never
+that differs from the last known one (`Unknown` is never a change);
+`last_seen_at` is the record's `scraped_at`, not the load time (duplicates keep the latest); never
 delete listings (myG truncation would make them look removed); idempotent;
 `--dry-run`.
 
@@ -96,6 +98,7 @@ Read-only, under `/api/v1`, docs at `/api/v1/docs`.
 
 - Category filters use `EXISTS`, not `JOIN` (10 listings have two category rows). Every sort adds `id` as a tie-breaker.
 - `/listings/summary` is declared before `/listings/{id}`; ids outside 32-bit return 422.
+- **Current offers only** (`api/freshness.py`): a listing counts when it was seen in its retailer's latest scrape (within 6 hours of that retailer's newest sighting) and that scrape is under 3 days old. Product counts, prices, the product list, `min_retailers` and `/compare` use current listings only; `/products/{id}` still lists old offers with `current: false`. A product with no current listing drops out of `/products`. First applied 2026-10-30: 36 products comparable across retailers (46 before, 10 of them only through offers missing from the latest scrape).
 - Products: an `Out of stock` listing never sets a product's price range or wins a comparison; within a retailer the best offer is the cheapest buyable one. `spread` is null with fewer than two buyable offers. `not_listed` means "not found in our data", never "not sold there".
 - Protection: `default_transaction_read_only=on` on the API engine, 5 s `statement_timeout`, `q` <= 100 chars / 8 words, GET-only CORS, in-process sliding-window rate limit (`api/ratelimit.py`, per process, `/health` exempt, 429 with `Retry-After`).
 

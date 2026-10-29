@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from api.deps import get_session
 from api.filters import MAX_QUERY_WORDS, escape_like
+from api.freshness import is_current
 from api.schemas import (
     CompareOut,
     ListingPrices,
@@ -27,7 +28,8 @@ ProductId = Annotated[int, Path(ge=1, le=2_147_483_647)]
 OUT_OF_STOCK = "Out of stock"
 
 # Prices of listings that can be bought; an out-of-stock listing never sets
-# a product's price range or wins a comparison.
+# a product's price range or wins a comparison. Counts, prices and the
+# product list use current listings only (api/freshness.py).
 _buyable_price = case(
     (Listing.availability != OUT_OF_STOCK, Listing.current_price), else_=None
 )
@@ -39,7 +41,7 @@ _stats = (
         func.min(_buyable_price).label("min_price"),
         func.max(_buyable_price).label("max_price"),
     )
-    .where(Listing.canonical_product_id.is_not(None))
+    .where(Listing.canonical_product_id.is_not(None), is_current)
     .group_by(Listing.canonical_product_id)
     .subquery()
 )
@@ -55,7 +57,7 @@ SORTS = {
 
 
 def _product_query():
-    """Products with at least one listing (orphans are hidden), plus their stats."""
+    """Products with at least one current listing, plus their stats."""
     return select(
         CanonicalProduct, _stats.c.listings, _stats.c.retailers,
         _stats.c.min_price, _stats.c.max_price,
@@ -83,20 +85,24 @@ def _get_product(session: Session, product_id: int) -> ProductOut:
     return _product_out(*row) if row else _product_out(product)
 
 
-def _offers(session: Session, product_id: int) -> list[OfferOut]:
-    rows = session.execute(
-        select(Listing, Retailer)
+def _offers(session: Session, product_id: int, current_only: bool = False) -> list[OfferOut]:
+    """Linked listings, current ones first, each cheapest first."""
+    current = is_current.label("current")
+    stmt = (
+        select(Listing, Retailer, current)
         .join(Retailer, Retailer.id == Listing.retailer_id)
         .where(Listing.canonical_product_id == product_id)
-        .order_by(Listing.current_price.asc(), Listing.id.asc())
-    ).all()
+        .order_by(current.desc(), Listing.current_price.asc(), Listing.id.asc())
+    )
+    if current_only:
+        stmt = stmt.where(is_current)
     return [
         OfferOut(
             listing_id=l.id, retailer=RetailerRef(id=r.id, name=r.name), name=l.name,
             url=l.url, price=l.current_price, availability=l.availability,
-            box_note=l.box_note, last_seen_at=l.last_seen_at,
+            box_note=l.box_note, last_seen_at=l.last_seen_at, current=bool(cur),
         )
-        for l, r in rows
+        for l, r, cur in session.execute(stmt).all()
     ]
 
 
@@ -172,14 +178,15 @@ def product_prices(product_id: ProductId, session: Session = Depends(get_session
 
 @router.get("/compare/{product_id}", response_model=CompareOut)
 def compare(product_id: ProductId, session: Session = Depends(get_session)):
-    """The best offer at each retailer, cheapest first.
+    """The best current offer at each retailer, cheapest first.
 
-    "cheapest_listed" means cheapest of the retailers listed here, and only an
-    offer that is not out of stock can be it. Ties are all marked.
+    Only current listings take part (seen in the retailer's latest, recent
+    scrape). "cheapest_listed" means cheapest of the retailers listed here,
+    and only an offer that is not out of stock can be it. Ties are all marked.
     """
     product = _get_product(session, product_id)
     by_retailer: dict[int, list[OfferOut]] = {}
-    for offer in _offers(session, product_id):
+    for offer in _offers(session, product_id, current_only=True):
         by_retailer.setdefault(offer.retailer.id, []).append(offer)
 
     def rank(o: OfferOut):

@@ -46,7 +46,7 @@ def rec(**over):
         brand="Samsung", brand_status="matched", brand_candidates=None,
         category="Mobiles & Tablets", product_type="Mobile Phone",
         mapping_status="mapped", raw_category="Mobiles", raw_subcategory=None,
-        taxonomy_version="1.0",
+        taxonomy_version="1.0", scraped_at="2026-10-30T00:10:00+00:00",
     )
     base.update(over)
     return base
@@ -158,3 +158,38 @@ def test_unknown_shop_fails():
 def test_bad_records_fail(bad):
     with pytest.raises(LoadError):
         validate_entries([("t", rec(**bad))], {"TestShop"})
+
+# ---- scraped_at: last_seen_at is when a scraper saw the listing --------------
+
+def test_last_seen_comes_from_scraped_at(session):
+    run(session, rec(scraped_at="2026-10-30T00:10:00+00:00"))
+    listing = get_listing(session)
+    assert listing.last_seen_at.isoformat() == "2026-10-30T00:10:00+00:00"
+    assert listing.first_seen_at == listing.last_seen_at
+
+
+def test_unchanged_old_file_keeps_old_last_seen(session):
+    run(session, rec(scraped_at="2026-09-22T10:00:00+00:00"))
+    run(session, rec(scraped_at="2026-09-22T10:00:00+00:00"))  # file not re-scraped
+    assert get_listing(session).last_seen_at.isoformat() == "2026-09-22T10:00:00+00:00"
+
+
+def test_rescrape_moves_last_seen_forward_first_seen_stays(session):
+    run(session, rec(scraped_at="2026-10-01T00:00:00+00:00"))
+    run(session, rec(scraped_at="2026-10-30T00:00:00+00:00"))
+    listing = get_listing(session)
+    assert listing.first_seen_at.isoformat() == "2026-10-01T00:00:00+00:00"
+    assert listing.last_seen_at.isoformat() == "2026-10-30T00:00:00+00:00"
+
+
+def test_duplicate_url_keeps_latest_scraped_at(session):
+    run(session,
+        rec(raw_category="A", scraped_at="2026-10-30T00:01:00+00:00"),
+        rec(raw_category="B", scraped_at="2026-10-30T00:09:00+00:00"))
+    assert get_listing(session).last_seen_at.isoformat() == "2026-10-30T00:09:00+00:00"
+
+
+@pytest.mark.parametrize("value", [None, "", "yesterday", "2026-10-30T00:00:00"])
+def test_bad_scraped_at_rejected(value):
+    with pytest.raises(LoadError, match="scraped_at"):
+        validate_entries([("t", rec(scraped_at=value))], {"TestShop"})

@@ -146,6 +146,9 @@ class OfferOut(BaseModel):
     availability: str
     box_note: str | None
     last_seen_at: datetime
+    # Seen in the retailer's latest, recent scrape. Old offers are shown
+    # for reference but never counted in prices or comparisons.
+    current: bool
 
 
 class ProductDetail(ProductOut):
@@ -174,8 +177,8 @@ class CompareOut(BaseModel):
     product: ProductOut
     # One row per retailer that lists the product, cheapest first.
     retailers: list[RetailerOffer]
-    # Tracked retailers with no linked listing. This means "not found in our
-    # data", not "not sold there".
+    # Tracked retailers with no current linked listing. This means "not found
+    # in our latest data", not "not sold there".
     not_listed: list[str]
     # Difference between the best offers of the listed retailers; null with
     # fewer than two retailers. Never against a list price.
