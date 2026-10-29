@@ -19,6 +19,7 @@ from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
 AVAILABILITY_VALUES = ("In stock", "Out of stock", "Unknown")
 BRAND_STATUSES = ("matched", "unknown", "review")
 MAPPING_STATUSES = ("mapped", "parent_only", "unmapped")
+NETWORK_VALUES = ("2G", "3G", "4G", "5G")
 
 
 def _in(column: str, values: tuple) -> str:
@@ -40,17 +41,51 @@ class Retailer(Base):
 
 
 class CanonicalProduct(Base):
-    """Created empty; filled in Phase 5 (product matching)."""
+    """One product that several retailer listings can point to (Phase 5).
+
+    Filled by the matcher: match_key is the matcher's grouping key and is
+    unique. Phones are keyed on specs (storage set) or, for feature phones
+    with no specs, on the TA model code.
+    """
 
     __tablename__ = "canonical_products"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    brand: Mapped[str | None] = mapped_column(Text)
+    brand: Mapped[str] = mapped_column(Text)
     name: Mapped[str] = mapped_column(Text)
     category: Mapped[str | None] = mapped_column(Text)
     product_type: Mapped[str | None] = mapped_column(Text)
+
+    model: Mapped[str] = mapped_column(Text)
+    network: Mapped[str | None] = mapped_column(Text)
+    ram_gb: Mapped[int | None] = mapped_column(Integer)
+    storage_gb: Mapped[int | None] = mapped_column(Integer)
+    package: Mapped[str | None] = mapped_column(Text)
+    ta_code: Mapped[str | None] = mapped_column(Text)
+    match_key: Mapped[str] = mapped_column(Text, unique=True)
+    matching_version: Mapped[str] = mapped_column(Text)
+
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now()
+    )
+
+    listings: Mapped[list["Listing"]] = relationship(back_populates="canonical_product")
+
+    __table_args__ = (
+        CheckConstraint(
+            _in("network", NETWORK_VALUES), name="ck_canonical_products_network"
+        ),
+        CheckConstraint("ram_gb > 0", name="ck_canonical_products_ram_positive"),
+        CheckConstraint(
+            "storage_gb > 0", name="ck_canonical_products_storage_positive"
+        ),
+        # every product is keyed on storage, or on a TA code when it has no specs
+        CheckConstraint(
+            "storage_gb IS NOT NULL OR ta_code IS NOT NULL",
+            name="ck_canonical_products_has_key_spec",
+        ),
+        Index("ix_canonical_products_brand", "brand"),
+        Index("ix_canonical_products_product_type", "product_type"),
     )
 
 
@@ -81,10 +116,16 @@ class Listing(Base):
     canonical_product_id: Mapped[int | None] = mapped_column(
         ForeignKey("canonical_products.id")
     )
+    # Box contents that differ from the plain product ("without adapter");
+    # set by the matcher, never part of the match key.
+    box_note: Mapped[str | None] = mapped_column(Text)
     taxonomy_version: Mapped[str] = mapped_column(Text)
     brands_version: Mapped[str] = mapped_column(Text)
 
     retailer: Mapped[Retailer] = relationship(back_populates="listings")
+    canonical_product: Mapped[CanonicalProduct | None] = relationship(
+        back_populates="listings"
+    )
     categories: Mapped[list["ListingCategory"]] = relationship(
         back_populates="listing", cascade="all, delete-orphan"
     )

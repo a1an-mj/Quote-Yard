@@ -1236,9 +1236,9 @@ Uniqueness uses a unique index on `(listing_id, raw_category, COALESCE(raw_subca
 
 **`price_history`**: `id`, `listing_id`, `price` (`> 0`), `availability`, `recorded_at`; index on `(listing_id, recorded_at DESC)`.
 
-**`canonical_products`**: created empty (`id`, `brand`, `name`, `category`, `product_type`, `created_at`); filled in Phase 5.
+**`canonical_products`**: created empty in Phase 3; extended in Phase 5 (migration `0001`) with the match columns, see Section 23.
 
-`category` and `product_type` are plain text, not foreign keys to lookup tables. The JSON taxonomy stays the single source of truth, and `taxonomy_version` covers drift. Tables are created with `create_all`; move to Alembic once the schema starts changing.
+`category` and `product_type` are plain text, not foreign keys to lookup tables. The JSON taxonomy stays the single source of truth, and `taxonomy_version` covers drift. Tables are created with `create_all` on a new database (then stamped at the Alembic head); since Phase 5, schema changes are **Alembic migrations** in `db/migrations/` (`alembic upgrade head`).
 
 ### Why the category join key is the raw pair
 
@@ -1596,21 +1596,24 @@ Phases 1 to 4 are complete (Sections 19a to 19e): 2,965 listings are loaded and 
 
 Matching stays **separate** from scraping, normalization and brand extraction (Section 3.3).
 
-### Progress (steps 1 to 4 done, nothing written to the database yet)
+### Progress (steps 1 to 5 done; no matches written to the database yet)
 
 | Step | Status |
 |------|--------|
 | 1. Extraction report | ✅ `matching/extract_phones.py` → `reports/phone_extraction_report.txt`. RAM and storage parsed for 246 / 277; gaps found: Nandilath drops "Galaxy", `V70FE` vs `V70 FE`, `Nothing Phone (4a)` gave an empty model, network missing on one side, Apple has no RAM, feature phones have no specs, bundles ("Photographer Kit", "Without Adapter"). |
 | 2-3. Matcher (`matching_version` 1.1) | ✅ `matching/phone_matcher.py` → `reports/phone_match_report.txt` + `reports/phone_matches.json`. Key `(brand, model, network, RAM, storage, package)`; colour and box contents never in the key. |
 | 4. Verification | ✅ All 32 cross-retailer groups checked by hand: **0 wrong matches**. Two runs give identical output. |
+| 5. Schema | ✅ Alembic introduced (`alembic==1.20.0`, `alembic.ini`, `db/migrations/`). Migration `0001`: `canonical_products` gains `model`, `network`, `ram_gb`, `storage_gb`, `package`, `ta_code`, `match_key` (unique), `matching_version`; `brand` becomes `NOT NULL`; checks: network in 2G-5G, RAM/storage > 0, storage or TA code required. `listings` gains `box_note`. Rehearsed on a copy (upgrade, downgrade, upgrade, `alembic check` clean) and on a new database; live database backed up, then upgraded (2,965 listings unchanged). `CanonicalProduct.listings` / `Listing.canonical_product` relationships added. 8 new model tests. |
 
 **Rules:** only `brand_status: matched` takes part · model key is the name head, casefolded, brand and filler words dropped, spaces removed · `galaxy` is optional for Samsung · `Phone (4a)` → `4a` · network read from the whole name, `LTE` = 4G; a listing with no network joins its model's network when only one is seen, otherwise review · **bundles** (`photographer kit`) are part of the key, so a bundle never merges with the plain phone · **box contents** (`without adapter`) are not: the phone merges, each listing keeps a `box_note`, and the group lists its `box_notes` (decided in 1.1) · **retailer words**, only when verified against the retailer's own spec table and only straight after the brand: Pittappillil `SMART` (its Model field reads `4B 5G` for "NOTHING SMART 4B 5G" and `G06 POWER 4G` for "MOTOROLA SMART G06 POWER 4G", checked 2026-10-29). `smart` is **not** a global filler word (Smart TV, Smart Watch, V-Guard Smart inverters) · Apple ignores RAM · phones with no RAM and storage match on brand + `TA-xxxx` code (decided) · groups with a price spread over 25% are kept but flagged.
 
 **Results (1.1):** 113 canonical products from 276 listings; **32 sold by 2+ retailers** (28 by two, 4 by three), covering 121 listings. 1 skipped (Nokia 130, no specs and no TA code). 0 review items. 1.0 had 116 / 30 and 3 review items; 1.1 resolved them: Nothing Phone (4b) 8/256 now matches Pittappillil "Smart 4B" (both 40,999), and Samsung A17 6/128 and 8/128 merge with Oxygen's "Without Adapter" listings (box note kept).
 
-**Tests:** `tests/test_phone_matcher.py`, 18 tests (four formats one group, variant words kept apart, RAM/storage must agree, colour ignored, Galaxy/spacing, Nothing brackets, LTE vs 5G, missing network joins / goes to review, bundle key, box note merges and is tracked, Pittappillil `SMART` only after the brand, Apple RAM, partial specs, TA codes, TA conflict, untrusted brand, price spread, order independence). Whole project: **121 tests pass**.
+**Tests:** `tests/test_phone_matcher.py`, 18 tests (four formats one group, variant words kept apart, RAM/storage must agree, colour ignored, Galaxy/spacing, Nothing brackets, LTE vs 5G, missing network joins / goes to review, bundle key, box note merges and is tracked, Pittappillil `SMART` only after the brand, Apple RAM, partial specs, TA codes, TA conflict, untrusted brand, price spread, order independence). Whole project: **129 tests pass** (after step 5).
 
-**Next:** step 5 (schema: recreate `canonical_products` with model, network, RAM, storage, package, `match_key`, `matching_version`; a `box_note` column on `listings`), step 6 (a runner that writes the groups and sets `listings.canonical_product_id`), step 7 (`/products` and `/compare` endpoints).
+**Schema commands:** new database `python -m db.create_tables` (creates and stamps); existing database `alembic upgrade head`; drift check `alembic check`.
+
+**Next:** step 6 (a runner that writes the groups and sets `listings.canonical_product_id`), step 7 (`/products` and `/compare` endpoints).
 
 ### Open questions
 

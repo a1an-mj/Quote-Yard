@@ -2,10 +2,18 @@
 Create all tables and seed the four retailers. Safe to run repeatedly.
 Fills in base_url where it is empty; never overwrites an existing value.
 
+On a new database create_all builds the latest schema, so it is stamped as
+the Alembic head. An existing database is upgraded with Alembic instead:
+    alembic upgrade head
+
 Usage (from the repo root):  python -m db.create_tables
 """
 
-from sqlalchemy import select
+from pathlib import Path
+
+from alembic import command
+from alembic.config import Config
+from sqlalchemy import inspect, select
 from sqlalchemy.orm import Session
 
 from db.models import Base, Retailer
@@ -20,9 +28,16 @@ RETAILERS = {
 }
 
 
+ALEMBIC_INI = Path(__file__).resolve().parent.parent / "alembic.ini"
+
+
 def main() -> None:
     engine = get_engine()
+    is_new = not inspect(engine).has_table("listings")
     Base.metadata.create_all(engine)
+    if is_new:
+        command.stamp(Config(str(ALEMBIC_INI)), "head")
+        print("New database: schema created and stamped at the Alembic head.")
 
     with Session(engine) as session:
         existing = {r.name: r for r in session.scalars(select(Retailer))}
