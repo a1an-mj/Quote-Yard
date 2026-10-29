@@ -135,7 +135,7 @@ def make_product(**overrides):
         brand="Samsung", name="Samsung Galaxy A07 5G [4 GB RAM, 128 GB]",
         category="Mobiles & Tablets", product_type="Mobile Phone",
         model="a07", network="5G", ram_gb=4, storage_gb=128, package=None,
-        ta_code=None, match_key="samsung|a07|5g|4|128|", matching_version="1.1",
+        ta_code=None, match_key="testco|zed9|5g|4|128|", matching_version="1.1",
     )
     fields.update(overrides)
     return CanonicalProduct(**fields)
@@ -155,7 +155,7 @@ def test_product_links_listings_with_box_note(session, retailer):
 def test_feature_phone_product_keyed_on_ta_code(session):
     session.add(make_product(
         brand="Nokia", model="110 power keypad", network=None, ram_gb=None,
-        storage_gb=None, ta_code="TA-1751", match_key="nokia|ta|ta-1751"))
+        storage_gb=None, ta_code="TA-0000", match_key="testco|ta|ta-0000"))
     session.flush()
 
 

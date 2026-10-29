@@ -6,8 +6,8 @@ parses model, network, RAM, storage and colour from the name, and reports how
 cleanly that works. It writes only to reports/. No database, no matching.
 
 Run from the repo root:
-    python matching/extract_phones.py
-    python matching/extract_phones.py --type "Mobile Phone" --data-dir branded_data
+    python -m matching.extract_phones
+    python -m matching.extract_phones --type "Mobile Phone" --data-dir branded_data
 """
 import argparse
 import json

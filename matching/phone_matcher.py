@@ -24,7 +24,7 @@ Rules (MATCHING_VERSION 1.1):
   - Phones with neither RAM nor storage match on brand + TA model code.
 
 Run from the repo root:
-    python matching/phone_matcher.py
+    python -m matching.phone_matcher
 """
 import argparse
 import json
@@ -32,7 +32,7 @@ import re
 from collections import Counter, defaultdict
 from pathlib import Path
 
-from extract_phones import HEAD_SPLIT, extract_colour, load_records, parse_specs
+from matching.extract_phones import HEAD_SPLIT, extract_colour, load_records, parse_specs
 
 MATCHING_VERSION = "1.1"
 ROOT = Path(__file__).resolve().parent.parent

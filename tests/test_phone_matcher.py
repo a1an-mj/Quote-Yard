@@ -3,9 +3,9 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent
-sys.path.insert(0, str(ROOT / "matching"))
+sys.path.insert(0, str(ROOT))
 
-from phone_matcher import match, parse_listing
+from matching.phone_matcher import match, parse_listing
 
 
 def rec(name, shop="Oxygen", brand=None, price=10000, status="matched", url=None):
