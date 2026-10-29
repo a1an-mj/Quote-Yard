@@ -21,13 +21,22 @@ Last updated 2026-10-29.
 The order puts working price comparison in front of users before accounts,
 and gets price history growing early, since deals and alerts depend on it.
 
-### Phase 6: Pipeline and scheduler (in progress: check the first scheduled runs)
+### Phase 6: Pipeline and scheduler (built; scheduled runs to be verified on the VivoBook)
 
 - ✅ `python -m pipeline`: scrape -> clean -> normalize -> brand -> load -> match. One retailer failing does not stop the others; empty or broken scrapes are restored from a backup; one run at a time; exit codes for the scheduler. 13 tests.
 - ✅ Comparisons use current offers only: `last_seen_at` comes from the scrape time, and `/products` / `/compare` count only listings from each retailer's latest, recent scrape.
 - ✅ Oxygen's `BRAND:SMART PHONES:MODEL 6/128 ...` names are matched (matching 1.2): 4 more cross-retailer products, unmatched phones 13 -> 7.
 - ✅ Small fixes: `Blueberry` is `start_only` (a Samsung colour was read as a brand) and `blueberrys` an alias (brands 1.3); every scraper retries a page that did not load once (`scrapers/navigation.py`).
-- ✅ Daily schedule: a systemd user timer runs `python -m pipeline` at 02:00 IST (`deploy/install-scheduler.sh`). Installed 2026-10-30; first scheduled run that night.
+- ✅ Daily schedule: a systemd user timer runs `python -m pipeline` at 02:00 IST (`deploy/install-scheduler.sh`). Tested under systemd on the dev laptop, then removed there: the scheduled runs will be verified on the **Asus VivoBook**, the planned server.
+- **VivoBook setup** (next session):
+  1. Linux with systemd, PostgreSQL, Python 3.14, git; clone the repo.
+  2. `python -m venv .venv && .venv/bin/pip install -r requirements-dev.txt && .venv/bin/playwright install chromium`
+  3. `createdb quote_yard && .venv/bin/python -m db.create_tables`
+  4. Copy `data/` over (or extract `quote-yard-raw-data.tar.gz`, or start with a fresh scrape); it is not in git.
+  5. `.venv/bin/python -m pytest -q` (creates `quote_yard_test`).
+  6. `.venv/bin/python -m pipeline --skip-scrape --dry-run`, then one full `python -m pipeline` by hand.
+  7. `deploy/install-scheduler.sh` and `loginctl enable-linger $USER` (runs without a login session).
+  8. Next morning: `journalctl --user -u quote-yard-pipeline -e` and `systemctl --user list-timers`.
 - Re-check stale prices: Pittappillil's site showed the Motorola G06 Power at 13,999 while our data has 15,999.
 
 ### Phase 7: React frontend
