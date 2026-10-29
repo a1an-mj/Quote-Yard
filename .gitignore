@@ -35,6 +35,9 @@ frontend/.vite/
 test-results/
 playwright-report/
 
+# Raw scraped data (backed up in quote-yard-raw-data.tar.gz)
+data/
+
 # Regenerable pipeline output
 cleaned_data/
 cleaned_data.tmp/
