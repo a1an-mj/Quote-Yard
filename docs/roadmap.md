@@ -23,7 +23,7 @@ and gets price history growing early, since deals and alerts depend on it.
 
 ### 1. One pipeline command, then the scheduler
 
-- `python -m pipeline` (or similar): scrape -> clean -> normalize -> brand -> load -> match, one retailer failing does not stop the others, a summary at the end.
+- ✅ `python -m pipeline`: scrape -> clean -> normalize -> brand -> load -> match. One retailer failing does not stop the others; empty or broken scrapes are restored from a backup; one run at a time; exit codes for the scheduler. 13 tests.
 - Then APScheduler (daily, about 02:00) so `price_history` grows. Without it there is no price-drop data.
 - Re-check stale prices: Pittappillil's site showed the Motorola G06 Power at 13,999 while our data has 15,999.
 
@@ -35,7 +35,6 @@ and gets price history growing early, since deals and alerts depend on it.
 
 ### 3. Coverage
 
-- myG 108-record cap (issue 1).
 - Matching for the next types. TVs, refrigerators, washing machines, ACs and laptops usually carry a manufacturer model code, which is a stronger key than phone names. When the second type is added, split the shared matcher core (brand gate, key, review report, writer) from the phone rules; not before.
 - Normalization coverage: 20% of records are `parent_only` / `unmapped` (issue 5).
 
@@ -55,9 +54,15 @@ Use a SELECT-only database role for the API and a separate role for the
 writers. Behind a reverse proxy, run uvicorn with `--proxy-headers
 --forwarded-allow-ips=<proxy>` so the rate limiter sees real clients.
 
+**Steps 1 to 5 are the first release.**
+
+### After the first release
+
+1. **myG 108-record cap** (issue 1), if it can be fixed within the site's rules. Confirmed again on the first pipeline run (2026-10-29): every myG category stopped at a 403 on page 10.
+2. **Vendor system**: shop accounts and local offers next to scraped prices ([`accounts-and-vendors.md`](accounts-and-vendors.md#vendors)). Needs accounts (step 4).
+
 ### Later
 
-- Vendor accounts and local shop offers ([`accounts-and-vendors.md`](accounts-and-vendors.md#vendors)).
 - Croma, through the same scraper interface.
 
 ## Open issues
@@ -65,7 +70,7 @@ writers. Behind a reverse proxy, run uvicorn with `--proxy-headers
 | # | Issue | Notes |
 |:-:|-------|-------|
 | 1 | **myG truncation** | 8 of 11 categories have exactly 108 records (9 pages x 12), matching a 403 at page 10. Cause unknown. Test one at a time: open pages 9-11 in a normal browser; run `--only mobiles --max-pages 12`; check whether sorting or filters expose other products. Read `robots.txt` and the terms first. Do not spoof headers or rotate identities; if the cap is deliberate, ask myG for a feed. Until fixed, no "cheapest" claim where myG coverage could change the answer. |
-| 2 | **myG TVs not in the scraper config** | The data has a myG `TV` category (108 records) but `CATEGORIES` in `myg_scraper.py` has no TV entry. A re-scrape would lose them. |
+| 2 | **myG TVs not in the scraper config** | The data has a myG `TV` category (108 records) but `CATEGORIES` in `myg_scraper.py` has no TV entry, so the pipeline never refreshes `myg_tv.json`: those listings go stale (old `last_seen_at`, old prices). |
 | 3 | **Out-of-stock path untested** | Data has only `In stock` (2,796) and `Unknown` (179). Schema and loader allow `Out of stock`; nothing has exercised it end to end. |
 | 4 | **Pittappillil: 7 empty subcategories** | 55 configured, 48 present in the data. Confirm they are really empty, not a silent scraper stop. |
 | 5 | **Unmapped records (20%)** | 346 `parent_only`, 240 `unmapped`. Cheapest wins: an `Earbuds` type (Oxygen Gadgets, 23); a name-rule layer (`mapping_status: rule_mapped`, versioned) for mixed buckets such as Pittappillil Chimney & Hob. |

@@ -50,8 +50,25 @@ The database URL comes from `QUOTE_YARD_DATABASE_URL`
 
 ## Run the pipeline
 
-After a scrape, run these in order. Every step is deterministic and safe to
-repeat; the loader and the match writer have `--dry-run`.
+One command runs everything:
+
+```
+python -m pipeline                          # scrape all 4 retailers, then process, load, match
+python -m pipeline --only myg oxygen        # scrape only these retailers
+python -m pipeline --skip-scrape            # reprocess the data/ already on disk
+python -m pipeline --skip-scrape --dry-run  # load and match roll back
+```
+
+Each retailer is scraped in its own process (a crash or hang never stops
+the others). `data/` is backed up first; a file that comes back empty or
+unreadable is restored from the backup, and one that shrinks by more than
+half is flagged. The processing stages stop at the first failure. Only one
+run at a time. Logs and the backup go to `logs/<timestamp>/` (the newest 14
+runs are kept). Exit code: 0 OK, 1 a retailer needs attention, 2 a stage
+failed.
+
+The same steps by hand, in order (each is deterministic and safe to
+repeat; the loader and the match writer have `--dry-run`):
 
 ```
 python scrapers/<retailer>_scraper.py          # writes data/<retailer>_*.json

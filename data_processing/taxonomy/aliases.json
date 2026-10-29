@@ -1,6 +1,6 @@
 {
-  "version": "1.0",
-  "taxonomy_version": "1.0",
+  "version": "1.1",
+  "taxonomy_version": "1.1",
   "null_subcategory_key": "__none__",
   "mappings": {
     "Nandilath G Mart": {
@@ -526,6 +526,14 @@
           "status": "parent_only",
           "product_type": null,
           "category": "Home Automation"
+        }
+      },
+      "Laptops": {
+        "__none__": {
+          "status": "parent_only",
+          "product_type": null,
+          "category": "Computers",
+          "note": "Mixed: about 98 laptops plus desktops, all-in-ones and Mac Mini (first seen 2026-10-30)"
         }
       },
       "Mobiles": {
