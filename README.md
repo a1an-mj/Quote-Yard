@@ -1,0 +1,114 @@
+# Quote Yard
+
+Price comparison for Kerala retailers. Scrapers collect listings from four
+shops, a pipeline cleans and classifies them, a matcher groups the same
+product across shops, and a read-only API serves the result.
+
+```
+scrapers -> data/ -> clean -> normalize -> brand -> PostgreSQL (loader)
+         -> match (canonical products) -> FastAPI -> React
+```
+
+| Retailer | Site | Scraper |
+|----------|------|---------|
+| myG | myg.in | `scrapers/myg_scraper.py` |
+| Oxygen | oxygendigitalshop.com | `scrapers/oxygen_scraper.py` |
+| Pittappillil | pittappillilonline.com | `scrapers/pittappillil_scraper.py` |
+| Nandilath G Mart | nandilathgmart.com | `scrapers/nandilath_scraper.py` |
+
+**Status (2026-10-29):** 2,965 listings loaded; mobile phones matched into
+113 products, 32 of them sold by 2+ retailers; 137 tests pass. What is next:
+[`docs/roadmap.md`](docs/roadmap.md).
+
+## Docs
+
+| File | Contents |
+|------|----------|
+| [`docs/roadmap.md`](docs/roadmap.md) | Where the project is, what comes next, open issues |
+| [`docs/decisions.md`](docs/decisions.md) | How each pipeline stage works and why, with baseline numbers |
+| [`docs/scrapers.md`](docs/scrapers.md) | Per-retailer scraper notes, selectors, quirks, commands |
+| [`docs/accounts-and-vendors.md`](docs/accounts-and-vendors.md) | Design proposals for accounts / watchlist / deals and vendor offers |
+
+## Setup
+
+Arch Linux, Python 3.14, PostgreSQL (local socket, current OS user).
+
+```
+python -m venv .venv && source .venv/bin/activate
+pip install -r requirements-dev.txt
+playwright install chromium      # only the scrapers need it
+createdb quote_yard
+python -m db.create_tables       # new database: creates the schema, stamps the Alembic head, seeds retailers
+```
+
+Existing database after pulling new code: `alembic upgrade head`.
+Check that models and database agree: `alembic check`.
+
+The database URL comes from `QUOTE_YARD_DATABASE_URL`
+(default `postgresql+psycopg:///quote_yard`).
+
+## Run the pipeline
+
+After a scrape, run these in order. Every step is deterministic and safe to
+repeat; the loader and the match writer have `--dry-run`.
+
+```
+python scrapers/<retailer>_scraper.py          # writes data/<retailer>_*.json
+python data_processing/run_cleaning.py         # -> cleaned_data/
+python data_processing/run_normalization.py    # -> normalized_data/
+python data_processing/run_branding.py         # -> branded_data/
+python -m db.loader                            # -> listings, categories, price history
+python -m db.match_writer                      # -> canonical products, listing links
+```
+
+Read-only reports (written to `reports/`): `python data_processing/review_normalized.py`,
+`python -m matching.extract_phones`, `python -m matching.phone_matcher`.
+
+## Run the API
+
+```
+uvicorn api.main:app --reload
+```
+
+Docs at http://127.0.0.1:8000/api/v1/docs. Settings: `QUOTE_YARD_CORS_ORIGINS`
+(default `http://localhost:5173`), `QUOTE_YARD_RATE_LIMIT` (requests per minute
+per client, default 120, `0` = off).
+
+## Tests
+
+```
+python -m pytest -q
+```
+
+Tests run against a separate database, `quote_yard_test` (override with
+`QUOTE_YARD_TEST_DATABASE_URL`). It is created if missing and rebuilt on every
+run. The suite refuses to start if the test URL is the real database or its
+name does not end in `_test`.
+
+## Layout
+
+```
+scrapers/          Playwright scrapers, one per retailer
+data/              raw scraper output (not in git; backup: quote-yard-raw-data.tar.gz)
+data_processing/   cleaning, normalization (taxonomy/), brand extraction (brands.json)
+db/                models, migrations (Alembic), loader, match writer
+matching/          phone extraction report and matcher
+api/               FastAPI app (read-only)
+frontend/          React + Vite prototype (not yet connected to the API)
+tests/             pytest suite
+cleaned_data/ normalized_data/ branded_data/ reports/   regenerable, not in git
+```
+
+Import style: `data_processing/` scripts run by path
+(`python data_processing/run_cleaning.py`); `db`, `api` and `matching` are
+packages, run with `python -m` from the repo root.
+
+## Ground rules
+
+- Every stage is deterministic and versioned (`taxonomy_version`, `brands_version`, `matching_version`); the same input gives the same output.
+- Mappings, brand aliases and matching rules are explicit and reviewable. Nothing is guessed: unknown or ambiguous cases are reported (`unmapped`, `brand_status: review`, matcher review list).
+- Later stages never modify earlier layers. Raw data is never edited.
+- The loader never deletes listings; the match writer never deletes products.
+- The API never writes. Public claims ("cheapest", "save X") must be provable from the data.
+- No AI extraction, no Kafka / Celery / Redis / microservices until a real need appears.
+- Debug one change at a time: change, test, then the next change.
