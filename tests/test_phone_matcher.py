@@ -194,3 +194,39 @@ def test_deterministic_regardless_of_order():
     shuffled = records[:]
     random.Random(1).shuffle(shuffled)
     assert match(shuffled) == first
+
+
+# ---- 1.2: name layouts -------------------------------------------------------
+
+def test_category_path_prefix_matches_other_formats():
+    groups, review, _ = match([
+        rec("XIAOMI:SMART PHONES:REDMI 15C 6/128GB 5G MOONLIGHT BLUE (NEW)", "Oxygen", "Xiaomi"),
+        rec("Redmi 15C 5G (6GB RAM/128GB Storage, Dusk Purple)", "Nandilath G Mart", "Xiaomi"),
+    ])
+    assert keys(groups) == {"xiaomi|redmi15c|5g|6|128|": ["Nandilath G Mart", "Oxygen"]}
+    assert not review
+
+
+def test_category_path_with_apple():
+    groups, _, _ = match([
+        rec("APPLE:SMART PHONES:IPHONE 17 256GB BLACK MG6J4HN/A (NEW)", "Oxygen", "Apple"),
+        rec("Apple iPhone 17 | 256 GB | Black | NM", "myG", "Apple"),
+    ])
+    assert keys(groups) == {"apple|iphone17|||256|": ["Oxygen", "myG"]}
+
+
+def test_unitless_sizes_read_only_for_real_sizes():
+    r = parse_listing(rec("VIVO:SMART PHONES:S2 FE 6/128 TITAN BLACK", brand="Vivo"))
+    assert (r["model"], r["ram_gb"], r["storage_gb"]) == ("s2 fe", 6, 128)
+    # 5/100 is not a RAM / storage pair, so nothing is read from it
+    odd = parse_listing(rec("Testco Zed 5/100 Black", brand="Testco"))
+    assert odd["ram_gb"] is None and odd["storage_gb"] is None
+    assert odd["skip_reason"] == "no_specs_no_ta_code"
+
+
+def test_model_ends_at_spaced_dash():
+    a = parse_listing(rec("REDMI A7 Pro 5G - Sunset Orange, 64 GB, 4 GB RAM", brand="Xiaomi"))
+    b = parse_listing(rec("REDMI A7 Pro 5G (Black, 64 GB) (4 GB RAM)", brand="Xiaomi"))
+    assert a["model_key"] == b["model_key"] == "redmia7pro"
+    assert parse_listing(rec("Testco X-Pro 5G (Black, 64 GB) (4 GB RAM)", brand="Testco"))[
+        "model"] == "x pro"  # an unspaced hyphen is part of the model

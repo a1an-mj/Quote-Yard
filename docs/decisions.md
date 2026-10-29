@@ -108,7 +108,7 @@ Phones first: the largest overlap (277 listings at all four shops), and the
 names carry brand, model, RAM and storage in four different formats.
 
 **Key:** `(brand, model, network, RAM, storage, package)`. Colour is never
-in the key. Rules (`matching_version` 1.1):
+in the key. Rules (`matching_version` 1.2):
 
 - Only `brand_status: matched` listings take part.
 - Model = name head (before `|`, `(` or the first size), casefolded, brand and filler words removed, spaces removed (`V70FE` = `V70 FE`). For Samsung "galaxy" is optional (Nandilath omits it). `Phone (4a)` reads as `4a`.
@@ -117,6 +117,7 @@ in the key. Rules (`matching_version` 1.1):
 - Bundles ("photographer kit") are part of the key. Box contents ("without adapter") are not: the listing merges and keeps `box_note`.
 - Retailer-specific words are dropped only when verified against the retailer's own spec table, and only straight after the brand. Pittappillil "SMART": its Model field reads `4B 5G` for "NOTHING SMART 4B 5G" and `G06 POWER 4G` for "MOTOROLA SMART G06 POWER 4G" (checked 2026-10-29). "smart" is not a global filler word.
 - Apple ignores RAM. Phones with no RAM and storage match on brand + `TA-xxxx` code.
+- Name layouts (1.2, after Oxygen started writing `APPLE:SMART PHONES:IPHONE 17 256GB ... (NEW)`): a leading `BRAND:CATEGORY:` path becomes `BRAND`; sizes without a unit (`6/128`) are read only when both numbers are real RAM and storage sizes; the model ends at ` - ` (`A7 Pro 5G - Sunset Orange, 64 GB`). Brands 1.2 adds the alias `real me`.
 - A group whose price spread is over 25% is kept but flagged.
 
 **Writing** (`python -m db.match_writer [--dry-run]`): reads in-scope

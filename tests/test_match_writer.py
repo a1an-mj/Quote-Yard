@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from db.match_writer import write_matches
+from matching.phone_matcher import MATCHING_VERSION
 from db.models import Base, CanonicalProduct, Listing, ListingCategory, Retailer
 from db.session import get_engine
 
@@ -80,7 +81,7 @@ def test_cross_retailer_group_written_and_linked(session):
     assert (p.brand, p.model, p.network, p.ram_gb, p.storage_gb) == ("Testco", "zed 9", "5G", 8, 128)
     assert p.match_key == "testco|zed9|5g|8|128|"
     assert (p.category, p.product_type, p.matching_version) == (
-        "Mobiles & Tablets", "Mobile Phone", "1.1")
+        "Mobiles & Tablets", "Mobile Phone", MATCHING_VERSION)
 
 
 def test_rerun_changes_nothing(session):

@@ -7,7 +7,7 @@ Two listings match only when brand, model, RAM, storage and package all agree
 cannot be decided goes to the review section of the report, never into a
 group by guess. Writes only to reports/. No database.
 
-Rules (MATCHING_VERSION 1.1):
+Rules (MATCHING_VERSION 1.2):
   - Only brand_status "matched" listings take part.
   - Model key: name head (before "|", "(" or the first size), casefolded,
     punctuation removed, brand word and filler words dropped, then joined
@@ -20,6 +20,10 @@ Rules (MATCHING_VERSION 1.1):
     not: the listing keeps them as box_note and the group lists them.
   - Retailer-specific words verified against the retailer's spec table are
     dropped right after the brand (Pittappillil "SMART").
+  - Name layouts (1.2): a leading category path "BRAND:CATEGORY:" becomes
+    "BRAND"; sizes without a unit ("6/128") count only when both numbers
+    are real RAM and storage sizes; the model ends at " - " ("A7 Pro 5G -
+    Sunset Orange, 64 GB").
   - Apple: RAM is ignored (Apple does not publish it; storage decides).
   - Phones with neither RAM nor storage match on brand + TA model code.
 
@@ -34,7 +38,7 @@ from pathlib import Path
 
 from matching.extract_phones import HEAD_SPLIT, extract_colour, load_records, parse_specs
 
-MATCHING_VERSION = "1.1"
+MATCHING_VERSION = "1.2"
 ROOT = Path(__file__).resolve().parent.parent
 
 FILLER = {"smartphone", "smartphones", "mobile", "mobiles", "phone"}
@@ -59,6 +63,13 @@ BOX_NOTES = [
 # has Model "G06 POWER 4G" (checked on the product pages, 2026-10-29).
 SHOP_WORDS_AFTER_BRAND = {"Pittappillil": {"smart"}}
 NOTHING_PAREN = re.compile(r"\bphone\s*\(\s*(\w+)\s*\)", re.I)
+# "APPLE:SMART PHONES:IPHONE 17 ..." -> "APPLE IPHONE 17 ..."
+CATEGORY_PATH = re.compile(r"^\s*([^:|()]+?)\s*:\s*[^:|()]+?\s*:\s*")
+# "3/64" or "8/256" with no unit; only accepted for real RAM / storage sizes
+UNITLESS_SIZES = re.compile(r"(?<![\w./+])(\d{1,2})\s*/\s*(\d{2,4})(?![\w./+])")
+RAM_SIZES = {1, 2, 3, 4, 6, 8, 12, 16, 18, 24}
+STORAGE_SIZES = {16, 32, 64, 128, 256, 512}
+HEAD_END = re.compile(r"\s+-\s+")
 NETWORK_ANY = re.compile(r"\b(?:([2345])G|(LTE))\b", re.I)
 TA_CODE = re.compile(r"\bTA-?(\d{3,5})\b", re.I)
 
@@ -77,7 +88,21 @@ def _clean_name(name):
     name, package = _strip_labels(name, PACKAGES)
     name, box_note = _strip_labels(name, BOX_NOTES)
     name = NOTHING_PAREN.sub(r"Phone \1", name)
+    name = CATEGORY_PATH.sub(r"\1 ", name)
+    name = UNITLESS_SIZES.sub(_add_unit, name)
     return name, package, box_note
+
+
+def _add_unit(m):
+    ram, storage = int(m.group(1)), int(m.group(2))
+    if ram in RAM_SIZES and storage in STORAGE_SIZES:
+        return f"{ram}/{storage}GB"
+    return m.group(0)
+
+
+def _head(name):
+    """The model part of a cleaned name: before "|", "(", the first size or " - "."""
+    return HEAD_END.split(HEAD_SPLIT.split(name, 1)[0], 1)[0]
 
 
 def _networks(name):
@@ -85,7 +110,7 @@ def _networks(name):
 
 
 def parse_model_tokens(name, brand, shop=None):
-    head = HEAD_SPLIT.split(name, 1)[0]
+    head = _head(name)
     head = NETWORK_ANY.sub(" ", head).casefold()
     head = re.sub(r"[^\w+\s]", " ", head)
     toks = [t for t in head.split() if t not in FILLER]
@@ -145,7 +170,7 @@ def key_str(key):
 def display_name(members):
     heads = []
     for m in members:
-        head = HEAD_SPLIT.split(_clean_name(m["name"])[0], 1)[0]
+        head = _head(_clean_name(m["name"])[0])
         head = re.sub(r"\s+", " ", NETWORK_ANY.sub(" ", head)).strip(" -,")
         for word in SHOP_WORDS_AFTER_BRAND.get(m["shop"], ()):
             head = re.sub(rf"^(\S+)\s+{word}\b", r"\1", head, flags=re.I)
