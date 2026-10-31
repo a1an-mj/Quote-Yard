@@ -6,7 +6,7 @@ import { api, errorMessage } from '../../lib/api'
 
 export default function Signup() {
   const navigate = useNavigate()
-  const [form, setForm] = useState({ email: '', password: '', website: '' })
+  const [form, setForm] = useState({ first_name: '', last_name: '', email: '', password: '', website: '' })
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value })
@@ -20,7 +20,7 @@ export default function Signup() {
       navigate('/verify', { state: { email: form.email.trim() } })
     } catch (err) {
       setError(err.status === 422
-        ? 'Enter a valid email and a password of at least 8 characters.'
+        ? 'Enter your first name, a valid email and a password of at least 8 characters.'
         : errorMessage(err))
       setBusy(false)
     }
@@ -33,6 +33,8 @@ export default function Signup() {
       footer={<>Already have an account? <Link className="qy-link" to="/login">Log in</Link></>}
     >
       <form className="qy-stack" style={{ gap: 16 }} onSubmit={submit}>
+        <Field id="first-name" label="First name" autoComplete="given-name" required maxLength={50} value={form.first_name} onChange={set('first_name')} />
+        <Field id="last-name" label="Last name (optional)" autoComplete="family-name" maxLength={50} value={form.last_name} onChange={set('last_name')} />
         <Field id="email" label="Email" type="email" autoComplete="email" required value={form.email} onChange={set('email')} />
         <Field id="password" label="Password" type="password" autoComplete="new-password" required minLength={8} maxLength={128} hint="At least 8 characters." value={form.password} onChange={set('password')} />
         <div className="qy-honeypot" aria-hidden="true">

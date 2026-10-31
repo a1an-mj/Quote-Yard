@@ -8,7 +8,7 @@ The accounts, saved items, alerts and deals backends are built (Phase 7). Vendor
 
 | Endpoint (`/api/v1/auth`) | What it does |
 |---------------------------|--------------|
-| `POST /register` | Email + password. Emails a code. Same reply whether or not the address has an account |
+| `POST /register` | First name (required), last name (optional), email + password. Emails a code. Same reply whether or not the address has an account |
 | `POST /resend-code` | Another sign-up code |
 | `POST /verify-email` | The code confirms the address and logs in |
 | `POST /login` | Sets the session cookie. Unverified accounts get `email_not_verified`, only after the right password |

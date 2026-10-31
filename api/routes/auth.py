@@ -44,12 +44,30 @@ def _normal_email(value: str) -> str:
     return value
 
 
+def _first_name(value: str) -> str:
+    value = " ".join(value.split())
+    if not 1 <= len(value) <= 50:
+        raise ValueError("first name must be 1 to 50 characters")
+    return value
+
+
+def _last_name(value: str | None) -> str | None:
+    value = " ".join((value or "").split())
+    if len(value) > 50:
+        raise ValueError("last name must be at most 50 characters")
+    return value or None
+
+
 Email = Annotated[str, AfterValidator(_normal_email)]
+FirstName = Annotated[str, AfterValidator(_first_name)]
+LastName = Annotated[str | None, AfterValidator(_last_name)]
 Password = Annotated[str, Field(min_length=8, max_length=128)]
 Code = Annotated[str, Field(pattern=r"^\d{6}$")]
 
 
 class RegisterIn(BaseModel):
+    first_name: FirstName
+    last_name: LastName = None
     email: Email
     password: Password
     website: str = ""  # honeypot: hidden in the form, only bots fill it
@@ -103,20 +121,20 @@ def _find(session: Session, email: str) -> User | None:
     return session.scalar(select(User).where(User.email == email))
 
 
-def _queue_code(background: BackgroundTasks, mailer, email: str, code: str | None,
+def _queue_code(background: BackgroundTasks, mailer, user: User, code: str | None,
                 subject: str, reason: str) -> None:
     if code is None:
         return
     minutes = int(CODE_LIFETIME.total_seconds() // 60)
-    body = (f"Your Quote Yard code is {code}.\n\nIt {reason} and expires in {minutes} minutes. "
+    body = (f"Hi {user.first_name},\n\nYour Quote Yard code is {code}.\n\nIt {reason} and expires in {minutes} minutes. "
             "If this wasn't you, you can ignore this email.\n")
-    background.add_task(send_safely, mailer, email, subject, body)
+    background.add_task(send_safely, mailer, user.email, subject, body)
 
 
 def _send_verify(background, mailer, session, user):
     code = issue_code(session, user, "verify_email")
     session.commit()
-    _queue_code(background, mailer, user.email, code, "Verify your Quote Yard email",
+    _queue_code(background, mailer, user, code, "Verify your Quote Yard email",
                 "confirms your email address")
 
 
@@ -137,7 +155,8 @@ def register(body: RegisterIn, request: Request, background: BackgroundTasks,
         return MessageOut(message=CHECK_EMAIL)
     user = _find(session, body.email)
     if user is None:
-        user = User(email=body.email, password_hash=password_hash)
+        user = User(email=body.email, first_name=body.first_name, last_name=body.last_name,
+                    password_hash=password_hash)
         session.add(user)
         try:
             session.flush()
@@ -145,8 +164,9 @@ def register(body: RegisterIn, request: Request, background: BackgroundTasks,
             session.rollback()
             return MessageOut(message=CHECK_EMAIL)
     elif user.email_verified_at is None:
-        # Whoever enters the emailed code owns the address and this password.
+        # Whoever enters the emailed code owns the address and these details.
         user.password_hash = password_hash
+        user.first_name, user.last_name = body.first_name, body.last_name
     else:
         return MessageOut(message=CHECK_EMAIL)
     _send_verify(background, mailer, session, user)
@@ -219,7 +239,7 @@ def forgot_password(body: EmailIn, request: Request, background: BackgroundTasks
     if user is not None and user.is_active and user.email_verified_at is not None:
         code = issue_code(session, user, "reset_password")
         session.commit()
-        _queue_code(background, mailer, user.email, code, "Reset your Quote Yard password",
+        _queue_code(background, mailer, user, code, "Reset your Quote Yard password",
                     "lets you choose a new password")
     return MessageOut(message=CHECK_EMAIL)
 

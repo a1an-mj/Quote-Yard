@@ -13,7 +13,7 @@ export default function Home() {
   }
 
   return (
-    <AuthCard title="You're logged in" intro={`Signed in as ${user.email}. Search and product pages come next.`}>
+    <AuthCard title={`Hi ${user.first_name}`} intro={`Signed in as ${user.email}. Search and product pages come next.`}>
       <button className="qy-btn" type="button" onClick={leave}>Log out</button>
     </AuthCard>
   )

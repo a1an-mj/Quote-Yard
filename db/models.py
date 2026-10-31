@@ -236,6 +236,8 @@ class User(Base):
 
     id: Mapped[int] = mapped_column(primary_key=True)
     email: Mapped[str] = mapped_column(Text, unique=True)
+    first_name: Mapped[str] = mapped_column(Text)
+    last_name: Mapped[str | None] = mapped_column(Text)
     password_hash: Mapped[str] = mapped_column(Text)
     is_active: Mapped[bool] = mapped_column(Boolean, server_default=true())
     # NULL until the sign-up code is entered; unverified accounts cannot log in.

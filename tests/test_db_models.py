@@ -188,7 +188,7 @@ def test_bad_product_rejected(session, overrides):
 # ---- accounts ---------------------------------------------------------------
 
 def make_user(email="a@example.com"):
-    return User(email=email, password_hash="x")
+    return User(email=email, password_hash="x", first_name="T")
 
 
 def test_duplicate_email_rejected(session):

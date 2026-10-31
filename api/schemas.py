@@ -193,6 +193,8 @@ class MessageOut(BaseModel):
 
 class UserOut(BaseModel):
     email: str
+    first_name: str
+    last_name: str | None
     created_at: datetime
 
 

@@ -66,6 +66,8 @@ def ctx(engine):
 
 
 def post(client, path, **body):
+    if path == "register":
+        body.setdefault("first_name", "Anu")
     return client.post(f"{PREFIX}/auth/{path}", json=body, headers=HEADERS)
 
 
@@ -158,6 +160,47 @@ def test_honeypot_creates_nothing(ctx):
     client, s, mailer = ctx
     r = post(client, "register", email=EMAIL, password=PASSWORD, website="http://spam")
     assert r.status_code == 202 and s.scalar(select(User)) is None and not mailer.sent
+
+
+def test_names_stored_trimmed_and_returned(ctx):
+    client, s, mailer = ctx
+    post(client, "register", email=EMAIL, password=PASSWORD, first_name="  Anu  Mary ", last_name=" Thomas ")
+    r = post(client, "verify-email", email=EMAIL, code=mailer.last_code()).json()
+    assert (r["first_name"], r["last_name"]) == ("Anu Mary", "Thomas")
+    assert "Hi Anu Mary" in mailer.sent[0][2]
+    assert me(client).json()["first_name"] == "Anu Mary"
+
+
+@pytest.mark.parametrize("value", [None, "", "   "])
+def test_last_name_is_optional(ctx, value):
+    client, s, _ = ctx
+    r = post(client, "register", email=EMAIL, password=PASSWORD, last_name=value)
+    assert r.status_code == 202 and s.scalar(select(User)).last_name is None
+
+
+@pytest.mark.parametrize("name", ["", "   ", "x" * 51])
+def test_first_name_required(ctx, name):
+    client, s, _ = ctx
+    assert post(client, "register", email=EMAIL, password=PASSWORD, first_name=name).status_code == 422
+    assert s.scalar(select(User)) is None
+
+
+def test_missing_first_name_rejected(ctx):
+    client, _, _ = ctx
+    r = client.post(f"{PREFIX}/auth/register", json={"email": EMAIL, "password": PASSWORD}, headers=HEADERS)
+    assert r.status_code == 422
+
+
+def test_too_long_last_name_rejected(ctx):
+    client, _, _ = ctx
+    assert post(client, "register", email=EMAIL, password=PASSWORD, last_name="x" * 51).status_code == 422
+
+
+def test_unverified_reregister_takes_the_new_name(ctx):
+    client, s, _ = ctx
+    post(client, "register", email=EMAIL, password=PASSWORD, first_name="First")
+    post(client, "register", email=EMAIL, password=PASSWORD, first_name="Second")
+    assert s.scalar(select(User)).first_name == "Second"
 
 
 # ---- codes --------------------------------------------------------------------

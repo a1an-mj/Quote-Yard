@@ -68,7 +68,7 @@ def s(engine):
 
 @pytest.fixture
 def user(s):
-    u = User(email="anu@example.com", password_hash="x", email_verified_at=NOW)
+    u = User(email="anu@example.com", password_hash="x", first_name="T", email_verified_at=NOW)
     s.add(u)
     s.flush()
     return u
@@ -263,7 +263,7 @@ def test_save_is_idempotent_and_remembers_the_price(client, s, shops):
 
 def test_saved_items_belong_to_their_user(client, s, shops):
     p = product(s)
-    other = User(email="other@example.com", password_hash="x", email_verified_at=NOW)
+    other = User(email="other@example.com", password_hash="x", first_name="T", email_verified_at=NOW)
     s.add(other)
     s.flush()
     client.put(f"{PREFIX}/me/saved/{p.id}", headers=HEADERS)
