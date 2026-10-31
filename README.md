@@ -2,7 +2,7 @@
 
 Price comparison for Kerala retailers. Scrapers collect listings from four
 shops, a pipeline cleans and classifies them, a matcher groups the same
-product across shops, and a read-only API serves the result.
+product across shops, and an API serves the result to logged-in users.
 
 ```
 scrapers -> data/ -> clean -> normalize -> brand -> PostgreSQL (loader)
@@ -102,7 +102,9 @@ User timers only run while you are logged in; on a server run
 uvicorn api.main:app --reload
 ```
 
-Docs at http://127.0.0.1:8000/api/v1/docs. Settings: `QUOTE_YARD_CORS_ORIGINS`
+Docs at http://127.0.0.1:8000/api/v1/docs. Most routes need a login, and during development
+email codes print in this terminal. Session cookies are `Secure` by default; on plain http other
+than localhost set `QUOTE_YARD_COOKIE_SECURE=false`. All settings are listed in `.env.example`. Settings: `QUOTE_YARD_CORS_ORIGINS`
 (default `http://localhost:5173`), `QUOTE_YARD_RATE_LIMIT` (requests per minute
 per client, default 120, `0` = off).
 
@@ -125,7 +127,7 @@ data/              raw scraper output (not in git; backup: quote-yard-raw-data.t
 data_processing/   cleaning, normalization (taxonomy/), brand extraction (brands.json)
 db/                models, migrations (Alembic), loader, match writer
 matching/          phone extraction report and matcher
-api/               FastAPI app (read-only)
+api/               FastAPI app (read-only data routes, accounts)
 frontend/          React + Vite prototype (not yet connected to the API)
 tests/             pytest suite
 cleaned_data/ normalized_data/ branded_data/ reports/   regenerable, not in git
@@ -141,6 +143,6 @@ packages, run with `python -m` from the repo root.
 - Mappings, brand aliases and matching rules are explicit and reviewable. Nothing is guessed: unknown or ambiguous cases are reported (`unmapped`, `brand_status: review`, matcher review list).
 - Later stages never modify earlier layers. Raw data is never edited.
 - The loader never deletes listings; the match writer never deletes products.
-- The API never writes. Public claims ("cheapest", "save X") must be provable from the data.
+- Data routes never write; only account code does, through its own connection. Public claims ("cheapest", "save X") must be provable from the data.
 - No AI extraction, no Kafka / Celery / Redis / microservices until a real need appears.
 - Debug one change at a time: change, test, then the next change.

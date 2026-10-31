@@ -1,25 +1,25 @@
 # Roadmap
 
-Last updated 2026-10-29.
+Last updated 2026-10-31.
 
 ## Where we are
 
 | Stage | State |
 |-------|-------|
 | Scrapers (4 retailers) | ✅ Working. myG is capped at 108 records in 8 of 11 categories (issue 1). Croma deferred. |
-| Cleaning, normalization, brand extraction | ✅ 2,975 records; 80% fully mapped to a product type; 98.9% brand matched |
-| PostgreSQL + loader | ✅ 2,965 listings, idempotent loads, price history (one point per listing so far) |
-| Read-only API | ✅ `/api/v1`: listings search, per-retailer summary, detail, price history, catalog; **products and compare** for matched products |
-| Matching | ✅ **Phones, end to end**: 277 listings, 113 products, 32 at 2+ retailers, 0 wrong matches on a full hand check; in the database and the API. Other types not started (about 9% of all listings are matched). |
-| Test isolation | ✅ Tests use `quote_yard_test`, never the real database |
-| React frontend | ⬜ Prototype exists, not connected |
-| Scheduler | ⬜ Not started; there is no single pipeline command yet |
-| Accounts | ⬜ Designed ([`accounts-and-vendors.md`](accounts-and-vendors.md)), not started |
+| Cleaning, normalization, brand extraction | ✅ |
+| PostgreSQL + loader | ✅ 3,854 listings, 4,263 price-history rows |
+| Data API | ✅ `/api/v1`: listings, products, compare, catalog; read-only, and login required since 2026-10-31 |
+| Matching | ✅ **Phones only**: about 11% of listings. Other types not started. |
+| Pipeline and schedule | 🟡 Built; scheduled runs to be verified on the VivoBook |
+| Accounts backend | ✅ Sign-up, email codes, login, logout, forgot password |
+| Saved items, alerts, deals | ⬜ Next |
+| React frontend | ⬜ Prototype on mock data; to be rebuilt from the new design |
 
 ## Next, in order
 
-The order puts working price comparison in front of users before accounts,
-and gets price history growing early, since deals and alerts depend on it.
+Accounts come before the frontend because the platform requires a login, so
+no page is built against fake sessions.
 
 ### Phase 6: Pipeline and scheduler (built; scheduled runs to be verified on the VivoBook)
 
@@ -28,50 +28,46 @@ and gets price history growing early, since deals and alerts depend on it.
 - ✅ Oxygen's `BRAND:SMART PHONES:MODEL 6/128 ...` names are matched (matching 1.2): 4 more cross-retailer products, unmatched phones 13 -> 7.
 - ✅ Small fixes: `Blueberry` is `start_only` (a Samsung colour was read as a brand) and `blueberrys` an alias (brands 1.3); every scraper retries a page that did not load once (`scrapers/navigation.py`).
 - ✅ Daily schedule: a systemd user timer runs `python -m pipeline` at 02:00 IST (`deploy/install-scheduler.sh`). Tested under systemd on the dev laptop, then removed there: the scheduled runs will be verified on the **Asus VivoBook**, the planned server.
-- **VivoBook setup** (next session):
-  1. Linux with systemd, PostgreSQL, Python 3.14, git; clone the repo.
-  2. `python -m venv .venv && .venv/bin/pip install -r requirements-dev.txt && .venv/bin/playwright install chromium`
-  3. `createdb quote_yard && .venv/bin/python -m db.create_tables`
-  4. Copy `data/` over (or extract `quote-yard-raw-data.tar.gz`, or start with a fresh scrape); it is not in git.
-  5. `.venv/bin/python -m pytest -q` (creates `quote_yard_test`).
-  6. `.venv/bin/python -m pipeline --skip-scrape --dry-run`, then one full `python -m pipeline` by hand.
-  7. `deploy/install-scheduler.sh` and `loginctl enable-linger $USER` (runs without a login session).
-  8. Next morning: `journalctl --user -u quote-yard-pipeline -e` and `systemctl --user list-timers`.
+- **VivoBook setup** (paused while Ubuntu upgrades to 26.04 LTS). This laptop stays the dev machine and runs Claude Code; the VivoBook is only the server, managed over SSH.
+  1. PostgreSQL 18 or newer, Python 3.14, git; `openssh-server` and SSH key access from the laptop; clone the repo.
+  2. `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && .venv/bin/playwright install --with-deps chromium`
+  3. Make a fresh transfer file on the laptop (`pg_dump -Fc` plus a `tar` of `data/`, which keeps the file times that decide which offers are current). **Restore the dump; do not create an empty database**: price history and product ids exist only there.
+  4. `createdb quote_yard && pg_restore --no-owner -d quote_yard quote_yard.dump`, extract `data/`, then `.venv/bin/alembic upgrade head`.
+  5. `.venv/bin/python -m pipeline --skip-scrape --dry-run`, then one full `python -m pipeline` by hand.
+  6. `deploy/install-scheduler.sh` and `loginctl enable-linger $USER` (runs without a login session). Set lid-close to not suspend.
+  7. Next morning: `journalctl --user -u quote-yard-pipeline -e` and `systemctl --user list-timers`. From then on the VivoBook holds the live data.
 - Re-check stale prices: Pittappillil's site showed the Motorola G06 Power at 13,999 while our data has 15,999.
 
-### Phase 7: React frontend
+### Phase 7: Accounts, saved items, alerts, deals
 
-- Search over products (matched) and listings (unmatched), product page with the comparison table and price history.
-- Unmatched categories use `/listings/summary`, labelled "per retailer, not matched products".
-- Visual direction is in [`decisions.md`](decisions.md#frontend).
+- ✅ Accounts backend: see [`accounts-and-vendors.md`](accounts-and-vendors.md). SMTP sending is written but not yet tried with a real mailbox.
+- Saved items and one alert type ("email me when the lowest price drops below X"). The pipeline gains a last stage, **send alerts**, after match; its failure must not undo the price update.
+- Public deals endpoint for the landing page carousel.
+- Read-only API additions for the variant selector and "recently added".
 
-### Phase 8: Coverage
+### Phase 8: React frontend
+
+Rebuild from the Claude Design artifact "Quote Yard" (minimal style, see [`decisions.md`](decisions.md#frontend)).
+
+- Public: landing page with what the site does, the 4 retailers and today's deals.
+- Sign up, verify email, log in, forgot password.
+- Behind login: Home, Search with suggestions, Results, Product with its prices and history, Categories, Saved items & alerts, plus the loading, error and empty states.
+
+### Phase 9: Coverage
 
 - Matching for the next types. TVs, refrigerators, washing machines, ACs and laptops usually carry a manufacturer model code, which is a stronger key than phone names. When the second type is added, split the shared matcher core (brand gate, key, review report, writer) from the phone rules; not before.
-- Normalization coverage: 20% of records are `parent_only` / `unmapped` (issue 5).
-
-### Phase 9: Accounts, watchlist, deals
-
-Designed in [`accounts-and-vendors.md`](accounts-and-vendors.md). **Open decision:**
-the current design puts the whole site behind login. A comparison site is
-found through search engines and shared links, which a login wall blocks,
-and free sign-up barely slows scrapers (rate limits do that). Recommendation:
-keep browsing and comparison public; require an account for the watchlist
-and alerts.
+- Normalization coverage: about 20% of records are `parent_only` / `unmapped` (issue 5).
 
 ### Phase 10: Deployment
 
-Choose the host (an Asus VivoBook as a self-hosted server is an option).
-Use a SELECT-only database role for the API and a separate role for the
-writers. Behind a reverse proxy, run uvicorn with `--proxy-headers
---forwarded-allow-ips=<proxy>` so the rate limiter sees real clients.
+Host on the Asus VivoBook. Public access and HTTPS. Set the email settings in the server's environment. Use a SELECT-only database role for the data API and a separate role for the writers. Behind a reverse proxy, run uvicorn with `--proxy-headers --forwarded-allow-ips=<proxy>` so the rate limiters see real clients.
 
 **Phases 6 to 10 complete the first release.**
 
 ### After the first release
 
 - **Phase 11: myG 108-record cap** (issue 1), if it can be fixed within the site's rules. Confirmed again on the first pipeline run (2026-10-29): every myG category stopped at a 403 on page 10.
-- **Phase 12: Vendor system**: shop accounts and local offers next to scraped prices ([`accounts-and-vendors.md`](accounts-and-vendors.md#vendors)). Needs accounts (Phase 9).
+- **Phase 12: Vendor system**: shop accounts and local offers next to scraped prices ([`accounts-and-vendors.md`](accounts-and-vendors.md#vendors)). Needs accounts (Phase 7).
 
 ### Later
 

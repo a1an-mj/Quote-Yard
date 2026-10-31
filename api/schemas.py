@@ -183,3 +183,14 @@ class CompareOut(BaseModel):
     # Difference between the best offers of the listed retailers; null with
     # fewer than two retailers. Never against a list price.
     spread: int | None
+
+
+# ---- accounts -----------------------------------------------------------------
+
+class MessageOut(BaseModel):
+    message: str
+
+
+class UserOut(BaseModel):
+    email: str
+    created_at: datetime

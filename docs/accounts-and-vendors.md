@@ -1,66 +1,50 @@
-# Accounts, watchlist, deals, vendors (design proposals)
+# Accounts, watchlist, deals, vendors
 
-Not built yet. Accounts are Phase 9 (first release); vendors are Phase 12, after the first release.
+The accounts backend is built (Phase 7). Saved items, alerts and deals are next in the same phase; vendors are Phase 12, after the first release.
 
-## Accounts and watchlist
+## Accounts (built)
 
-### Open decision: what needs a login
+**Access:** the platform requires login. Public: `/health`, `/retailers`, the auth routes, and later the deals endpoint, for a landing page with what the site does, the 4 retailers and today's deals. Everything else returns 401. No Google sign-in, WhatsApp or phone codes in the first release.
 
-The original design gates the whole platform (search, listings, comparison)
-behind login, with only a public deal teaser. **Recommended instead:**
-browsing and comparison stay public; an account is needed for the
-watchlist, alerts and anything personal. Reasons: a comparison site is found
-through search engines and shared links, which a login wall blocks; free
-sign-up barely slows scrapers, while the rate limiter already does. If
-gating is kept, every catalog / listing / product route gains a
-`require_user` dependency and the API tests switch to an authenticated
-client.
+| Endpoint (`/api/v1/auth`) | What it does |
+|---------------------------|--------------|
+| `POST /register` | Email + password. Emails a code. Same reply whether or not the address has an account |
+| `POST /resend-code` | Another sign-up code |
+| `POST /verify-email` | The code confirms the address and logs in |
+| `POST /login` | Sets the session cookie. Unverified accounts get `email_not_verified`, only after the right password |
+| `POST /logout` | Ends this session on the server |
+| `GET /me` | The logged-in user, or 401 |
+| `POST /forgot-password`, `POST /reset-password` | Same code system; a new password ends every session |
 
-### Decided
+| Rule | Detail |
+|------|--------|
+| Passwords | argon2id (`argon2-cffi`). 8 to 128 characters, no composition rules |
+| Codes | 6 digits, hashed; 10 minutes, single use, a new code cancels the old; 5 wrong tries kill it; one per minute, 5 per hour per address and purpose |
+| Sessions | Opaque random token, only its SHA-256 stored, in an httpOnly SameSite=Lax cookie (`Secure` unless `QUOTE_YARD_COOKIE_SECURE=false`). 14 days |
+| CSRF | State-changing auth requests need the `X-Quote-Yard` header; CORS with credentials from configured origins only |
+| Abuse | Same reply for unknown addresses, equal password-check time, mail sent after the response. Per client address: 20 auth requests a minute (`QUOTE_YARD_AUTH_RATE_LIMIT`), 10 logins per account per 15 minutes, 20 registrations a day; hidden honeypot field |
+| Writes | Data routes keep the read-only connection. Only account code writes, through a separate one |
+| Mail | `QUOTE_YARD_MAIL_BACKEND`: `console` prints codes (development), `smtp` sends. See `.env.example`. First setup: a dedicated Gmail with an App Password; about 500 mails a day; a domain and provider later only change settings |
 
-- Open sign-up with email and password; **email verification by OTP**.
-- Token sessions and secure password hashing; protection against automated sign-up and login abuse.
-- Vendor accounts are a separate system and a separate phase.
+Limiters are per process and reset on restart, like the main limiter.
 
-### Proposed details
+## Saved items and alerts (next)
 
-| Topic | Proposal |
-|-------|----------|
-| Session token | Opaque random token (not JWT); only its SHA-256 stored. Delivered in an httpOnly, SameSite=Lax cookie (`Secure` in production). 14-day expiry; logout revokes. |
-| CSRF | Required custom header on state-changing requests; CORS with credentials from configured origins only |
-| Passwords | argon2id (`argon2-cffi`), or stdlib `hashlib.scrypt` if no wheel for Python 3.14. 10-128 chars, no composition rules, not equal to the email |
-| OTP | 6 digits from `secrets`, stored hashed; 10 minutes, single use, a new code cancels the old; 5 wrong tries invalidate it; 60 s resend cooldown and per-email / per-IP hourly caps. Unverified accounts cannot log in. Same mechanism later for password reset. |
-| Mail | Console backend in development, fake sender in tests, SMTP from environment in production. Needs a provider and a sending domain with SPF and DKIM, or codes land in spam. |
-| Login abuse | Generic error, equal timing for unknown emails, short per-account backoff, stricter rate limit on `/auth/login` |
-| Sign-up abuse | Stricter per-IP rate limit and a daily per-IP account cap on `/auth/register`, hidden honeypot field, optional CAPTCHA (e.g. Cloudflare Turnstile) |
-| Writes | Product and listing routes stay read-only. Only auth, watchlist and deal-admin code writes, through a separate connection, to the new tables only. Two database roles in deployment. |
+A saved list, and one alert type: email when the lowest current price drops below a chosen amount, checked after each daily pipeline run.
 
-### Schema (new tables, via an Alembic migration)
+### Remaining tables (via an Alembic migration)
 
 | Table | Columns |
 |-------|---------|
-| `users` | `id`, `email` (casefolded, unique), `password_hash`, `is_active`, `email_verified_at`, `created_at`, `last_login_at` |
-| `email_codes` | `id`, `user_id`, `code_hash`, `purpose`, `expires_at`, `attempts`, `used_at`, `created_at` |
-| `sessions` | `id`, `user_id`, `token_hash` (unique), `created_at`, `expires_at`, `revoked_at` (model `UserSession`, to avoid clashing with SQLAlchemy `Session`) |
-| `watchlist_items` | `user_id`, `canonical_product_id` or `listing_id`, `price_when_saved`, `created_at`; unique per user and item |
+| `saved_products` | `user_id`, `canonical_product_id`, `price_when_saved`, `created_at`; unique per user and item |
 | `featured_deals` | `id`, `canonical_product_id`, `is_active`, `is_manual`, `verified_by`, `verified_at`, `created_at` |
 
 `price_when_saved` lets a later "dropped since you saved it" view work
 without a schema change.
 
-### Endpoints (under `/api/v1`)
-
-| Method | Endpoint | Access |
-|--------|----------|--------|
-| POST | `/auth/register`, `/auth/verify-email`, `/auth/resend-code`, `/auth/login` | Public, rate limited |
-| POST | `/auth/logout` · GET `/auth/me` | Logged in |
-| GET / PUT / DELETE | `/me/watchlist`, `/me/watchlist/{id}` (PUT is idempotent) | Logged in |
-| GET | `/public/deals` | Public |
-
-Admin commands: `python -m db.users` (list, deactivate, set password),
-`python -m db.deals` (create manual, list, deactivate).
-
 ### Deals must be provable
+
+Proposed rule: a listing or product in the latest scrape, not out of stock, at its lowest price in the last 90 days **and** below an earlier recorded price, with a drop of at least 2% or Rs 500. Most prices never change, so "at its lowest" alone would match nearly everything (2,874 of 3,048 listings on 2026-10-31, against 136 that really dropped). Five are picked once a day, and the biggest gaps between stores are added. Say "Lowest in 90 days" only once 90 days of history exist; until then "Lowest since we began tracking", with the real drop.
 
 | Rule | Detail |
 |------|--------|
@@ -69,14 +53,6 @@ Admin commands: `python -m db.users` (list, deactivate, set password),
 | "Cheapest" | Only "cheapest of the N retailers listed", only when every tracked retailer stocking it is included. Never "cheapest in Kerala". Not where myG truncation could change the answer. |
 | Auto-hide | Any matched listing out of stock, last seen over 3 days ago, or saving below a minimum |
 | Later | With daily scrapes, real price drops also qualify |
-
-### Rough plan (about six days)
-
-1. Users, sessions, hashing, register / login / logout / me, cookie and CSRF, tests
-2. OTP: codes, mail backends, verify / resend, send limits, tests
-3. Abuse protection, per-user rate limit, `db.users`
-4. Watchlist; deal generation and `/public/deals`
-5-6. Frontend pages (landing, register / verify / login, dashboard, watchlist)
 
 ## Vendors
 

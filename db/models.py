@@ -4,6 +4,7 @@ from datetime import datetime
 
 from sqlalchemy import (
     BigInteger,
+    Boolean,
     CheckConstraint,
     DateTime,
     ForeignKey,
@@ -12,6 +13,8 @@ from sqlalchemy import (
     Text,
     UniqueConstraint,
     func,
+    text,
+    true,
 )
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
@@ -20,6 +23,7 @@ AVAILABILITY_VALUES = ("In stock", "Out of stock", "Unknown")
 BRAND_STATUSES = ("matched", "unknown", "review")
 MAPPING_STATUSES = ("mapped", "parent_only", "unmapped")
 NETWORK_VALUES = ("2G", "3G", "4G", "5G")
+EMAIL_CODE_PURPOSES = ("verify_email", "reset_password")
 
 
 def _in(column: str, values: tuple) -> str:
@@ -223,3 +227,64 @@ Index(
     PriceHistory.listing_id,
     PriceHistory.recorded_at.desc(),
 )
+
+
+class User(Base):
+    """A customer account. email is stored casefolded."""
+
+    __tablename__ = "users"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(Text, unique=True)
+    password_hash: Mapped[str] = mapped_column(Text)
+    is_active: Mapped[bool] = mapped_column(Boolean, server_default=true())
+    # NULL until the sign-up code is entered; unverified accounts cannot log in.
+    email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    __table_args__ = (
+        CheckConstraint("email = lower(email)", name="ck_users_email_lowercase"),
+    )
+
+
+class EmailCode(Base):
+    """A one-time emailed code, for sign-up verification and password reset."""
+
+    __tablename__ = "email_codes"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    purpose: Mapped[str] = mapped_column(Text)
+    code_hash: Mapped[str] = mapped_column(Text)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    attempts: Mapped[int] = mapped_column(Integer, server_default=text("0"))
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    __table_args__ = (
+        CheckConstraint(_in("purpose", EMAIL_CODE_PURPOSES), name="ck_email_codes_purpose"),
+        CheckConstraint("attempts >= 0", name="ck_email_codes_attempts"),
+        Index("ix_email_codes_user_purpose", "user_id", "purpose"),
+    )
+
+
+class UserSession(Base):
+    """A login. Only the token's hash is stored, so a database leak exposes no live session."""
+
+    __tablename__ = "user_sessions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    token_hash: Mapped[str] = mapped_column(Text, unique=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    __table_args__ = (Index("ix_user_sessions_user_id", "user_id"),)

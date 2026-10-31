@@ -83,7 +83,7 @@ delete listings (myG truncation would make them look removed); idempotent;
 
 ## API (`api/`)
 
-Read-only, under `/api/v1`, docs at `/api/v1/docs`.
+Under `/api/v1`, docs at `/api/v1/docs`. Data routes are read-only and need a login (`/health` and `/retailers` stay public); account routes are in [`accounts-and-vendors.md`](accounts-and-vendors.md).
 
 | Endpoint | Purpose |
 |----------|---------|
@@ -100,7 +100,7 @@ Read-only, under `/api/v1`, docs at `/api/v1/docs`.
 - `/listings/summary` is declared before `/listings/{id}`; ids outside 32-bit return 422.
 - **Current offers only** (`api/freshness.py`): a listing counts when it was seen in its retailer's latest scrape (within 6 hours of that retailer's newest sighting) and that scrape is under 3 days old. Product counts, prices, the product list, `min_retailers` and `/compare` use current listings only; `/products/{id}` still lists old offers with `current: false`. A product with no current listing drops out of `/products`. First applied 2026-10-30: 36 products comparable across retailers (46 before, 10 of them only through offers missing from the latest scrape).
 - Products: an `Out of stock` listing never sets a product's price range or wins a comparison; within a retailer the best offer is the cheapest buyable one. `spread` is null with fewer than two buyable offers. `not_listed` means "not found in our data", never "not sold there".
-- Protection: `default_transaction_read_only=on` on the API engine, 5 s `statement_timeout`, `q` <= 100 chars / 8 words, GET-only CORS, in-process sliding-window rate limit (`api/ratelimit.py`, per process, `/health` exempt, 429 with `Retry-After`).
+- Protection: `default_transaction_read_only=on` on the API engine, 5 s `statement_timeout`, `q` <= 100 chars / 8 words, CORS for configured origins only, in-process sliding-window rate limit (`api/ratelimit.py`, per process, `/health` exempt, 429 with `Retry-After`).
 
 ## Matching (`matching/`, `db/match_writer.py`)
 
@@ -146,18 +146,7 @@ with the database, and a headless scrape.
 
 ## Frontend
 
-React, Vite, Tailwind, React Router. Neo-brutalist: bold chunky type,
-rounded cards, strong dark framing, solid colour blocks, high contrast,
-mobile first, subtle animation.
-
-| Colour | Hex |
-|--------|-----|
-| Terracotta (primary) | `#C65A3A` |
-| Warm Ivory | `#F5EFE5` |
-| Warm Taupe | `#A99B8D` |
-| Olive Green | `#656A45` |
-| Walnut Brown | `#4A3025` |
-| Near Black | `#171512` |
+Rebuilt from the Claude Design artifact "Quote Yard", whose minimal style replaced the earlier terracotta neo-brutalist look (2026-10-31): white tiles on a pale ground, hairline borders, Geist and Geist Mono type, with light and dark themes. The shared tokens are in the design's `qy.css`. Whether the neon green buttons and dot-matrix headings stay is still to be confirmed.
 
 ## Technology choices
 

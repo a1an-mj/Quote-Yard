@@ -1,4 +1,5 @@
 import sys
+from datetime import datetime
 from pathlib import Path
 
 import pytest
@@ -164,29 +165,29 @@ def test_bad_records_fail(bad):
 def test_last_seen_comes_from_scraped_at(session):
     run(session, rec(scraped_at="2026-10-30T00:10:00+00:00"))
     listing = get_listing(session)
-    assert listing.last_seen_at.isoformat() == "2026-10-30T00:10:00+00:00"
+    assert listing.last_seen_at == datetime.fromisoformat("2026-10-30T00:10:00+00:00")
     assert listing.first_seen_at == listing.last_seen_at
 
 
 def test_unchanged_old_file_keeps_old_last_seen(session):
     run(session, rec(scraped_at="2026-09-22T10:00:00+00:00"))
     run(session, rec(scraped_at="2026-09-22T10:00:00+00:00"))  # file not re-scraped
-    assert get_listing(session).last_seen_at.isoformat() == "2026-09-22T10:00:00+00:00"
+    assert get_listing(session).last_seen_at == datetime.fromisoformat("2026-09-22T10:00:00+00:00")
 
 
 def test_rescrape_moves_last_seen_forward_first_seen_stays(session):
     run(session, rec(scraped_at="2026-10-01T00:00:00+00:00"))
     run(session, rec(scraped_at="2026-10-30T00:00:00+00:00"))
     listing = get_listing(session)
-    assert listing.first_seen_at.isoformat() == "2026-10-01T00:00:00+00:00"
-    assert listing.last_seen_at.isoformat() == "2026-10-30T00:00:00+00:00"
+    assert listing.first_seen_at == datetime.fromisoformat("2026-10-01T00:00:00+00:00")
+    assert listing.last_seen_at == datetime.fromisoformat("2026-10-30T00:00:00+00:00")
 
 
 def test_duplicate_url_keeps_latest_scraped_at(session):
     run(session,
         rec(raw_category="A", scraped_at="2026-10-30T00:01:00+00:00"),
         rec(raw_category="B", scraped_at="2026-10-30T00:09:00+00:00"))
-    assert get_listing(session).last_seen_at.isoformat() == "2026-10-30T00:09:00+00:00"
+    assert get_listing(session).last_seen_at == datetime.fromisoformat("2026-10-30T00:09:00+00:00")
 
 
 @pytest.mark.parametrize("value", [None, "", "yesterday", "2026-10-30T00:00:00"])

@@ -29,3 +29,18 @@ def get_api_engine() -> Engine:
 def get_session() -> Iterator[Session]:
     with Session(get_api_engine()) as session:
         yield session
+
+
+@lru_cache
+def get_write_engine() -> Engine:
+    """Only account code writes, through this connection."""
+    return create_engine(
+        get_database_url(),
+        pool_pre_ping=True,
+        connect_args={"options": f"-c statement_timeout={STATEMENT_TIMEOUT_MS}"},
+    )
+
+
+def get_write_session() -> Iterator[Session]:
+    with Session(get_write_engine()) as session:
+        yield session

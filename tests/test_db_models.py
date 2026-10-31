@@ -1,7 +1,9 @@
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
+from sqlalchemy import select
 from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session
 
@@ -11,10 +13,13 @@ sys.path.insert(0, str(ROOT))
 from db.models import (
     Base,
     CanonicalProduct,
+    EmailCode,
     Listing,
     ListingCategory,
     PriceHistory,
     Retailer,
+    User,
+    UserSession,
 )
 from db.session import get_engine
 
@@ -178,3 +183,50 @@ def test_bad_product_rejected(session, overrides):
     session.add(make_product(**overrides))
     with pytest.raises(IntegrityError):
         session.flush()
+
+
+# ---- accounts ---------------------------------------------------------------
+
+def make_user(email="a@example.com"):
+    return User(email=email, password_hash="x")
+
+
+def test_duplicate_email_rejected(session):
+    session.add(make_user())
+    session.flush()
+    session.add(make_user())
+    with pytest.raises(IntegrityError):
+        session.flush()
+
+
+def test_mixed_case_email_rejected(session):
+    session.add(make_user("A@Example.com"))
+    with pytest.raises(IntegrityError):
+        session.flush()
+
+
+def test_bad_code_purpose_rejected(session):
+    user = make_user()
+    session.add(user)
+    session.flush()
+    session.add(EmailCode(user_id=user.id, purpose="other", code_hash="h",
+                          expires_at=datetime.now(timezone.utc)))
+    with pytest.raises(IntegrityError):
+        session.flush()
+
+
+def test_deleting_user_removes_codes_and_sessions(session):
+    user = make_user()
+    session.add(user)
+    session.flush()
+    now = datetime.now(timezone.utc)
+    session.add_all([
+        EmailCode(user_id=user.id, purpose="verify_email", code_hash="h", expires_at=now),
+        UserSession(user_id=user.id, token_hash="t", expires_at=now),
+    ])
+    session.flush()
+    session.delete(user)
+    session.flush()
+    session.expire_all()
+    assert session.scalars(select(EmailCode).where(EmailCode.code_hash == "h")).first() is None
+    assert session.scalars(select(UserSession).where(UserSession.token_hash == "t")).first() is None

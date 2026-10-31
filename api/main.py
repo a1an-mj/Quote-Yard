@@ -2,11 +2,12 @@
 
 import os
 
-from fastapi import FastAPI
+from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from api.auth import require_user
 from api.ratelimit import RateLimiter, RateLimitMiddleware
-from api.routes import catalog, health, listings, products
+from api.routes import auth, catalog, health, listings, products
 
 API_PREFIX = "/api/v1"
 DEFAULT_RATE_LIMIT = 120  # requests per minute, per client address
@@ -52,13 +53,17 @@ def create_app(rate_limit: int | None = None) -> FastAPI:
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins(),
-        allow_methods=["GET"],
-        allow_headers=["*"],
+        allow_methods=["GET", "POST"],
+        allow_headers=["Content-Type", "X-Quote-Yard"],
+        allow_credentials=True,
     )
     app.include_router(health.router, prefix=API_PREFIX)
     app.include_router(catalog.router, prefix=API_PREFIX)
-    app.include_router(listings.router, prefix=API_PREFIX)
-    app.include_router(products.router, prefix=API_PREFIX)
+    app.include_router(auth.router, prefix=API_PREFIX)
+    # The data behind the login; /health and /retailers stay public for the landing page.
+    logged_in = [Depends(require_user)]
+    app.include_router(listings.router, prefix=API_PREFIX, dependencies=logged_in)
+    app.include_router(products.router, prefix=API_PREFIX, dependencies=logged_in)
     return app
 
 

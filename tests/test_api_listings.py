@@ -10,6 +10,7 @@ from sqlalchemy.orm import Session
 ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
+from api.auth import require_user
 from api.deps import get_session
 from api.main import app
 from db.models import Base, Listing, ListingCategory, Retailer
@@ -37,6 +38,7 @@ def ctx(engine):
     trans = conn.begin()
     session = Session(bind=conn, join_transaction_mode="create_savepoint")
     app.dependency_overrides[get_session] = lambda: session
+    app.dependency_overrides[require_user] = lambda: None
     yield TestClient(app), session
     app.dependency_overrides.clear()
     session.close()

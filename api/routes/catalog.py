@@ -2,6 +2,7 @@ from fastapi import APIRouter, Depends
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from api.auth import require_user
 from api.deps import get_session
 from api.schemas import BrandOut, ProductTypeOut, RetailerCount, RetailerOut
 from db.models import Listing, ListingCategory, Retailer
@@ -23,7 +24,8 @@ def list_retailers(session: Session = Depends(get_session)):
     ]
 
 
-@router.get("/product-types", response_model=list[ProductTypeOut])
+@router.get("/product-types", response_model=list[ProductTypeOut],
+            dependencies=[Depends(require_user)])
 def list_product_types(session: Session = Depends(get_session)):
     """Canonical product types with listing counts, total and per retailer.
 
@@ -60,7 +62,8 @@ def list_product_types(session: Session = Depends(get_session)):
     return result
 
 
-@router.get("/brands", response_model=list[BrandOut])
+@router.get("/brands", response_model=list[BrandOut],
+            dependencies=[Depends(require_user)])
 def list_brands(session: Session = Depends(get_session)):
     """Brands with listing counts, most listings first. Unbranded listings are excluded."""
     rows = session.execute(
