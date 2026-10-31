@@ -1,20 +1,19 @@
 import { Link } from 'react-router-dom'
-import { Tag } from 'lucide-react'
-import Button from '../components/Button'
+import Footer from '../components/Footer'
+import PublicNav from '../components/PublicNav'
 
 export default function NotFound() {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-ivory px-4 text-center">
-      <span className="flex h-14 w-14 items-center justify-center rounded-full border-2 border-ink bg-terracotta text-ivory">
-        <Tag size={26} strokeWidth={2.5} />
-      </span>
-      <h1 className="font-display text-4xl font-bold text-ink">404</h1>
-      <p className="max-w-xs font-body text-walnut">
-        This page wandered off. Let's get you back to comparing prices.
-      </p>
-      <Button as={Link} to="/" size="lg">
-        Back to Quote Yard
-      </Button>
-    </div>
+    <>
+      <PublicNav />
+      <main className="qy-wrap qy-section">
+        <div className="qy-empty">
+          <h1 className="qy-h1">Page not found</h1>
+          <p className="qy-small">That page doesn't exist or isn't available yet.</p>
+          <Link className="qy-btn" to="/">Back to Quote Yard</Link>
+        </div>
+      </main>
+      <Footer />
+    </>
   )
 }

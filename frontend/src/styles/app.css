@@ -1,0 +1,15 @@
+/* Additions to the design's qy.css. Keep qy.css as the design delivered it. */
+html, body { margin: 0; }
+html.qy { min-height: 100%; }
+
+.qy-deals { display: flex; gap: var(--qy-4); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-block: 2px; }
+.qy-deals::-webkit-scrollbar { display: none; }
+.qy-deal { flex: 0 0 min(400px, 84vw); scroll-snap-align: start; display: grid; grid-template-columns: 112px minmax(0, 1fr); gap: 18px; padding: 16px; }
+.qy-deal .qy-img { aspect-ratio: 1 / 1; }
+.qy-deal__name { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+
+.qy-hero__title { font-size: clamp(44px, 6vw, 76px); }
+@media (max-width: 640px) { .qy-nav__in { padding-block: 12px; gap: var(--qy-3); } .qy-nav__links { display: none; } }
+
+/* qy.css's ".qy a { color: inherit }" otherwise wins, unreadable in dark mode. */
+.qy a.qy-btn--primary { color: var(--qy-on-cta); }

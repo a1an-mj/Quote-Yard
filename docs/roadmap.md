@@ -28,8 +28,8 @@ no page is built against fake sessions.
 - ✅ Oxygen's `BRAND:SMART PHONES:MODEL 6/128 ...` names are matched (matching 1.2): 4 more cross-retailer products, unmatched phones 13 -> 7.
 - ✅ Small fixes: `Blueberry` is `start_only` (a Samsung colour was read as a brand) and `blueberrys` an alias (brands 1.3); every scraper retries a page that did not load once (`scrapers/navigation.py`).
 - ✅ Daily schedule: a systemd user timer runs `python -m pipeline` at 02:00 IST (`deploy/install-scheduler.sh`). Tested under systemd on the dev laptop, then removed there: the scheduled runs will be verified on the **Asus VivoBook**, the planned server.
-- **VivoBook setup** (paused while Ubuntu upgrades to 26.04 LTS). This laptop stays the dev machine and runs Claude Code; the VivoBook is only the server, managed over SSH.
-  1. PostgreSQL 18 or newer, Python 3.14, git; `openssh-server` and SSH key access from the laptop; clone the repo.
+- **VivoBook setup** (Ubuntu 24.04.5). This laptop stays the dev machine and runs Claude Code; the VivoBook is only the server, managed over SSH.
+  1. PostgreSQL 18 or newer from PostgreSQL's own apt repository (24.04 ships 16, which cannot restore the laptop's dump), the system Python 3.12, git; `openssh-server`; clone the repo.
   2. `python3 -m venv .venv && .venv/bin/pip install -r requirements.txt && .venv/bin/playwright install --with-deps chromium`
   3. Make a fresh transfer file on the laptop (`pg_dump -Fc` plus a `tar` of `data/`, which keeps the file times that decide which offers are current). **Restore the dump; do not create an empty database**: price history and product ids exist only there.
   4. `createdb quote_yard && pg_restore --no-owner -d quote_yard quote_yard.dump`, extract `data/`, then `.venv/bin/alembic upgrade head`.
@@ -52,6 +52,7 @@ Rebuild from the Claude Design artifact "Quote Yard" (minimal style, see [`decis
 
 - Public: landing page with what the site does, the 4 retailers and today's deals.
 - Sign up, verify email, log in, forgot password.
+- ✅ Landing page, against the real API, in light and dark.
 - Behind login: Home, Search with suggestions, Results, Product with its prices and history, Categories, Saved items & alerts, plus the loading, error and empty states.
 
 ### Phase 9: Coverage
