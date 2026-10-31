@@ -26,3 +26,11 @@ export async function api(path, { method = 'GET', body, signal } = {}) {
   if (!response.ok) throw new ApiError(response.status, data?.detail)
   return data
 }
+
+// Words for a person, whatever went wrong. FastAPI's 422 detail is a list of field errors.
+export function errorMessage(error) {
+  if (error?.status === 429) return 'Too many attempts. Please wait a little and try again.'
+  if (error?.status === 422) return 'Please check what you entered.'
+  if (error instanceof ApiError && typeof error.detail === 'string') return error.detail
+  return "We couldn't reach the server. Please try again."
+}

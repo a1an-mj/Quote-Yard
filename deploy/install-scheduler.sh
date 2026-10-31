@@ -34,6 +34,8 @@ Documentation=file://$REPO/README.md
 [Service]
 Type=oneshot
 WorkingDirectory=$REPO
+# Mail settings; the leading - means the file is optional.
+EnvironmentFile=-$REPO/.env
 ExecStart=$PYTHON -m pipeline
 # A full run takes about 40 minutes; stop a stuck run after 3 hours.
 TimeoutStartSec=3h

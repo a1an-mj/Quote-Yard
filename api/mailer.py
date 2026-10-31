@@ -60,3 +60,11 @@ def send_safely(mailer, to: str, subject: str, body: str) -> None:
         mailer.send(to, subject, body)
     except Exception:
         log.exception("Could not send %r", subject)
+
+
+if __name__ == "__main__":
+    # Try the mail settings: python -m api.mailer you@example.com
+    import sys
+
+    get_mailer().send(sys.argv[1], "Quote Yard test email", "If you can read this, sending works.\n")
+    print(f"Sent to {sys.argv[1]} using {os.environ.get('QUOTE_YARD_MAIL_BACKEND', 'console')}")

@@ -13,3 +13,10 @@ html.qy { min-height: 100%; }
 
 /* qy.css's ".qy a { color: inherit }" otherwise wins, unreadable in dark mode. */
 .qy a.qy-btn--primary { color: var(--qy-on-cta); }
+
+.qy-auth { display: flex; justify-content: center; padding-block: 56px; }
+.qy-auth__card { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 20px; }
+.qy-honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
+.qy-form-error { margin: 0; color: var(--qy-err); font-size: 14px; }
+.qy-form-note { margin: 0; color: var(--qy-ok); font-size: 14px; }
+.qy-input--code { font-family: var(--qy-mono); font-size: 22px; letter-spacing: 0.3em; }
