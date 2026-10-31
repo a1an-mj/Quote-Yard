@@ -1,6 +1,6 @@
 # Accounts, watchlist, deals, vendors
 
-The accounts backend is built (Phase 7). Saved items, alerts and deals are next in the same phase; vendors are Phase 12, after the first release.
+The accounts, saved items, alerts and deals backends are built (Phase 7). Vendors are Phase 12, after the first release.
 
 ## Accounts (built)
 
@@ -28,31 +28,23 @@ The accounts backend is built (Phase 7). Saved items, alerts and deals are next 
 
 Limiters are per process and reset on restart, like the main limiter.
 
-## Saved items and alerts (next)
+## Saved items and alerts (built)
 
-A saved list, and one alert type: email when the lowest current price drops below a chosen amount, checked after each daily pipeline run.
+| Endpoint (`/api/v1/me`, login required) | What it does |
+|---|---|
+| `GET /saved`, `PUT` / `DELETE /saved/{product_id}` | A saved list. Saving twice changes nothing; `price_when_saved` is kept for a later "dropped since you saved it" |
+| `GET /alerts`, `PUT` / `DELETE /alerts/{product_id}` | One alert per product: email when its lowest current price goes below `target_price` |
 
-### Remaining tables (via an Alembic migration)
+`python -m api.send_alerts [--dry-run]` is the pipeline's last stage. Only current, buyable offers count. It mails once, again only for a lower price, and re-arms when the price climbs back to the target. Each alert commits after its email, so a failed mail is retried on the next run and a delivered one is never repeated.
 
-| Table | Columns |
-|-------|---------|
-| `saved_products` | `user_id`, `canonical_product_id`, `price_when_saved`, `created_at`; unique per user and item |
-| `featured_deals` | `id`, `canonical_product_id`, `is_active`, `is_manual`, `verified_by`, `verified_at`, `created_at` |
+## Deals (built)
 
-`price_when_saved` lets a later "dropped since you saved it" view work
-without a schema change.
+`GET /api/v1/public/deals` is public and returns up to 5, with no store links. Everything is computed from recorded prices (`api/deals.py`), with no deals table.
 
-### Deals must be provable
-
-Proposed rule: a listing or product in the latest scrape, not out of stock, at its lowest price in the last 90 days **and** below an earlier recorded price, with a drop of at least 2% or Rs 500. Most prices never change, so "at its lowest" alone would match nearly everything (2,874 of 3,048 listings on 2026-10-31, against 136 that really dropped). Five are picked once a day, and the biggest gaps between stores are added. Say "Lowest in 90 days" only once 90 days of history exist; until then "Lowest since we began tracking", with the real drop.
-
-| Rule | Detail |
-|------|--------|
-| Source | A canonical product at 2+ retailers; prices come live from the matched listings, never typed in. A manual deal records `verified_by` and `verified_at`. |
-| Claims | Generated from the data: "12,999 at Oxygen, 13,499 at Nandilath: save 500". The saving is between the listed retailers, not against a list price (none is stored). |
-| "Cheapest" | Only "cheapest of the N retailers listed", only when every tracked retailer stocking it is included. Never "cheapest in Kerala". Not where myG truncation could change the answer. |
-| Auto-hide | Any matched listing out of stock, last seen over 3 days ago, or saving below a minimum |
-| Later | With daily scrapes, real price drops also qualify |
+- **Price drop:** current and buyable, at its lowest price of the last 90 days, at least Rs 500 below the price before it, changed in the last 7 days, and (for a matched product) no tracked store cheaper. Most prices never change, so "at its lowest" alone would match nearly everything (2,874 of 3,048 listings on 2026-10-31).
+- **Store gap:** a matched product whose lowest store is at least Rs 500 below the next store.
+- **Picking:** one deal per product, at most 2 gaps, different brands first, the same picks all day (seeded by the date in IST), and never padded when there are too few.
+- **Wording:** "Lowest in 90 days" only when that listing has 90 days of history; until then "Lowest since we began tracking", with the real earlier price. Savings are between recorded prices or stores, never against an MRP.
 
 ## Vendors
 

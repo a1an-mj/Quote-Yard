@@ -53,6 +53,7 @@ SORTS = {
     "price_desc": (_stats.c.min_price.desc().nulls_last(), CanonicalProduct.id.asc()),
     "retailers": (_stats.c.retailers.desc(), _stats.c.min_price.asc().nulls_last(),
                   CanonicalProduct.id.asc()),
+    "newest": (CanonicalProduct.created_at.desc(), CanonicalProduct.id.desc()),
 }
 
 
@@ -117,7 +118,7 @@ def search_products(
     max_price: int | None = Query(None, ge=0, description="On the product's lowest price"),
     min_retailers: int = Query(1, ge=1, le=50,
                                description="2 = only products that can be compared"),
-    sort: Literal["name", "price_asc", "price_desc", "retailers"] = "name",
+    sort: Literal["name", "price_asc", "price_desc", "retailers", "newest"] = "name",
     limit: int = Query(20, ge=1, le=100),
     offset: int = Query(0, ge=0),
     session: Session = Depends(get_session),
@@ -153,6 +154,24 @@ def search_products(
 def get_product(product_id: ProductId, session: Session = Depends(get_session)):
     product = _get_product(session, product_id)
     return ProductDetail(**product.model_dump(), offers=_offers(session, product_id))
+
+
+@router.get("/products/{product_id}/variants", response_model=list[ProductOut])
+def product_variants(product_id: ProductId, session: Session = Depends(get_session)):
+    """The same model in other RAM / storage, itself included, each with a current offer."""
+    product = session.get(CanonicalProduct, product_id)
+    if product is None:
+        raise HTTPException(status_code=404, detail="product not found")
+    rows = session.execute(
+        _product_query()
+        .where(CanonicalProduct.brand == product.brand,
+               CanonicalProduct.model == product.model,
+               CanonicalProduct.network.is_not_distinct_from(product.network),
+               CanonicalProduct.package.is_not_distinct_from(product.package))
+        .order_by(CanonicalProduct.ram_gb.asc().nulls_first(),
+                  CanonicalProduct.storage_gb.asc().nulls_first(), CanonicalProduct.id)
+    ).all()
+    return [_product_out(*row) for row in rows]
 
 
 @router.get("/products/{product_id}/prices", response_model=ProductPriceHistory)

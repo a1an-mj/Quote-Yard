@@ -13,7 +13,7 @@ Last updated 2026-10-31.
 | Matching | ✅ **Phones only**: about 11% of listings. Other types not started. |
 | Pipeline and schedule | 🟡 Built; scheduled runs to be verified on the VivoBook |
 | Accounts backend | ✅ Sign-up, email codes, login, logout, forgot password |
-| Saved items, alerts, deals | ⬜ Next |
+| Saved items, alerts, deals | ✅ API built; alert emails go through the pipeline's last stage |
 | React frontend | ⬜ Prototype on mock data; to be rebuilt from the new design |
 
 ## Next, in order
@@ -41,9 +41,10 @@ no page is built against fake sessions.
 ### Phase 7: Accounts, saved items, alerts, deals
 
 - ✅ Accounts backend: see [`accounts-and-vendors.md`](accounts-and-vendors.md). SMTP sending is written but not yet tried with a real mailbox.
-- Saved items and one alert type ("email me when the lowest price drops below X"). The pipeline gains a last stage, **send alerts**, after match; its failure must not undo the price update.
-- Public deals endpoint for the landing page carousel.
-- Read-only API additions for the variant selector and "recently added".
+- ✅ Saved items and one alert type ("email me when the lowest price drops below X"). The pipeline's last stage, **alerts**, runs after match, so a mail failure cannot undo the price update.
+- ✅ `/public/deals` for the landing page carousel.
+- ✅ `/products/{id}/variants` and `/products?sort=newest` for the variant selector and "recently added".
+- **Before the first real alert:** the scheduled service needs the SMTP settings; with the default console backend, alert emails only go to the log. Real sending is still untried.
 
 ### Phase 8: React frontend
 

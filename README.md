@@ -6,7 +6,7 @@ product across shops, and an API serves the result to logged-in users.
 
 ```
 scrapers -> data/ -> clean -> normalize -> brand -> PostgreSQL (loader)
-         -> match (canonical products) -> FastAPI -> React
+         -> match (canonical products) -> alerts -> FastAPI -> React
 ```
 
 | Retailer | Site | Scraper |
@@ -56,7 +56,7 @@ One command runs everything:
 python -m pipeline                          # scrape all 4 retailers, then process, load, match
 python -m pipeline --only myg oxygen        # scrape only these retailers
 python -m pipeline --skip-scrape            # reprocess the data/ already on disk
-python -m pipeline --skip-scrape --dry-run  # load and match roll back
+python -m pipeline --skip-scrape --dry-run  # nothing saved or emailed
 ```
 
 Each retailer is scraped in its own process (a crash or hang never stops
@@ -77,6 +77,7 @@ python data_processing/run_normalization.py    # -> normalized_data/
 python data_processing/run_branding.py         # -> branded_data/
 python -m db.loader                            # -> listings, categories, price history
 python -m db.match_writer                      # -> canonical products, listing links
+python -m api.send_alerts                      # -> price alert emails
 ```
 
 Read-only reports (written to `reports/`): `python data_processing/review_normalized.py`,

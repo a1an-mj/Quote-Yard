@@ -194,3 +194,30 @@ class MessageOut(BaseModel):
 class UserOut(BaseModel):
     email: str
     created_at: datetime
+
+
+class SavedOut(BaseModel):
+    product: ProductOut
+    price_when_saved: int | None
+    saved_at: datetime
+
+
+class AlertOut(BaseModel):
+    product: ProductOut
+    target_price: int
+    last_notified_at: datetime | None
+    created_at: datetime
+
+
+class DealOut(BaseModel):
+    kind: str  # price_drop | store_gap
+    name: str
+    brand: str | None
+    retailer: str
+    price: int
+    # The earlier price (price_drop) or the next store's price (store_gap).
+    compared_price: int
+    compared_retailer: str | None
+    saving: int
+    label: str
+    checked_at: datetime

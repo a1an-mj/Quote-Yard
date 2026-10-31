@@ -1,13 +1,13 @@
 """
 Quote Yard - full update in one command.
 
-    scrape (each retailer) -> clean -> normalize -> brand -> load -> match
+    scrape (each retailer) -> clean -> normalize -> brand -> load -> match -> alerts
 
 Usage (from the repo root):
     python -m pipeline                         # everything
     python -m pipeline --only myg oxygen       # scrape only these retailers
     python -m pipeline --skip-scrape           # reprocess the data/ already on disk
-    python -m pipeline --skip-scrape --dry-run # load and match roll back
+    python -m pipeline --skip-scrape --dry-run # nothing saved or emailed
 
 Rules:
 - Each scraper runs in its own process with a timeout, so one retailer
@@ -52,8 +52,10 @@ STAGES = [
     ("brand", [PY, "data_processing/run_branding.py"]),
     ("load", [PY, "-m", "db.loader"]),
     ("match", [PY, "-m", "db.match_writer"]),
+    # Last on purpose: the day's prices are already saved if email fails.
+    ("alerts", [PY, "-m", "api.send_alerts"]),
 ]
-DRY_RUN_STAGES = {"load", "match"}  # these accept --dry-run
+DRY_RUN_STAGES = {"load", "match", "alerts"}  # these accept --dry-run
 
 KEEP_RUNS = 14  # log folders (each holds a data/ backup) kept after a run
 SHRINK_WARNING = 0.5

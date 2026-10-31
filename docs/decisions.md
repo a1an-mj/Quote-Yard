@@ -83,7 +83,7 @@ delete listings (myG truncation would make them look removed); idempotent;
 
 ## API (`api/`)
 
-Under `/api/v1`, docs at `/api/v1/docs`. Data routes are read-only and need a login (`/health` and `/retailers` stay public); account routes are in [`accounts-and-vendors.md`](accounts-and-vendors.md).
+Under `/api/v1`, docs at `/api/v1/docs`. Data routes are read-only and need a login (`/health`, `/retailers` and `/public/deals` stay public); account routes are in [`accounts-and-vendors.md`](accounts-and-vendors.md).
 
 | Endpoint | Purpose |
 |----------|---------|
@@ -146,7 +146,7 @@ with the database, and a headless scrape.
 
 ## Frontend
 
-Rebuilt from the Claude Design artifact "Quote Yard", whose minimal style replaced the earlier terracotta neo-brutalist look (2026-10-31): white tiles on a pale ground, hairline borders, Geist and Geist Mono type, with light and dark themes. The shared tokens are in the design's `qy.css`. Whether the neon green buttons and dot-matrix headings stay is still to be confirmed.
+Rebuilt from the Claude Design artifact "Quote Yard", whose minimal style replaced the earlier terracotta neo-brutalist look (2026-10-31): white tiles on a pale ground, hairline borders, Geist and Geist Mono type, with light and dark themes. The shared tokens are in the design's `qy.css`. Neon green (`#4DFF00`) marks key actions and Doto dot-matrix type sets display headings and numerals.
 
 ## Technology choices
 

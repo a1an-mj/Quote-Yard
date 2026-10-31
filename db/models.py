@@ -288,3 +288,47 @@ class UserSession(Base):
     )
 
     __table_args__ = (Index("ix_user_sessions_user_id", "user_id"),)
+
+
+class SavedProduct(Base):
+    __tablename__ = "saved_products"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    canonical_product_id: Mapped[int] = mapped_column(
+        ForeignKey("canonical_products.id", ondelete="CASCADE")
+    )
+    # Lowest current price when saved, for a later "dropped since you saved it".
+    price_when_saved: Mapped[int | None] = mapped_column(Integer)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "canonical_product_id", name="uq_saved_products_user_product"),
+    )
+
+
+class PriceAlert(Base):
+    """Email the user when the product's lowest current price goes below target_price."""
+
+    __tablename__ = "price_alerts"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    user_id: Mapped[int] = mapped_column(ForeignKey("users.id", ondelete="CASCADE"))
+    canonical_product_id: Mapped[int] = mapped_column(
+        ForeignKey("canonical_products.id", ondelete="CASCADE")
+    )
+    target_price: Mapped[int] = mapped_column(Integer)
+    # The price last emailed about: mail again only for a lower one. Cleared
+    # when the price climbs back to the target.
+    last_notified_price: Mapped[int | None] = mapped_column(Integer)
+    last_notified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    __table_args__ = (
+        UniqueConstraint("user_id", "canonical_product_id", name="uq_price_alerts_user_product"),
+        CheckConstraint("target_price > 0", name="ck_price_alerts_target_positive"),
+    )
