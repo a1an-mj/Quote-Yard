@@ -84,6 +84,11 @@ CATEGORIES = {
         "output": "data/myg_home_automation.json",
         "label": "Home Automation",
     },
+    "tvs": {
+        "base_url": "https://www.myg.in/tv/",
+        "output": "data/myg_tv.json",
+        "label": "TV",
+    },
 }
 
 PRODUCT_LINK_SELECTOR = "a.line-clamp-2"

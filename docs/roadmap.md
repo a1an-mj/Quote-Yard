@@ -80,7 +80,7 @@ Host on the Asus VivoBook. Public access and HTTPS. Set the email settings in th
 | # | Issue | Notes |
 |:-:|-------|-------|
 | 1 | **myG truncation** | 8 of 11 categories have exactly 108 records (9 pages x 12), matching a 403 at page 10. Cause unknown. Test one at a time: open pages 9-11 in a normal browser; run `--only mobiles --max-pages 12`; check whether sorting or filters expose other products. Read `robots.txt` and the terms first. Do not spoof headers or rotate identities; if the cap is deliberate, ask myG for a feed. Until fixed, no "cheapest" claim where myG coverage could change the answer. |
-| 2 | **myG TVs not in the scraper config** | The data has a myG `TV` category (108 records) but `CATEGORIES` in `myg_scraper.py` has no TV entry, so the pipeline never refreshes `myg_tv.json`: those listings go stale (old `last_seen_at`, old prices). |
+| 2 | ~~**myG TVs**~~ | ✅ Added back to the scraper (`tvs`, 2026-11-01). |
 | 3 | **Out-of-stock path untested** | Data has only `In stock` (2,796) and `Unknown` (179). Schema and loader allow `Out of stock`; nothing has exercised it end to end. |
 | 4 | **Pittappillil: 7 empty subcategories** | 55 configured, 48 present in the data. Confirm they are really empty, not a silent scraper stop. |
 | 5 | **Unmapped records (20%)** | 346 `parent_only`, 240 `unmapped`. Cheapest wins: an `Earbuds` type (Oxygen Gadgets, 23); a name-rule layer (`mapping_status: rule_mapped`, versioned) for mixed buckets such as Pittappillil Chimney & Hob. |

@@ -19,7 +19,7 @@ helper (renamed from `inspect.py`, which shadowed the standard library).
 
 ## myG (`myg_scraper.py`)
 
-Custom storefront. 11 categories in `CATEGORIES` (each `base_url`,
+Custom storefront. 12 categories in `CATEGORIES` (each `base_url`,
 `output`, `label`). Pagination `/category/page-N/`.
 
 ```python
@@ -31,8 +31,8 @@ AVAILABILITY_SELECTOR = "p.text-green"
 Prices like `₹1,23,456.00` -> `123456`; unparseable -> `None`.
 
 Known problems: page 10 returns **403**, so 8 categories stop at 108
-records (roadmap issue 1); the data has a myG TV category but `CATEGORIES`
-has no TV entry (issue 2). 404 on short categories (e.g. Home Automation
+records (roadmap issue 1).
+404 on short categories (e.g. Home Automation
 page 3) is handled; before that fix the crash lost earlier pages. If a
 missing page ever returns 200 with an empty grid, catch the selector
 timeout in `scrape_page()` and return an empty list.
