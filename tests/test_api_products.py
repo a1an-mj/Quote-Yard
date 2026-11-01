@@ -105,7 +105,8 @@ def test_list_products_with_stats(ctx, shops):
     assert (item["listings"], item["retailers"], item["min_price"], item["max_price"]) == (
         3, 2, 19500, 21000)
     assert item["specs"] == {"model": "zed 9", "network": "5G", "ram_gb": 8,
-                             "storage_gb": 128, "package": None, "ta_code": None}
+                             "storage_gb": 128, "package": None, "ta_code": None,
+                             "model_code": None, "size_label": None}
 
 
 def test_orphan_products_hidden_from_list(ctx, shops):

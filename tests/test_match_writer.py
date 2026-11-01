@@ -151,3 +151,20 @@ def test_relinked_when_specs_change(session):
     stats = run(session)
     assert stats["listings_relinked"] == 1 and stats["products_inserted"] == 1
     assert product_of(session, a).id != first
+
+
+def test_televisions_are_written_on_their_model_code(session):
+    a = add(session, "ShopA", "Testco TV | 43 inch | ABC-1234", product_type="Television")
+    b = add(session, "ShopB", "TESTCO 43 INCH SMART LED TV, ABC1234", product_type="Television")
+    phone = add(session, "ShopA", "Testco Zed 9 5G (Black, 128 GB) (8 GB RAM)")
+
+    stats = write_matches(session, "Television", retailers=SHOPS)
+
+    assert stats["groups"] == 1 and stats["cross_retailer"] == 1
+    product = product_of(session, a)
+    assert product.id == product_of(session, b).id
+    assert (product.model_code, product.size_label, product.product_type) == (
+        "ABC1234", "43 inch", "Television")
+    assert product.storage_gb is None and product.matching_version == "1.0"
+    assert product_of(session, phone) is None  # another type is never touched
+    assert write_matches(session, "Television", retailers=SHOPS).get("products_updated", 0) == 0

@@ -118,6 +118,8 @@ class ProductSpecs(BaseModel):
     storage_gb: int | None
     package: str | None
     ta_code: str | None
+    model_code: str | None = None
+    size_label: str | None = None
 
 
 class ProductOut(BaseModel):

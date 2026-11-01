@@ -1,8 +1,8 @@
 """
 Quote Yard - Phase 5 match writer.
 
-Runs the phone matcher over the listings already in PostgreSQL and writes
-the result: one canonical_products row per group, and canonical_product_id
+Runs the matchers over the listings already in PostgreSQL and writes the
+result: one canonical_products row per group, and canonical_product_id
 plus box_note on each listing.
 
 Usage (from the repo root):
@@ -12,8 +12,7 @@ Usage (from the repo root):
 Rules:
 - Input is the database, not the JSON files, so matches always describe
   the loaded listings. Scope: listings with a category row whose
-  product_type is "Mobile Phone". Listings outside the scope are never
-  touched.
+  product_type is in MATCHERS. Listings outside the scope are never touched.
 - One transaction: all or nothing.
 - canonical_products are upserted by match_key. They are never deleted:
   a product left with no listings (after a rule change) is reported as
@@ -28,16 +27,23 @@ from __future__ import annotations
 import argparse
 from collections import Counter
 
-from sqlalchemy import exists, func, select
+from sqlalchemy import exists, func, select, text
 from sqlalchemy.orm import Session
 
 from db.models import CanonicalProduct, Listing, ListingCategory, Retailer
 from db.session import get_engine
+from matching import code_matcher
 from matching.phone_matcher import MATCHING_VERSION, match
 
 PRODUCT_TYPE = "Mobile Phone"
+# product_type -> (matcher taking records, matching version)
+MATCHERS = {
+    PRODUCT_TYPE: (match, MATCHING_VERSION),
+    "Television": (lambda records: code_matcher.match(records, "Television"),
+                   code_matcher.CODE_MATCHING_VERSION),
+}
 PRODUCT_FIELDS = ("brand", "name", "model", "network", "ram_gb", "storage_gb",
-                  "package", "ta_code")
+                  "package", "ta_code", "model_code", "size_label")
 
 
 def collect_records(session: Session, product_type: str = PRODUCT_TYPE,
@@ -77,7 +83,8 @@ def write_matches(session: Session, product_type: str = PRODUCT_TYPE,
                   retailers: set[str] | None = None) -> dict:
     records, listings = collect_records(session, product_type, retailers)
     by_url = {(r["shop"], r["url"]): r["listing_id"] for r in records}
-    groups, review, skipped = match(records)
+    matcher, version = MATCHERS[product_type]
+    groups, review, skipped = matcher(records)
 
     stats = Counter()
     stats.update(listings_in_scope=len(records), groups=len(groups),
@@ -91,9 +98,9 @@ def write_matches(session: Session, product_type: str = PRODUCT_TYPE,
     target: dict[int, tuple[CanonicalProduct | None, str | None]] = {}
     for g in groups:
         ids = [by_url[(m["shop"], m["url"])] for m in g["listings"]]
-        values = {f: g[f] for f in PRODUCT_FIELDS}
+        values = {f: g.get(f) for f in PRODUCT_FIELDS}
         values.update(category=_category_for(session, ids, product_type),
-                      product_type=product_type, matching_version=MATCHING_VERSION)
+                      product_type=product_type, matching_version=version)
         product = existing.get(g["match_key"])
         if product is None:
             product = CanonicalProduct(match_key=g["match_key"], **values)
@@ -104,14 +111,14 @@ def write_matches(session: Session, product_type: str = PRODUCT_TYPE,
                 setattr(product, k, v)
             stats["products_updated"] += 1
         for m, lid in zip(g["listings"], ids):
-            target[lid] = (product, m["box_note"])
+            target[lid] = (product, m.get("box_note"))
 
     for item in review:
         for m in item["listings"]:
             lid = by_url[(m["shop"], m["url"])]
-            target.setdefault(lid, (None, m["box_note"]))
+            target.setdefault(lid, (None, m.get("box_note")))
     for m in skipped:
-        target.setdefault(by_url[(m["shop"], m["url"])], (None, m["box_note"]))
+        target.setdefault(by_url[(m["shop"], m["url"])], (None, m.get("box_note")))
 
     session.flush()  # new products get ids
     for lid, listing in listings.items():
@@ -145,10 +152,13 @@ def main() -> None:
     args = parser.parse_args()
 
     with Session(get_engine()) as session:
-        stats = write_matches(session)
+        all_stats = {t: write_matches(session, t) for t in MATCHERS}
         if args.dry_run:
             session.rollback()
         else:
+            session.commit()
+            # Fresh statistics, so the API's first queries after a big change plan well.
+            session.execute(text("ANALYZE listings, canonical_products"))
             session.commit()
         counts = {
             "canonical_products": session.scalar(
@@ -159,13 +169,14 @@ def main() -> None:
         }
 
     print("DRY RUN (rolled back)" if args.dry_run else "WRITTEN")
-    print(f"  matching_version:      {MATCHING_VERSION}")
     keys = ("listings_in_scope", "groups", "cross_retailer", "review_items", "skipped",
             "products_inserted", "products_updated", "listings_linked",
             "listings_relinked", "listings_unlinked", "box_notes_changed",
             "orphaned_products")
-    for key in keys:
-        print(f"  {key + ':':<22} {stats.get(key, 0)}")
+    for product_type, stats in all_stats.items():
+        print(f"  {product_type} (matching_version {MATCHERS[product_type][1]})")
+        for key in keys:
+            print(f"    {key + ':':<22} {stats.get(key, 0)}")
     print(f"Database now: {counts}")
 
 

@@ -49,7 +49,7 @@ class CanonicalProduct(Base):
 
     Filled by the matcher: match_key is the matcher's grouping key and is
     unique. Phones are keyed on specs (storage set) or, for feature phones
-    with no specs, on the TA model code.
+    with no specs, on the TA model code. Other types are keyed on model_code.
     """
 
     __tablename__ = "canonical_products"
@@ -66,6 +66,8 @@ class CanonicalProduct(Base):
     storage_gb: Mapped[int | None] = mapped_column(Integer)
     package: Mapped[str | None] = mapped_column(Text)
     ta_code: Mapped[str | None] = mapped_column(Text)
+    model_code: Mapped[str | None] = mapped_column(Text)
+    size_label: Mapped[str | None] = mapped_column(Text)
     match_key: Mapped[str] = mapped_column(Text, unique=True)
     matching_version: Mapped[str] = mapped_column(Text)
 
@@ -83,9 +85,9 @@ class CanonicalProduct(Base):
         CheckConstraint(
             "storage_gb > 0", name="ck_canonical_products_storage_positive"
         ),
-        # every product is keyed on storage, or on a TA code when it has no specs
+        # every product is keyed on storage, a TA code or a model code
         CheckConstraint(
-            "storage_gb IS NOT NULL OR ta_code IS NOT NULL",
+            "storage_gb IS NOT NULL OR ta_code IS NOT NULL OR model_code IS NOT NULL",
             name="ck_canonical_products_has_key_spec",
         ),
         Index("ix_canonical_products_brand", "brand"),
@@ -157,6 +159,7 @@ class Listing(Base):
         ),
         Index("ix_listings_brand", "brand"),
         Index("ix_listings_canonical_product_id", "canonical_product_id"),
+        Index("ix_listings_retailer_last_seen", "retailer_id", "last_seen_at"),
     )
 
 

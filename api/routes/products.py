@@ -70,7 +70,8 @@ def _product_out(p: CanonicalProduct, listings=0, retailers=0, low=None, high=No
         id=p.id, name=p.name, brand=p.brand, category=p.category,
         product_type=p.product_type,
         specs=ProductSpecs(model=p.model, network=p.network, ram_gb=p.ram_gb,
-                           storage_gb=p.storage_gb, package=p.package, ta_code=p.ta_code),
+                           storage_gb=p.storage_gb, package=p.package, ta_code=p.ta_code,
+                           model_code=p.model_code, size_label=p.size_label),
         listings=listings, retailers=retailers, min_price=low, max_price=high,
         matching_version=p.matching_version,
     )

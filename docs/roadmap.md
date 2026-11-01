@@ -1,6 +1,6 @@
 # Roadmap
 
-Last updated 2026-10-31.
+Last updated 2026-11-01.
 
 ## Where we are
 
@@ -10,11 +10,11 @@ Last updated 2026-10-31.
 | Cleaning, normalization, brand extraction | ✅ |
 | PostgreSQL + loader | ✅ 3,854 listings, 4,263 price-history rows |
 | Data API | ✅ `/api/v1`: listings, products, compare, catalog; read-only, and login required since 2026-10-31 |
-| Matching | ✅ **Phones only**: about 11% of listings. Other types not started. |
+| Matching | 🟡 Phones and TVs (model codes, `matching/code_matcher.py`). Washing machines, fridges, ACs and microwaves next. |
 | Pipeline and schedule | ✅ Running on the VivoBook; first scheduled run passed 2026-11-01 (02:14, 32 minutes, all stages OK) |
 | Accounts backend | ✅ Sign-up, email codes, login, logout, forgot password |
 | Saved items, alerts, deals | ✅ API built; alert emails go through the pipeline's last stage |
-| React frontend | ⬜ Prototype on mock data; to be rebuilt from the new design |
+| React frontend | ✅ Rebuilt from the new design, on the real API |
 
 ## Next, in order
 
@@ -57,7 +57,8 @@ Rebuild from the Claude Design artifact "Quote Yard" (minimal style, see [`decis
 
 ### Phase 9: Coverage
 
-- Matching for the next types. TVs, refrigerators, washing machines, ACs and laptops usually carry a manufacturer model code, which is a stronger key than phone names. When the second type is added, split the shared matcher core (brand gate, key, review report, writer) from the phone rules; not before.
+- ✅ TVs matched on model codes (`python -m matching.code_matcher --type Television` writes a report).
+- Next, one type at a time with a report first: washing machines, refrigerators, ACs, microwaves. A trial on exact codes found few or no cross-store matches for mixer grinders, ceiling fans and laptops.
 - Normalization coverage: about 20% of records are `parent_only` / `unmapped` (issue 5).
 
 ### Phase 10: Deployment

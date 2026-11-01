@@ -21,8 +21,10 @@ export function formatSize(gb) {
   return gb >= 1024 && gb % 1024 === 0 ? `${gb / 1024} TB` : `${gb} GB`
 }
 
-export function specLine({ network, ram_gb, storage_gb, ta_code }) {
+export function specLine({ network, ram_gb, storage_gb, ta_code, size_label, model_code }) {
   const parts = []
+  if (size_label) parts.push(size_label)
+  if (model_code) parts.push(model_code)
   if (ram_gb) parts.push(`${ram_gb} GB RAM`)
   if (storage_gb) parts.push(formatSize(storage_gb))
   if (network) parts.push(network)
