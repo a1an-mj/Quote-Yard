@@ -10,7 +10,7 @@ Last updated 2026-11-01.
 | Cleaning, normalization, brand extraction | ✅ |
 | PostgreSQL + loader | ✅ 3,854 listings, 4,263 price-history rows |
 | Data API | ✅ `/api/v1`: listings, products, compare, catalog; read-only, and login required since 2026-10-31 |
-| Matching | 🟡 Phones and TVs (model codes, `matching/code_matcher.py`). Washing machines, fridges, ACs and microwaves next. |
+| Matching | 🟡 Phones, TVs and washing machines (model codes, `matching/code_matcher.py`). Fridges, ACs and microwaves next. |
 | Pipeline and schedule | ✅ Running on the VivoBook; first scheduled run passed 2026-11-01 (02:14, 32 minutes, all stages OK) |
 | Accounts backend | ✅ Sign-up, email codes, login, logout, forgot password |
 | Saved items, alerts, deals | ✅ API built; alert emails go through the pipeline's last stage |
@@ -57,8 +57,8 @@ Rebuild from the Claude Design artifact "Quote Yard" (minimal style, see [`decis
 
 ### Phase 9: Coverage
 
-- ✅ TVs matched on model codes (`python -m matching.code_matcher --type Television` writes a report).
-- Next, one type at a time with a report first: washing machines, refrigerators, ACs, microwaves. A trial on exact codes found few or no cross-store matches for mixer grinders, ceiling fans and laptops.
+- ✅ TVs and washing machines matched on model codes (`python -m matching.code_matcher --type Television` writes a report). Most Whirlpool washing machines have no model code in their names and stay unmatched.
+- Next, one type at a time with a report first: refrigerators, ACs, microwaves. A trial on exact codes found few or no cross-store matches for mixer grinders, ceiling fans and laptops.
 - Normalization coverage: about 20% of records are `parent_only` / `unmapped` (issue 5).
 
 ### Phase 10: Deployment

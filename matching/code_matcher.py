@@ -6,17 +6,20 @@ not contradict each other. Anything doubtful goes to the review section of the
 report, never into a group by guess. Listings without a recognisable code are
 skipped. Writes only to reports/. No database.
 
-Rules (CODE_MATCHING_VERSION 1.0):
+Rules (CODE_MATCHING_VERSION 1.1):
   - Only brand_status "matched" listings take part.
   - The code is the last word in the name with both letters and digits, at
     least 4 characters, that is not a measurement or a feature ("55Inch", "4K",
-    "HDR10") and is not followed by "Series".
+    "HDR10", "1400Rpm", "12/7KG", the warranty word "10YrMW") and is not
+    followed by "Series".
   - Dashes and slashes are ignored, so "K-55S30" == "K55S30". Colour-specific
     codes stay separate products.
   - A split code is joined only for the prefixes seen in the data ("K 55S30",
     "OLED 55B56LA"); PRO / MAX / PLUS / ULTRA straight after a code is part of it.
   - Brand rules seen on the same products in the data: LG's ".ATR" ending,
-    Samsung's "LXL" ending and missing "UA" prefix, Impex's "EVOQ" prefix.
+    Samsung's "LXL" and "TL" endings and missing "UA" prefix, Impex's "EVOQ"
+    prefix. IFB ("BXN 8012K") and Godrej ("WTEON VLVT 80 5.0 FDTS MTBK") write
+    their codes as several words, which are joined.
   - Different sizes under one code, or prices apart by more than PRICE_SPREAD_LIMIT,
     send the whole group to review, unmerged.
   - Possible misses (one code inside another) are reported, never merged.
@@ -32,27 +35,31 @@ from pathlib import Path
 
 from matching.extract_phones import load_records
 
-CODE_MATCHING_VERSION = "1.0"
+CODE_MATCHING_VERSION = "1.1"
 ROOT = Path(__file__).resolve().parent.parent
 PRICE_SPREAD_LIMIT = 1.25
 MIN_CODE_LENGTH = 4
 
 SIZE_PATTERNS = {
     "Television": (re.compile(r"(\d{2,3})\s*(?:-|\")?\s*inch(?:es)?\b", re.I), "inch"),
+    # Not "9/6/3KG" or "12/7KG": those are wash / dry capacities.
+    "Washing Machine": (re.compile(r"(?<![\d./])(\d{1,2}(?:\.\d)?)\s*kg\b(?!\s*/\d)", re.I), "kg"),
 }
 SHORT_NAMES = {"Television": "TV"}
 
 TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9./\-]*[A-Za-z0-9]")
 NOT_A_CODE = re.compile(
     r"^(?:\d+(?:\.\d+)?(?:cm|m|mm|inch|inches|hz|k|w|ch|l|ltr|kg|gb|tb|ton|star)"
-    r"|hdr\d+|gen\d+)$",
+    r"|hdr\d+|gen\d+|rpm\d+|\d+rpm|[\d./]+kg|\d+y(?:r|m|rm|mw|rmw)?)$",
     re.I,
 )
 SPLIT_PREFIX = re.compile(r"\b(K|OLED)\s+(\d{2}[A-Za-z])")
+IFB_CODE = re.compile(r"\b([A-Z]{3})\s+(\d{4}K?H?)\b")
+GODREJ_CODE = re.compile(r"\bW(?:FEON|TEON|SEDGE|S\s+EDGE)\b[^|,()]*?(?=\s+Fully\b|\s*[|,()]|\s*$)")
 VARIANT_AFTER_CODE = {"pro", "max", "plus", "ultra"}
 BRAND_RULES = {
     "LG": lambda code: code.split(".", 1)[0],
-    "Samsung": lambda code: re.sub(r"^(?=\d)", "UA", re.sub(r"LXL$", "", code)),
+    "Samsung": lambda code: re.sub(r"^(?=\d)", "UA", re.sub(r"(?:LXL|TL)$", "", code)),
     "Impex": lambda code: re.sub(r"^EVOQ(?=\d)", "", code),
 }
 
@@ -68,6 +75,12 @@ def is_code_word(word):
 
 def extract_code(name, brand=None):
     """Return the normalised model code in a name, or None."""
+    if brand == "Godrej":
+        found = GODREJ_CODE.search(name)
+        if found:
+            return re.sub(r"[^A-Za-z0-9]", "", found.group()).upper()
+    if brand == "IFB":
+        name = IFB_CODE.sub(r"\1\2", name)
     words = TOKEN.findall(SPLIT_PREFIX.sub(r"\1\2", name))
     for i in range(len(words) - 1, -1, -1):
         word = words[i]
@@ -88,7 +101,7 @@ def extract_size(name, product_type):
     if pattern is None:
         return None
     found = pattern[0].search(name)
-    return int(found.group(1)) if found else None
+    return float(found.group(1)) if found else None
 
 
 def parse_listing(rec, product_type):
@@ -112,7 +125,7 @@ def parse_listing(rec, product_type):
 def display_name(brand, code, size, product_type):
     unit = SIZE_PATTERNS[product_type][1] if size and product_type in SIZE_PATTERNS else None
     label = SHORT_NAMES.get(product_type, product_type)
-    middle = f"{size} {unit} {label}" if unit else label
+    middle = f"{size:g} {unit} {label}" if unit else label
     return f"{brand} {middle} {code}"
 
 
@@ -144,7 +157,7 @@ def match(records, product_type):
             "match_key": f"{product_type}|{brand}|{code}".casefold(),
             "matching_version": CODE_MATCHING_VERSION,
             "brand": brand, "model": code, "model_code": code, "size": size,
-            "size_label": f"{size} {SIZE_PATTERNS[product_type][1]}" if size else None,
+            "size_label": f"{size:g} {SIZE_PATTERNS[product_type][1]}" if size else None,
             "name": display_name(brand, code, size, product_type),
             "shops": sorted({m["shop"] for m in members}),
             "min_price": min(prices), "max_price": max(prices),

@@ -4,6 +4,7 @@ import pytest
 from matching.code_matcher import extract_code, extract_size, match
 
 TV = "Television"
+WM = "Washing Machine"
 
 
 def rec(shop, name, price=10000, brand="LG", status="matched"):
@@ -22,6 +23,20 @@ def rec(shop, name, price=10000, brand="LG", status="matched"):
      "Samsung", "UA43U8400HU"),
     ("Samsung 1.63m (65 Inch) Crystal 4K UHD Smart TV, 2026 Model (65U8300HU)",
      "Samsung", "UA65U8300HU"),
+    ("Samsung WT90C4260GG/TL 9KG Top Load Washing Machine Grey", "Samsung", "WT90C4260GG"),
+    ("Samsung 9.0 kg 5 Star Semi Automatic Washing Machine (WT90C4260GG, Gray)", "Samsung", "WT90C4260GG"),
+    ("Samsung WD12FG5B34BBTL 12/7KG Washer Dryer Silver", "Samsung", "WD12FG5B34BB"),
+    ("LG Fully Automatic Top Load Washing Machine | 8 Kg | T80V4MB1S ABMQEIL", "LG", "T80V4MB1S"),
+    ("IFB 8 kg 5 Star Washing Machine, RPM 1200 (Senator BXN 8012K CMS, Black)", "IFB", "BXN8012K"),
+    ("IFB 8KG FRONT LOAD WASHING MACHINE SENATOR BXN 8012K CMS", "IFB", "BXN8012K"),
+    ("IFB 9/6/3KG FULLY AUTOMATIC FRONT LOAD WASHING MACHINE, WDR EXECUTIVE ZBN", "IFB", None),
+    ("Godrej 8 kg Top Load (WTEON VLVT 80 5.0 FDTS MTBK, Metallic Black)", "Godrej", "WTEONVLVT8050FDTSMTBK"),
+    ("Godrej Top Load | 8 kg | Metallic Black | WTEON VLVT 80 5.0 FDTS MTBK", "Godrej", "WTEONVLVT8050FDTSMTBK"),
+    ("Godrej WTEON ADR+ 70 5.0 FDUN GPGR Fully Automatic Top Load Washing Machine | 7 Kg", "Godrej", "WTEONADR7050FDUNGPGR"),
+    ("Godrej Semi | 8 kg | WS EDGE ULT 80 5.0 DB2 M MIGR", "Godrej", "WSEDGEULT8050DB2MMIGR"),
+    ("WHIRLPOOL 8 KG FULLY AUTOMATIC TOP LOAD WASHING MACHINE, STAINWASH PRO GREY 10YrMW", "Whirlpool", None),
+    ("Whirlpool 9Kg 5Star Semi Automatic Top Load Washing Machine (Ace XL, Grey Dazzle)", "Whirlpool", None),
+    ("IFB 10 kg Washing Machine Rpm1400 (Executive)", None, None),
     ("Impex 164 cm (65 Inch) 4k QD-Mini Led Google Smart TV (EVOQ65S4MLC3)", "Impex", "65S4MLC3"),
     ("IMPEX 55 Inch 4K QLED Google Smart TV, Dolby Vision | Dolby ATMOS (evoQ 55S4QLC3)",
      "Impex", "55S4QLC3"),
@@ -47,6 +62,15 @@ def test_names_without_a_code(name):
 def test_size_comes_from_inches_not_a_wrong_cm():
     assert extract_size("Hisense 80cm (43 Inch) Full HD Smart Led TV (43E4S)", TV) == 43
     assert extract_size("LG NANO 4K UHD TV | 139 cm (55) | Black", TV) is None
+
+
+def test_washing_machine_sizes():
+    assert extract_size("LG 7.5 Kg Semi Automatic, P-7510RRAZ", WM) == 7.5
+    assert extract_size("LG | 8.0 Kg | T80", WM) == extract_size("LG 8KG FRONT LOAD", WM) == 8
+    assert extract_size("IFB 9/6/3KG FRONT LOAD", WM) is None
+    groups, _, _ = match([rec("myG", "LG Top Load | 7.5 Kg | T75VBMB1S")], WM)
+    assert groups[0]["name"] == "LG 7.5 kg Washing Machine T75VBMB1S"
+    assert groups[0]["size_label"] == "7.5 kg"
 
 
 def test_stores_written_differently_become_one_product():

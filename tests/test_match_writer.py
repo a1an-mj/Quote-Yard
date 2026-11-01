@@ -10,6 +10,7 @@ ROOT = Path(__file__).resolve().parent.parent
 sys.path.insert(0, str(ROOT))
 
 from db.match_writer import write_matches
+from matching import code_matcher
 from matching.phone_matcher import MATCHING_VERSION
 from db.models import Base, CanonicalProduct, Listing, ListingCategory, Retailer
 from db.session import get_engine
@@ -165,6 +166,17 @@ def test_televisions_are_written_on_their_model_code(session):
     assert product.id == product_of(session, b).id
     assert (product.model_code, product.size_label, product.product_type) == (
         "ABC1234", "43 inch", "Television")
-    assert product.storage_gb is None and product.matching_version == "1.0"
+    assert product.storage_gb is None and product.matching_version == code_matcher.CODE_MATCHING_VERSION
     assert product_of(session, phone) is None  # another type is never touched
     assert write_matches(session, "Television", retailers=SHOPS).get("products_updated", 0) == 0
+
+
+def test_washing_machines_are_written_with_their_capacity(session):
+    a = add(session, "ShopA", "Testco Top Load | 7.5 Kg | WM-1234", product_type="Washing Machine")
+    b = add(session, "ShopB", "TESTCO 7.5KG TOP LOAD, WM1234", product_type="Washing Machine")
+
+    assert write_matches(session, "Washing Machine", retailers=SHOPS)["cross_retailer"] == 1
+
+    product = product_of(session, a)
+    assert product.id == product_of(session, b).id
+    assert (product.model_code, product.size_label) == ("WM1234", "7.5 kg")
