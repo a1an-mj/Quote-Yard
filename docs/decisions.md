@@ -108,7 +108,7 @@ Phones first: the largest overlap (277 listings at all four shops), and the
 names carry brand, model, RAM and storage in four different formats.
 
 **Key:** `(brand, model, network, RAM, storage, package)`. Colour is never
-in the key. Rules (`matching_version` 1.2):
+in the key. Rules (`matching_version` 1.3):
 
 - Only `brand_status: matched` listings take part.
 - Model = name head (before `|`, `(` or the first size), casefolded, brand and filler words removed, spaces removed (`V70FE` = `V70 FE`). For Samsung "galaxy" is optional (Nandilath omits it). `Phone (4a)` reads as `4a`.
@@ -116,6 +116,7 @@ in the key. Rules (`matching_version` 1.2):
 - Network from the whole name, `LTE` = 4G. A listing without one joins its model's network if only one is seen; if the model exists as both 4G and 5G it goes to review (Galaxy A07 LTE vs A07 5G).
 - Bundles ("photographer kit") are part of the key. Box contents ("without adapter") are not: the listing merges and keeps `box_note`.
 - Retailer-specific words are dropped only when verified against the retailer's own spec table, and only straight after the brand. Pittappillil "SMART": its Model field reads `4B 5G` for "NOTHING SMART 4B 5G" and `G06 POWER 4G` for "MOTOROLA SMART G06 POWER 4G" (checked 2026-10-29). "smart" is not a global filler word.
+- Manufacturer codes are not the model (1.3): realme `RMX####`, verified on Pittappillil's spec tables (`C83 5G` for "REALME SMART RMX5256 C83 5G", checked 2026-11-01).
 - Apple ignores RAM. Phones with no RAM and storage match on brand + `TA-xxxx` code.
 - Name layouts (1.2, after Oxygen started writing `APPLE:SMART PHONES:IPHONE 17 256GB ... (NEW)`): a leading `BRAND:CATEGORY:` path becomes `BRAND`; sizes without a unit (`6/128`) are read only when both numbers are real RAM and storage sizes; the model ends at ` - ` (`A7 Pro 5G - Sunset Orange, 64 GB`). Brands 1.2 adds the alias `real me`.
 - A group whose price spread is over 25% is kept but flagged.

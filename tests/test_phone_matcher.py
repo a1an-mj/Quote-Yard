@@ -230,3 +230,26 @@ def test_model_ends_at_spaced_dash():
     assert a["model_key"] == b["model_key"] == "redmia7pro"
     assert parse_listing(rec("Testco X-Pro 5G (Black, 64 GB) (4 GB RAM)", brand="Testco"))[
         "model"] == "x pro"  # an unspaced hyphen is part of the model
+
+
+# ---- 1.3: manufacturer codes ---------------------------------------------------
+
+def test_realme_code_is_not_part_of_the_model():
+    groups, review, _ = match([
+        rec("REALME SMART RMX5256 C83 5G (4+64GB) BLOOMING PURPLE", "Pittappillil", "realme"),
+        rec("realme C83 5G (Sprouting Green, 64 GB) (4 GB RAM)", "Oxygen", "realme"),
+    ])
+    assert keys(groups) == {"realme|c83|5g|4|64|": ["Oxygen", "Pittappillil"]}
+    assert "RMX" not in groups[0]["name"] and not review
+
+
+def test_code_does_not_merge_different_models():
+    a = parse_listing(rec("REALME SMART RMX5171 16 5G (8+256GB) AIR WHITE", "Pittappillil", "realme"))
+    b = parse_listing(rec("realme 16 Pro 5G (Pebble Grey, 256 GB) (8 GB RAM)", "Oxygen", "realme"))
+    assert (a["model_key"], b["model_key"]) == ("16", "16pro")
+
+
+def test_only_the_code_pattern_is_dropped():
+    # Not four digits after RMX, or part of a longer word: left alone.
+    assert parse_listing(rec("Testco RMX12 (8+128GB)", brand="Testco"))["model"] == "rmx12"
+    assert parse_listing(rec("Testco ARMX5256 (8+128GB)", brand="Testco"))["model"] == "armx5256"

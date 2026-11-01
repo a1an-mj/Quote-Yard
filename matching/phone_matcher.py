@@ -7,7 +7,7 @@ Two listings match only when brand, model, RAM, storage and package all agree
 cannot be decided goes to the review section of the report, never into a
 group by guess. Writes only to reports/. No database.
 
-Rules (MATCHING_VERSION 1.2):
+Rules (MATCHING_VERSION 1.3):
   - Only brand_status "matched" listings take part.
   - Model key: name head (before "|", "(" or the first size), casefolded,
     punctuation removed, brand word and filler words dropped, then joined
@@ -20,6 +20,7 @@ Rules (MATCHING_VERSION 1.2):
     not: the listing keeps them as box_note and the group lists them.
   - Retailer-specific words verified against the retailer's spec table are
     dropped right after the brand (Pittappillil "SMART").
+  - Manufacturer codes in the name are not the model (1.3): realme "RMX5256".
   - Name layouts (1.2): a leading category path "BRAND:CATEGORY:" becomes
     "BRAND"; sizes without a unit ("6/128") count only when both numbers
     are real RAM and storage sizes; the model ends at " - " ("A7 Pro 5G -
@@ -38,7 +39,7 @@ from pathlib import Path
 
 from matching.extract_phones import HEAD_SPLIT, extract_colour, load_records, parse_specs
 
-MATCHING_VERSION = "1.2"
+MATCHING_VERSION = "1.3"
 ROOT = Path(__file__).resolve().parent.parent
 
 FILLER = {"smartphone", "smartphones", "mobile", "mobiles", "phone"}
@@ -62,6 +63,10 @@ BOX_NOTES = [
 # Pittappillil: "NOTHING SMART 4B 5G" has Model "4B 5G"; "MOTOROLA SMART G06 POWER 4G"
 # has Model "G06 POWER 4G" (checked on the product pages, 2026-10-29).
 SHOP_WORDS_AFTER_BRAND = {"Pittappillil": {"smart"}}
+# Manufacturer codes some names carry before the model. Verified on the store's
+# spec table: "REALME SMART RMX5256 C83 5G" has Model "C83 5G", and "REALME SMART
+# RMX5171 16 5G" has Model "16 5G" (Pittappillil product pages, 2026-11-01).
+MODEL_CODE = re.compile(r"\brmx\d{4}\b", re.I)
 NOTHING_PAREN = re.compile(r"\bphone\s*\(\s*(\w+)\s*\)", re.I)
 # "APPLE:SMART PHONES:IPHONE 17 ..." -> "APPLE IPHONE 17 ..."
 CATEGORY_PATH = re.compile(r"^\s*([^:|()]+?)\s*:\s*[^:|()]+?\s*:\s*")
@@ -112,6 +117,7 @@ def _networks(name):
 def parse_model_tokens(name, brand, shop=None):
     head = _head(name)
     head = NETWORK_ANY.sub(" ", head).casefold()
+    head = MODEL_CODE.sub(" ", head)
     head = re.sub(r"[^\w+\s]", " ", head)
     toks = [t for t in head.split() if t not in FILLER]
     if brand and toks and toks[0] == brand.casefold().split()[0]:
@@ -171,7 +177,8 @@ def display_name(members):
     heads = []
     for m in members:
         head = _head(_clean_name(m["name"])[0])
-        head = re.sub(r"\s+", " ", NETWORK_ANY.sub(" ", head)).strip(" -,")
+        head = MODEL_CODE.sub(" ", NETWORK_ANY.sub(" ", head))
+        head = re.sub(r"\s+", " ", head).strip(" -,")
         for word in SHOP_WORDS_AFTER_BRAND.get(m["shop"], ()):
             head = re.sub(rf"^(\S+)\s+{word}\b", r"\1", head, flags=re.I)
         heads.append(head)
