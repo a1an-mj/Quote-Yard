@@ -41,7 +41,7 @@ MATCHERS = {
     PRODUCT_TYPE: (match, MATCHING_VERSION),
     **{product_type: (lambda records, t=product_type: code_matcher.match(records, t),
                       code_matcher.CODE_MATCHING_VERSION)
-       for product_type in ("Television", "Washing Machine")},
+       for product_type in ("Television", "Washing Machine", "Refrigerator")},
 }
 PRODUCT_FIELDS = ("brand", "name", "model", "network", "ram_gb", "storage_gb",
                   "package", "ta_code", "model_code", "size_label")

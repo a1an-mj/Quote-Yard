@@ -37,6 +37,14 @@ def rec(shop, name, price=10000, brand="LG", status="matched"):
     ("WHIRLPOOL 8 KG FULLY AUTOMATIC TOP LOAD WASHING MACHINE, STAINWASH PRO GREY 10YrMW", "Whirlpool", None),
     ("Whirlpool 9Kg 5Star Semi Automatic Top Load Washing Machine (Ace XL, Grey Dazzle)", "Whirlpool", None),
     ("IFB 10 kg Washing Machine Rpm1400 (Executive)", None, None),
+    ("Samsung 189 L 5 Star Refrigerator (RR21H2H25BR, Begonia Red)", "Samsung", "RR21H2H25BR"),
+    ("Samsung Refrigerator | 189 L | Begonia Red | RR21H2H25BR/HL", "Samsung", "RR21H2H25BR"),
+    ("SAMSUNG 236 LITRE FROST FREE 2 STAR RT-40H28W2PNL REFRIGERATOR", "Samsung", "RT40H28W2P"),
+    ("Godrej 244 L 2 Star (RT EONVALOR 280BN RI FS ST, Fossil Steel)", "Godrej", "RTEONVALOR280BNRIFSST"),
+    ("Godrej 244 L 2 Star (RT EONCRYSTAL 280BN RI OB, Onyx Black)", "Godrej", "RTEONCRYSTAL280BNRIOB"),
+    ("Godrej RD Emarvel 207CN TDF Direct Cool Single Door Refrigerator | 184 L", "Godrej", "RDEMARVEL207CNTDF"),
+    ("LIEBHERR 191L DIRECT COOL REFRIGERATOR, DNBsiE 1911 I01 20", "Liebherr", "DNBSIE1911"),
+    ("Liebherr Direct Cool Single Door Fridge | 191L | 5 Star | Silver Steel | DNBsiE 1911", "Liebherr", "DNBSIE1911"),
     ("Impex 164 cm (65 Inch) 4k QD-Mini Led Google Smart TV (EVOQ65S4MLC3)", "Impex", "65S4MLC3"),
     ("IMPEX 55 Inch 4K QLED Google Smart TV, Dolby Vision | Dolby ATMOS (evoQ 55S4QLC3)",
      "Impex", "55S4QLC3"),
@@ -71,6 +79,19 @@ def test_washing_machine_sizes():
     groups, _, _ = match([rec("myG", "LG Top Load | 7.5 Kg | T75VBMB1S")], WM)
     assert groups[0]["name"] == "LG 7.5 kg Washing Machine T75VBMB1S"
     assert groups[0]["size_label"] == "7.5 kg"
+
+
+def test_whirlpool_refrigerators_are_skipped():
+    groups, _, skipped = match([
+        rec("myG", "Whirlpool Fridge | 235L | IF INV ELT DF278", brand="Whirlpool"),
+        rec("Pittappillil", "WHIRLPOOL 235 Litre NEO DF278 PRM", brand="Whirlpool"),
+    ], "Refrigerator")
+    assert not groups and [r["skip_reason"] for r in skipped] == ["no_model_code"] * 2
+
+
+def test_refrigerator_sizes():
+    for name in ("LG 251L FROST FREE", "LG | 251 L | X", "LG 251 LITRE STAR", "LG:FRIDGE:X 251 LTR"):
+        assert extract_size(name, "Refrigerator") == 251
 
 
 def test_stores_written_differently_become_one_product():
