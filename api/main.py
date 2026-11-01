@@ -7,6 +7,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from api.auth import require_user
 from api.ratelimit import RateLimiter, RateLimitMiddleware
+from api.site import add_site
 from api.routes import auth, catalog, health, listings, me, products, public
 
 API_PREFIX = "/api/v1"
@@ -48,6 +49,7 @@ def create_app(rate_limit: int | None = None) -> FastAPI:
             RateLimitMiddleware,
             limiter=RateLimiter(limit),
             exempt_paths=(f"{API_PREFIX}/health",),
+            prefix=API_PREFIX,
         )
     # Added last, so it is outermost: even 429 responses carry CORS headers.
     app.add_middleware(
@@ -66,6 +68,7 @@ def create_app(rate_limit: int | None = None) -> FastAPI:
     logged_in = [Depends(require_user)]
     app.include_router(listings.router, prefix=API_PREFIX, dependencies=logged_in)
     app.include_router(products.router, prefix=API_PREFIX, dependencies=logged_in)
+    add_site(app, API_PREFIX)
     return app
 
 

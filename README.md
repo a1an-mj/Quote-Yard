@@ -109,6 +109,18 @@ than localhost set `QUOTE_YARD_COOKIE_SECURE=false`. All settings are listed in 
 (default `http://localhost:5173`), `QUOTE_YARD_RATE_LIMIT` (requests per minute
 per client, default 120, `0` = off).
 
+## Deploy
+
+The API serves the built frontend from `frontend/dist`, so one service is the whole site.
+
+```
+deploy/install-api.sh [--lan]            # on the server, once
+deploy/deploy.sh user@192.168.1.14       # from the laptop, after git push
+```
+
+`deploy.sh` builds the site, updates the server's code and database, and restarts
+the service. It refuses to run with unpushed commits or during the nightly update.
+
 ## Tests
 
 ```

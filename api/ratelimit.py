@@ -48,15 +48,24 @@ class RateLimiter:
 
 
 class RateLimitMiddleware:
-    """Pure ASGI middleware. Counts by the client address in the ASGI scope."""
+    """Pure ASGI middleware. Counts by the client address in the ASGI scope.
 
-    def __init__(self, app, limiter, exempt_paths=()):
+    Only paths under `prefix` count, so loading the site's files does not use
+    up a visitor's API allowance.
+    """
+
+    def __init__(self, app, limiter, exempt_paths=(), prefix=""):
         self.app = app
         self.limiter = limiter
         self.exempt_paths = frozenset(exempt_paths)
+        self.prefix = prefix
 
     async def __call__(self, scope, receive, send):
-        if scope["type"] != "http" or scope["path"] in self.exempt_paths:
+        if (
+            scope["type"] != "http"
+            or scope["path"] in self.exempt_paths
+            or not scope["path"].startswith(self.prefix)
+        ):
             await self.app(scope, receive, send)
             return
         client = scope.get("client")
