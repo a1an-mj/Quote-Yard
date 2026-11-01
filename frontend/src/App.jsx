@@ -8,6 +8,7 @@ import Verify from './pages/auth/Verify'
 import Home from './pages/Home'
 import Landing from './pages/Landing'
 import NotFound from './pages/NotFound'
+import Product from './pages/Product'
 import Results from './pages/Results'
 
 export default function App() {
@@ -20,6 +21,7 @@ export default function App() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/home" element={<RequireLogin><Home /></RequireLogin>} />
+      <Route path="/product/:id" element={<RequireLogin><Product /></RequireLogin>} />
       <Route path="/search" element={<RequireLogin><Results /></RequireLogin>} />
       <Route path="*" element={<NotFound />} />
     </Routes>

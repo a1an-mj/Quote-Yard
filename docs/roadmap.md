@@ -53,8 +53,8 @@ Rebuild from the Claude Design artifact "Quote Yard" (minimal style, see [`decis
 - Public: landing page with what the site does, the 4 retailers and today's deals.
 - ✅ Landing page, against the real API, in light and dark.
 - ✅ Sign up, verify email, log in, forgot password. `/home` is a placeholder until the logged-in pages exist.
-- ✅ Home, Search with suggestions, Results.
-- Behind login, still to build: Product with its prices and history, Categories, Saved items & alerts.
+- ✅ Home, Search with suggestions, Results, Product with its prices and history.
+- Behind login, still to build: Categories, Saved items & alerts.
 
 ### Phase 9: Coverage
 

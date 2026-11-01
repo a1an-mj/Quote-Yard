@@ -43,3 +43,12 @@ html.qy { min-height: 100%; }
 
 /* No product images yet: a short band, not the design's full square. */
 .qy .qy-pcard .qy-img { aspect-ratio: 4 / 1; min-height: 56px; align-items: center; }
+
+.qy-chart { position: relative; }
+.qy-chart svg { display: block; width: 100%; height: auto; overflow: visible; touch-action: pan-y; }
+.qy-chart__tip { position: absolute; top: 0; transform: translateX(-50%); padding: 6px 10px; background: var(--qy-surface); border: 1px solid var(--qy-ink); border-radius: var(--qy-r-sm); font-size: 12px; white-space: nowrap; pointer-events: none; }
+.qy-summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: var(--qy-5); }
+.qy-variant-chip[aria-current="page"] { background: var(--qy-ink); border-color: var(--qy-ink); color: var(--qy-surface); }
+
+.qy-row--best th { background: var(--qy-best); box-shadow: inset 3px 0 0 var(--qy-ink); }
+@media (max-width: 640px) { .qy-listing { grid-template-columns: minmax(0, 1fr); } .qy-listing > :last-child { align-items: flex-start; justify-content: flex-start !important; } }
