@@ -25,7 +25,8 @@ echo "Building the site..."
 
 echo "Updating the server..."
 "${SSH[@]}" 'set -e; cd ~/quote-yard; git pull --ff-only -q; .venv/bin/pip install -q -r requirements.txt; .venv/bin/alembic upgrade head 2>/dev/null'
-rsync -a --delete -e "ssh -i $KEY -o BatchMode=yes -o IdentitiesOnly=yes" frontend/dist/ "$TARGET:quote-yard/frontend/dist/"
+# Unpack beside the live site, then swap, so a failed copy leaves it untouched.
+tar -C frontend/dist -cf - . | "${SSH[@]}" 'set -e; cd ~/quote-yard/frontend; rm -rf dist.new dist.old; mkdir dist.new; tar -xf - -C dist.new; [ ! -d dist ] || mv dist dist.old; mv dist.new dist; rm -rf dist.old'
 "${SSH[@]}" 'systemctl --user restart quote-yard-api.service; sleep 3; curl -sf http://127.0.0.1:8000/api/v1/health'
 echo
 echo "Deployed $(git rev-parse --short HEAD)."
