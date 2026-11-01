@@ -11,6 +11,7 @@ import Landing from './pages/Landing'
 import NotFound from './pages/NotFound'
 import Product from './pages/Product'
 import Results from './pages/Results'
+import Saved from './pages/Saved'
 
 export default function App() {
   return (
@@ -24,6 +25,7 @@ export default function App() {
       <Route path="/home" element={<RequireLogin><Home /></RequireLogin>} />
       <Route path="/categories" element={<RequireLogin><Categories /></RequireLogin>} />
       <Route path="/product/:id" element={<RequireLogin><Product /></RequireLogin>} />
+      <Route path="/saved" element={<RequireLogin><Saved /></RequireLogin>} />
       <Route path="/search" element={<RequireLogin><Results /></RequireLogin>} />
       <Route path="*" element={<NotFound />} />
     </Routes>

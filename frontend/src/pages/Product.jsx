@@ -3,6 +3,7 @@ import AppNav, { Breadcrumb } from '../components/AppNav'
 import ErrorBlock from '../components/ErrorBlock'
 import Footer from '../components/Footer'
 import PriceChart from '../components/PriceChart'
+import ProductActions from '../components/ProductActions'
 import { formatPrice, isOutdated, specLine, timeAgo } from '../lib/format'
 import { lowestOverTime } from '../lib/history'
 import { useApi } from '../lib/useApi'
@@ -241,6 +242,8 @@ export default function Product() {
                 </div>
               )}
             </div>
+
+            <ProductActions productId={data.id} lowest={data.min_price} />
 
             {compare.error ? (
               <ErrorBlock what="current prices" onRetry={compare.retry} />
