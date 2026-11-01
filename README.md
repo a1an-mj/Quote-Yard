@@ -121,6 +121,18 @@ deploy/deploy.sh user@192.168.1.14       # from the laptop, after git push
 `deploy.sh` builds the site, updates the server's code and database, and restarts
 the service. It refuses to run with unpushed commits or during the nightly update.
 
+## Backups
+
+```
+deploy/install-backup.sh                 # on the server: daily at 03:30
+deploy/pull-backup.sh user@192.168.1.14  # from the laptop: copy the newest one here
+```
+
+Kept in `~/quote-yard-backups` on the server: 14 daily and 6 monthly. They hold user
+emails and password hashes, so they stay private and out of git. To restore:
+`createdb quote_yard && pg_restore --no-owner -d quote_yard quote_yard-DATE.dump`, then
+`tar -xf data-DATE.tar` in the repo root.
+
 ## Tests
 
 ```
