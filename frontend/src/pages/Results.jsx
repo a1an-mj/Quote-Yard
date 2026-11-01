@@ -13,11 +13,11 @@ const SORTS = {
   products: [['price_asc', 'Lowest listed price'], ['price_desc', 'Highest listed price'], ['retailers', 'Most stores'], ['newest', 'Newest'], ['name', 'Name']],
   listings: [['price_asc', 'Lowest listed price'], ['price_desc', 'Highest listed price'], ['name', 'Name']],
 }
-const LABELS = { brand: 'Brand', product_type: 'Type', retailer: 'Store', availability: 'Availability', min_price: 'From ₹', max_price: 'Up to ₹' }
+const LABELS = { category: 'Category', brand: 'Brand', product_type: 'Type', retailer: 'Store', availability: 'Availability', min_price: 'From ₹', max_price: 'Up to ₹' }
 
 function shared(params) {
   const out = new URLSearchParams()
-  for (const key of ['q', 'brand', 'product_type', 'min_price', 'max_price']) {
+  for (const key of ['q', 'brand', 'category', 'product_type', 'min_price', 'max_price']) {
     if (params.get(key)) out.set(key, params.get(key))
   }
   return out
@@ -203,7 +203,7 @@ export default function Results() {
     .map((key) => ({ key, label: `${LABELS[key]}${key.endsWith('_price') ? '' : ':'} ${key.endsWith('_price') ? formatCount(Number(params.get(key))) : params.get(key)}` }))
   if (kind === 'products' && params.get('min_retailers')) active.push({ key: 'min_retailers', label: '2+ stores' })
 
-  const heading = q ? `Results for “${q}”` : params.get('product_type') ?? 'All products'
+  const heading = q ? `Results for “${q}”` : params.get('product_type') ?? params.get('category') ?? 'All products'
   const sort = params.get('sort')
   const sortValue = SORTS[kind].some(([value]) => value === sort) ? sort : 'price_asc'
   const items = results.data?.items ?? []

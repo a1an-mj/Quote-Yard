@@ -28,6 +28,11 @@ class ProductTypeOut(BaseModel):
     retailers: list[RetailerCount]
 
 
+class CategoryCount(BaseModel):
+    category: str
+    listings: int
+
+
 class BrandOut(BaseModel):
     brand: str
     listings: int

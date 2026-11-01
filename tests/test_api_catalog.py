@@ -1,4 +1,5 @@
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 import pytest
@@ -148,3 +149,28 @@ def test_brands_exclude_unbranded_and_sort_by_count(ctx):
 def test_catalog_is_get_only(ctx):
     client, _ = ctx
     assert client.post(f"{PREFIX}/retailers").status_code == 405
+
+
+def test_categories_count_distinct_listings_and_include_those_without_types(ctx):
+    client, session = ctx
+    shop = add_retailer(session, "ZzShop")
+    add_listing(session, shop, 1, categories=(("Zz A", "T1"), ("Zz A", "T2")))
+    add_listing(session, shop, 2, categories=(("Zz A", "T1"),))
+    add_listing(session, shop, 3, categories=(("Zz B", None),))
+    add_listing(session, shop, 4, categories=((None, None),))
+    rows = client.get(f"{PREFIX}/categories").json()
+    assert [(r["category"], r["listings"]) for r in rows] == [("Zz A", 2), ("Zz B", 1)]
+
+
+def test_current_counts_leave_out_old_listings(ctx):
+    client, session = ctx
+    shop = add_retailer(session, "ZzShop")
+    add_listing(session, shop, 1)
+    old = add_listing(session, shop, 2)
+    old.last_seen_at = datetime(2020, 1, 1, tzinfo=timezone.utc)
+    session.flush()
+    assert client.get(f"{PREFIX}/categories").json()[0]["listings"] == 2
+    assert client.get(f"{PREFIX}/categories?current=true").json()[0]["listings"] == 1
+    assert client.get(f"{PREFIX}/product-types").json()[0]["listings"] == 2
+    assert client.get(f"{PREFIX}/product-types?current=true").json()[0]["listings"] == 1
+

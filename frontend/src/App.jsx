@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom'
 import { RequireLogin } from './lib/auth'
+import Categories from './pages/Categories'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import Login from './pages/auth/Login'
 import ResetPassword from './pages/auth/ResetPassword'
@@ -21,6 +22,7 @@ export default function App() {
       <Route path="/forgot-password" element={<ForgotPassword />} />
       <Route path="/reset-password" element={<ResetPassword />} />
       <Route path="/home" element={<RequireLogin><Home /></RequireLogin>} />
+      <Route path="/categories" element={<RequireLogin><Categories /></RequireLogin>} />
       <Route path="/product/:id" element={<RequireLogin><Product /></RequireLogin>} />
       <Route path="/search" element={<RequireLogin><Results /></RequireLogin>} />
       <Route path="*" element={<NotFound />} />

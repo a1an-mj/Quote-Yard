@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import Logo from './Logo'
 import SearchBox from './SearchBox'
@@ -18,6 +18,9 @@ export default function AppNav({ search = true }) {
       <div className="qy-wrap qy-nav__in">
         <Logo to="/home" />
         {search && <SearchBox compact />}
+        <nav className="qy-navlinks" aria-label="Main">
+          <NavLink className={({ isActive }) => `qy-navlink ${isActive ? 'qy-navlink--on' : ''}`} to="/categories">Categories</NavLink>
+        </nav>
         <div className="qy-row qy-appnav__user" style={{ flexWrap: 'wrap' }}>
           <ThemeSwitch />
           <span className="qy-small">Hi {user?.first_name}</span>

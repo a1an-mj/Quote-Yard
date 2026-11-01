@@ -371,7 +371,7 @@ def test_reset_rejects_short_password(ctx):
 @pytest.mark.parametrize("path", [
     "/listings", "/listings/summary", "/listings/1", "/listings/1/prices",
     "/products", "/products/1", "/products/1/prices", "/compare/1",
-    "/product-types", "/brands", "/auth/me",
+    "/product-types", "/categories", "/brands", "/auth/me",
 ])
 def test_data_routes_need_login(ctx, path):
     client, _, _ = ctx

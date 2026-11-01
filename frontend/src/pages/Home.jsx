@@ -37,7 +37,7 @@ export default function Home() {
   const deals = useApi('/public/deals')
   const compared = useApi('/products?sort=retailers&min_retailers=2&limit=4')
   const newest = useApi('/products?sort=newest&limit=4')
-  const types = useApi('/product-types')
+  const types = useApi('/product-types?current=true')
   const topTypes = [...(types.data ?? [])].sort((a, b) => b.listings - a.listings).slice(0, 10)
 
   return (
@@ -51,7 +51,10 @@ export default function Home() {
         </section>
 
         <section className="qy-wrap qy-section" aria-labelledby="types-title" style={{ paddingTop: 0 }}>
-          <h2 className="qy-h2" id="types-title" style={{ marginBottom: 16 }}>Browse by type</h2>
+          <div className="qy-between" style={{ marginBottom: 16 }}>
+            <h2 className="qy-h2" id="types-title">Browse by type</h2>
+            <Link className="qy-link" to="/categories">All categories</Link>
+          </div>
           {types.error ? (
             <ErrorBlock what="product types" onRetry={types.retry} />
           ) : (

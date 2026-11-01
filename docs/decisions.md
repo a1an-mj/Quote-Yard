@@ -88,7 +88,7 @@ Under `/api/v1`, docs at `/api/v1/docs`. Data routes are read-only and need a lo
 | Endpoint | Purpose |
 |----------|---------|
 | `/health` | API and database check |
-| `/retailers`, `/product-types`, `/brands` | Catalog with counts |
+| `/retailers`, `/categories`, `/product-types`, `/brands` | Catalog with counts; `current=true` on categories and types counts only current listings |
 | `/listings` | Search (`q`: every word must appear, `ILIKE`, input escaped) and filters: retailer, category, product_type, brand, price range, availability, `seen_since`; sort `price_asc` / `price_desc` / `name`; `limit` <= 100 |
 | `/listings/summary` | Per-retailer count, min/max and cheapest for the same filters. Interim: it does not claim the listings are the same product |
 | `/listings/{id}`, `/listings/{id}/prices` | Detail and price history |

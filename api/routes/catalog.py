@@ -1,10 +1,11 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Query
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from api.auth import require_user
 from api.deps import get_session
-from api.schemas import BrandOut, ProductTypeOut, RetailerCount, RetailerOut
+from api.freshness import is_current
+from api.schemas import BrandOut, CategoryCount, ProductTypeOut, RetailerCount, RetailerOut
 from db.models import Listing, ListingCategory, Retailer
 
 router = APIRouter(tags=["catalog"])
@@ -24,15 +25,35 @@ def list_retailers(session: Session = Depends(get_session)):
     ]
 
 
+CurrentOnly = Query(False, description="Count only listings from each retailer's latest, recent scrape")
+
+
+@router.get("/categories", response_model=list[CategoryCount],
+            dependencies=[Depends(require_user)])
+def list_categories(current: bool = CurrentOnly, session: Session = Depends(get_session)):
+    """Canonical categories, most listings first, including ones with no product types."""
+    count = func.count(func.distinct(ListingCategory.listing_id))
+    stmt = (
+        select(ListingCategory.category, count)
+        .join(Listing, Listing.id == ListingCategory.listing_id)
+        .where(ListingCategory.category.is_not(None))
+        .group_by(ListingCategory.category)
+        .order_by(count.desc(), ListingCategory.category)
+    )
+    if current:
+        stmt = stmt.where(is_current)
+    return [CategoryCount(category=c, listings=n) for c, n in session.execute(stmt)]
+
+
 @router.get("/product-types", response_model=list[ProductTypeOut],
             dependencies=[Depends(require_user)])
-def list_product_types(session: Session = Depends(get_session)):
+def list_product_types(current: bool = CurrentOnly, session: Session = Depends(get_session)):
     """Canonical product types with listing counts, total and per retailer.
 
     Counts distinct listings, because one listing can have several category
     rows with the same type. Listings without a product type are not included.
     """
-    rows = session.execute(
+    stmt = (
         select(
             ListingCategory.category,
             ListingCategory.product_type,
@@ -43,7 +64,10 @@ def list_product_types(session: Session = Depends(get_session)):
         .join(Retailer, Retailer.id == Listing.retailer_id)
         .where(ListingCategory.product_type.is_not(None))
         .group_by(ListingCategory.category, ListingCategory.product_type, Retailer.name)
-    ).all()
+    )
+    if current:
+        stmt = stmt.where(is_current)
+    rows = session.execute(stmt).all()
 
     types: dict[tuple, ProductTypeOut] = {}
     for category, product_type, retailer, count in rows:
