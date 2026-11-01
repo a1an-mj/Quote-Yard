@@ -1,6 +1,6 @@
 # Accounts, watchlist, deals, vendors
 
-The accounts, saved items, alerts and deals backends are built (Phase 7). Vendors are Phase 12, after the first release.
+The accounts, saved items, alerts and deals backends are built (Phase 7). The vendor system (Phase 12) is built too, but shops can only reach it once the site is public (Phase 10).
 
 ## Accounts (built)
 
@@ -46,21 +46,21 @@ Limiters are per process and reset on restart, like the main limiter.
 - **Picking:** one deal per product, at most 2 gaps, different brands first, the same picks all day (seeded by the date in IST), and never padded when there are too few.
 - **Wording:** "Lowest in 90 days" only when that listing has 90 days of history; until then "Lowest since we began tracking", with the real earlier price. Savings are between recorded prices or stores, never against an MRP.
 
-## Vendors
+## Vendors (built)
 
-Local shops register, get reviewed, and publish weekly offers that appear
-**next to** scraped prices.
+Local shops are invited, get reviewed, and publish offers that appear **next to** store prices. Customers contact the shop directly; Quote Yard takes no orders or payments.
 
-| Principle | Detail |
-|-----------|--------|
-| Separate storage | Offers in their own tables, never in `listings` |
-| Matched and validated | Each offer links to a canonical product and is checked (price, dates, product) before it shows |
-| Reviewed identity | Business details reviewed before any offer is published |
-| Visible source | Every price is labelled: scraped listing, verified-vendor offer (unreviewed offers are not shown). API price objects gain a `source` field. |
-| Validity | Start and end dates, automatic expiry, weekly by default |
-| Separate accounts | Vendor accounts are not a flag on `users` |
-| Audit | Offer changes and review decisions are recorded |
-| Sensitive data | Collect only what review needs (e.g. GST number, to decide) and protect it |
-
-Depends on: canonical products (done for phones), accounts with verified
-email, an admin review tool.
+| Rule | Detail |
+|------|--------|
+| Joining | Invite only. An admin sends a one-time link to the shop's email, valid 7 days; a new invite cancels the old link. The link carries its token after the `#`, so it stays out of server logs |
+| Accounts | Separate tables, login and cookie (`qy_vendor_session`) from customers. A shop login cannot read customer data, and the reverse |
+| Review | A shop waits as `pending` until an admin approves it. Offers appear only while the shop is `approved`; suspending hides them all at once, reinstating restores them |
+| Admins | Customer accounts listed in `QUOTE_YARD_ADMIN_EMAILS`. They use `/admin` |
+| Offers | **Not reviewed one by one** (user's decision, 2026-11-01): they go live on their start date after the automatic checks. An admin can remove any offer |
+| Automatic checks | Product has a current store price; price is 50% to 150% of the lowest store price (likely typing mistakes are refused); start date not past and at most 30 days ahead; at most 31 days long; one running offer per product; at most 200 per shop |
+| Expiry | Offers stop showing after their end date (India time) with no background job |
+| Separate from store data | Own tables, never in `listings`. Offers **do not** affect lowest prices, comparisons, price history, alerts or deals |
+| Labelled | Store offers have `source: scraped_listing`, shop offers `source: verified_vendor`. The page says the shop sets the price itself |
+| Shown to customers | Shop name, town, district, phone, offer dates, and a Google Maps link built by the server, so a shop cannot supply its own link. No free-text notes |
+| Sensitive data | Optional GST number, seen only by admins. Shops cannot edit approved details themselves |
+| Audit | `vendor_audit_log` records invites, review decisions and every offer change |

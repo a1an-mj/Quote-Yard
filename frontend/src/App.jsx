@@ -1,5 +1,6 @@
 import { Route, Routes } from 'react-router-dom'
 import { RequireLogin } from './lib/auth'
+import Admin from './pages/Admin'
 import Categories from './pages/Categories'
 import ForgotPassword from './pages/auth/ForgotPassword'
 import Login from './pages/auth/Login'
@@ -12,6 +13,8 @@ import NotFound from './pages/NotFound'
 import Product from './pages/Product'
 import Results from './pages/Results'
 import Saved from './pages/Saved'
+import { VendorForgot, VendorJoin, VendorLogin, VendorReset } from './pages/vendor/VendorAuth'
+import VendorDashboard from './pages/vendor/VendorDashboard'
 
 export default function App() {
   return (
@@ -27,6 +30,12 @@ export default function App() {
       <Route path="/product/:id" element={<RequireLogin><Product /></RequireLogin>} />
       <Route path="/saved" element={<RequireLogin><Saved /></RequireLogin>} />
       <Route path="/search" element={<RequireLogin><Results /></RequireLogin>} />
+      <Route path="/admin" element={<RequireLogin><Admin /></RequireLogin>} />
+      <Route path="/vendor" element={<VendorDashboard />} />
+      <Route path="/vendor/login" element={<VendorLogin />} />
+      <Route path="/vendor/join" element={<VendorJoin />} />
+      <Route path="/vendor/forgot-password" element={<VendorForgot />} />
+      <Route path="/vendor/reset" element={<VendorReset />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   )

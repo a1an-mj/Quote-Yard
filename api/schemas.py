@@ -1,6 +1,9 @@
-from datetime import datetime
+from datetime import date, datetime
+from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, computed_field
+
+from api.security import is_admin_email
 
 
 class HealthOut(BaseModel):
@@ -145,6 +148,7 @@ class ProductPage(BaseModel):
 
 
 class OfferOut(BaseModel):
+    source: Literal["scraped_listing"] = "scraped_listing"
     listing_id: int
     retailer: RetailerRef
     name: str
@@ -203,6 +207,25 @@ class UserOut(BaseModel):
     first_name: str
     last_name: str | None
     created_at: datetime
+
+    @computed_field
+    @property
+    def is_admin(self) -> bool:
+        return is_admin_email(self.email)
+
+
+class LocalOfferOut(BaseModel):
+    """A local shop's own price. Labelled by source and never counted as a store's lowest price."""
+    id: int
+    source: Literal["verified_vendor"] = "verified_vendor"
+    shop_name: str
+    town: str
+    district: str
+    phone: str
+    map_url: str
+    price: int
+    starts_on: date
+    ends_on: date
 
 
 class SavedOut(BaseModel):

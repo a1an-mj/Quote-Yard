@@ -1,4 +1,7 @@
+from datetime import datetime
 from typing import Annotated, Literal
+from urllib.parse import quote_plus
+from zoneinfo import ZoneInfo
 
 from fastapi import APIRouter, Depends, HTTPException, Path, Query
 from sqlalchemy import case, distinct, func, select
@@ -10,6 +13,7 @@ from api.freshness import is_current
 from api.schemas import (
     CompareOut,
     ListingPrices,
+    LocalOfferOut,
     OfferOut,
     PricePoint,
     ProductDetail,
@@ -20,7 +24,7 @@ from api.schemas import (
     RetailerOffer,
     RetailerRef,
 )
-from db.models import CanonicalProduct, Listing, PriceHistory, Retailer
+from db.models import CanonicalProduct, Listing, PriceHistory, Retailer, Vendor, VendorOffer
 
 router = APIRouter(tags=["products"])
 
@@ -194,6 +198,34 @@ def product_prices(product_id: ProductId, session: Session = Depends(get_session
         listings=[ListingPrices(listing_id=o.listing_id, retailer=o.retailer,
                                 points=points[o.listing_id]) for o in offers],
     )
+
+
+def map_url(vendor: Vendor) -> str:
+    """Built here from reviewed details, so a shop can never supply a link of its own."""
+    query = quote_plus(f"{vendor.shop_name}, {vendor.address}, {vendor.town}, {vendor.district}, Kerala")
+    return f"https://www.google.com/maps/search/?api=1&query={query}"
+
+
+@router.get("/products/{product_id}/local-offers", response_model=list[LocalOfferOut])
+def local_offers(product_id: ProductId, session: Session = Depends(get_session)):
+    """Running offers from approved shops, cheapest first. Expired ones simply stop matching."""
+    _get_product(session, product_id)
+    today = datetime.now(ZoneInfo("Asia/Kolkata")).date()
+    rows = session.execute(
+        select(VendorOffer, Vendor)
+        .join(Vendor, Vendor.id == VendorOffer.vendor_id)
+        .where(VendorOffer.canonical_product_id == product_id,
+               VendorOffer.closed_at.is_(None),
+               VendorOffer.starts_on <= today, VendorOffer.ends_on >= today,
+               Vendor.status == "approved")
+        .order_by(VendorOffer.price, VendorOffer.id)
+    ).all()
+    return [
+        LocalOfferOut(id=o.id, shop_name=v.shop_name, town=v.town, district=v.district,
+                      phone=v.phone, map_url=map_url(v), price=o.price,
+                      starts_on=o.starts_on, ends_on=o.ends_on)
+        for o, v in rows
+    ]
 
 
 @router.get("/compare/{product_id}", response_model=CompareOut)

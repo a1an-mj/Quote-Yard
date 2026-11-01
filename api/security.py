@@ -1,6 +1,7 @@
 """Password, one-time code and session token primitives."""
 
 import hashlib
+import os
 import secrets
 
 from argon2 import PasswordHasher
@@ -35,3 +36,9 @@ def new_session_token() -> str:
 def hash_token(token: str) -> str:
     """Session tokens are long and random, so a fast hash is enough."""
     return hashlib.sha256(token.encode()).hexdigest()
+
+
+def is_admin_email(email: str) -> bool:
+    """Admins are the customer accounts listed in QUOTE_YARD_ADMIN_EMAILS (comma separated)."""
+    raw = os.environ.get("QUOTE_YARD_ADMIN_EMAILS", "")
+    return email.lower() in {e.strip().lower() for e in raw.split(",") if e.strip()}

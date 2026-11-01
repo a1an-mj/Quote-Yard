@@ -23,7 +23,8 @@ export async function api(path, { method = 'GET', body, signal } = {}) {
   })
   if (response.status === 204) return null
   const data = await response.json().catch(() => null)
-  if (response.status === 401) window.dispatchEvent(new Event('qy:unauthorized'))
+  // A shop's login is separate, so losing it must not sign a customer out.
+  if (response.status === 401 && !path.startsWith('/vendor')) window.dispatchEvent(new Event('qy:unauthorized'))
   if (!response.ok) throw new ApiError(response.status, data?.detail)
   return data
 }
@@ -31,7 +32,7 @@ export async function api(path, { method = 'GET', body, signal } = {}) {
 // Words for a person, whatever went wrong. FastAPI's 422 detail is a list of field errors.
 export function errorMessage(error) {
   if (error?.status === 429) return 'Too many attempts. Please wait a little and try again.'
-  if (error?.status === 422) return 'Please check what you entered.'
+  if (error?.status === 422 && typeof error.detail !== 'string') return 'Please check what you entered.'
   if (error instanceof ApiError && typeof error.detail === 'string') return error.detail
   return "We couldn't reach the server. Please try again."
 }

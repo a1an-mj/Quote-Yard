@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom'
+
 export default function Footer() {
   return (
     <footer className="qy-foot">
@@ -7,6 +9,7 @@ export default function Footer() {
           Listed prices from Kerala retailers. Prices and stock change often; always confirm on
           the store's page before you buy.
         </p>
+        <Link className="qy-small" to="/vendor/login">Shop owners: log in</Link>
       </div>
     </footer>
   )

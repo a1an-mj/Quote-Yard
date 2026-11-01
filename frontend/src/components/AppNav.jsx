@@ -21,6 +21,7 @@ export default function AppNav({ search = true }) {
         <nav className="qy-navlinks" aria-label="Main">
           <NavLink className={({ isActive }) => `qy-navlink ${isActive ? 'qy-navlink--on' : ''}`} to="/categories">Categories</NavLink>
           <NavLink className={({ isActive }) => `qy-navlink ${isActive ? 'qy-navlink--on' : ''}`} to="/saved">Saved</NavLink>
+          {user?.is_admin && <NavLink className={({ isActive }) => `qy-navlink ${isActive ? 'qy-navlink--on' : ''}`} to="/admin">Shops</NavLink>}
         </nav>
         <div className="qy-row qy-appnav__user" style={{ flexWrap: 'wrap' }}>
           <ThemeSwitch />

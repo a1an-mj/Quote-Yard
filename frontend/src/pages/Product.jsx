@@ -156,6 +156,42 @@ function OfferList({ offers }) {
   )
 }
 
+function untilDate(iso) {
+  return new Date(`${iso}T00:00:00`).toLocaleDateString('en-IN', { day: 'numeric', month: 'short' })
+}
+
+function LocalOffers({ id }) {
+  const state = useApi(`/products/${id}/local-offers`)
+  if (!state.data?.length) return null
+  return (
+    <section className="qy-stack" style={{ gap: 12 }} aria-labelledby="local-title">
+      <h2 className="qy-h2" id="local-title">Local shop offers</h2>
+      <ul className="qy-stack" style={{ listStyle: 'none', margin: 0, padding: 0, gap: 8 }}>
+        {state.data.map((offer) => (
+          <li key={offer.id} className="qy-tile qy-listing">
+            <div className="qy-stack" style={{ gap: 4, minWidth: 0 }}>
+              <span className="qy-row" style={{ gap: 8, flexWrap: 'wrap' }}>
+                <span style={{ fontSize: 14, fontWeight: 500 }}>{offer.shop_name}</span>
+                <span className="qy-badge">Verified shop</span>
+              </span>
+              <span className="qy-small">{offer.town}, {offer.district} · until {untilDate(offer.ends_on)}</span>
+            </div>
+            <div className="qy-row" style={{ flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+              <span className="qy-price">{formatPrice(offer.price)}</span>
+              <a className="qy-btn qy-btn--sm" href={`tel:+91${offer.phone}`}>Call<span className="qy-honeypot"> {offer.shop_name}</span></a>
+              <a className="qy-btn qy-btn--quiet qy-btn--sm" href={offer.map_url} target="_blank" rel="noopener noreferrer">Map<span aria-hidden="true"> ↗</span><span className="qy-honeypot"> for {offer.shop_name}, opens in a new tab</span></a>
+            </div>
+          </li>
+        ))}
+      </ul>
+      <p className="qy-small">
+        We check who the shop is, but the shop sets this price itself. Call to confirm the price and stock before you
+        go. These offers aren't counted in the store prices, lowest price or alerts on this page.
+      </p>
+    </section>
+  )
+}
+
 function History({ id }) {
   const state = useApi(`/products/${id}/prices`)
   if (state.error) return <ErrorBlock what="price history" onRetry={state.retry} />
@@ -262,6 +298,8 @@ export default function Product() {
             ) : (
               <div className="qy-skel" style={{ height: 240 }} role="status" aria-label="Loading prices" />
             )}
+
+            <LocalOffers id={id} />
 
             <section className="qy-stack" style={{ gap: 12 }} aria-labelledby="history-title">
               <div className="qy-stack" style={{ gap: 4 }}>

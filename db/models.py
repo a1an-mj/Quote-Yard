@@ -1,11 +1,12 @@
 """Quote Yard - Phase 3 database models (SQLAlchemy 2.0)."""
 
-from datetime import datetime
+from datetime import date, datetime
 
 from sqlalchemy import (
     BigInteger,
     Boolean,
     CheckConstraint,
+    Date,
     DateTime,
     ForeignKey,
     Index,
@@ -24,6 +25,9 @@ BRAND_STATUSES = ("matched", "unknown", "review")
 MAPPING_STATUSES = ("mapped", "parent_only", "unmapped")
 NETWORK_VALUES = ("2G", "3G", "4G", "5G")
 EMAIL_CODE_PURPOSES = ("verify_email", "reset_password")
+VENDOR_STATUSES = ("pending", "approved", "rejected", "suspended")
+VENDOR_TOKEN_PURPOSES = ("invite", "reset_password")
+OFFER_CLOSED_BY = ("vendor", "admin", "replaced")
 
 
 def _in(column: str, values: tuple) -> str:
@@ -336,4 +340,122 @@ class PriceAlert(Base):
     __table_args__ = (
         UniqueConstraint("user_id", "canonical_product_id", name="uq_price_alerts_user_product"),
         CheckConstraint("target_price > 0", name="ck_price_alerts_target_positive"),
+    )
+
+
+class Vendor(Base):
+    """A local shop. Separate from customer accounts; email is stored casefolded."""
+
+    __tablename__ = "vendors"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(Text, unique=True)
+    password_hash: Mapped[str] = mapped_column(Text)
+    shop_name: Mapped[str] = mapped_column(Text)
+    owner_name: Mapped[str] = mapped_column(Text)
+    phone: Mapped[str] = mapped_column(Text)  # 10 digits, without +91
+    address: Mapped[str] = mapped_column(Text)
+    town: Mapped[str] = mapped_column(Text)
+    district: Mapped[str] = mapped_column(Text)
+    # Only for the review; never shown to customers.
+    gst_number: Mapped[str | None] = mapped_column(Text)
+    status: Mapped[str] = mapped_column(Text, server_default=text("'pending'"))
+    reviewed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    last_login_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    __table_args__ = (
+        CheckConstraint("email = lower(email)", name="ck_vendors_email_lowercase"),
+        CheckConstraint(_in("status", VENDOR_STATUSES), name="ck_vendors_status"),
+    )
+
+
+class VendorToken(Base):
+    """A one-time emailed link: an invite to join, or a password reset. Only its hash is stored."""
+
+    __tablename__ = "vendor_tokens"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    email: Mapped[str] = mapped_column(Text)
+    purpose: Mapped[str] = mapped_column(Text)
+    token_hash: Mapped[str] = mapped_column(Text, unique=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    __table_args__ = (
+        CheckConstraint(_in("purpose", VENDOR_TOKEN_PURPOSES), name="ck_vendor_tokens_purpose"),
+        Index("ix_vendor_tokens_email_purpose", "email", "purpose"),
+    )
+
+
+class VendorSession(Base):
+    """A shop's login. Only the token's hash is stored."""
+
+    __tablename__ = "vendor_sessions"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    vendor_id: Mapped[int] = mapped_column(ForeignKey("vendors.id", ondelete="CASCADE"))
+    token_hash: Mapped[str] = mapped_column(Text, unique=True)
+    expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
+    revoked_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    __table_args__ = (Index("ix_vendor_sessions_vendor_id", "vendor_id"),)
+
+
+class VendorOffer(Base):
+    """A shop's price for a product. Never mixed into listings, price history, alerts or deals."""
+
+    __tablename__ = "vendor_offers"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    vendor_id: Mapped[int] = mapped_column(ForeignKey("vendors.id", ondelete="CASCADE"))
+    canonical_product_id: Mapped[int] = mapped_column(
+        ForeignKey("canonical_products.id", ondelete="CASCADE")
+    )
+    price: Mapped[int] = mapped_column(Integer)
+    # Both inclusive, as dates in India.
+    starts_on: Mapped[date] = mapped_column(Date)
+    ends_on: Mapped[date] = mapped_column(Date)
+    closed_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
+    closed_by: Mapped[str | None] = mapped_column(Text)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
+    )
+
+    __table_args__ = (
+        CheckConstraint("price > 0", name="ck_vendor_offers_price_positive"),
+        CheckConstraint("ends_on >= starts_on", name="ck_vendor_offers_dates"),
+        CheckConstraint(_in("closed_by", OFFER_CLOSED_BY), name="ck_vendor_offers_closed_by"),
+        # A shop has at most one open offer per product.
+        Index("uq_vendor_offers_open", "vendor_id", "canonical_product_id", unique=True,
+              postgresql_where=text("closed_at IS NULL")),
+        Index("ix_vendor_offers_product", "canonical_product_id"),
+    )
+
+
+class VendorAuditLog(Base):
+    """Who did what: review decisions and every offer change."""
+
+    __tablename__ = "vendor_audit_log"
+
+    id: Mapped[int] = mapped_column(primary_key=True)
+    actor: Mapped[str] = mapped_column(Text)
+    action: Mapped[str] = mapped_column(Text)
+    vendor_id: Mapped[int | None] = mapped_column(ForeignKey("vendors.id", ondelete="SET NULL"))
+    offer_id: Mapped[int | None] = mapped_column(ForeignKey("vendor_offers.id", ondelete="SET NULL"))
+    detail: Mapped[dict | None] = mapped_column(JSONB)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now()
     )

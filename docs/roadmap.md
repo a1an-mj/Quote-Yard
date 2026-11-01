@@ -70,7 +70,7 @@ Host on the Asus VivoBook. Public access and HTTPS. Set the email settings in th
 ### After the first release
 
 - **Phase 11: myG 108-record cap** (issue 1), if it can be fixed within the site's rules. Confirmed again on the first pipeline run (2026-10-29): every myG category stopped at a 403 on page 10.
-- **Phase 12: Vendor system**: shop accounts and local offers next to scraped prices ([`accounts-and-vendors.md`](accounts-and-vendors.md#vendors)). Needs accounts (Phase 7).
+- **Phase 12: Vendor system** ✅ built ahead of the first release: invited shops, an admin page, and local offers next to store prices ([`accounts-and-vendors.md`](accounts-and-vendors.md#vendors-built)). Real shops can use it once Phase 10 makes the site public.
 
 ### Later
 

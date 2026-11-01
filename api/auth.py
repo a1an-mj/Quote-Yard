@@ -8,7 +8,14 @@ from sqlalchemy import func, select, update
 from sqlalchemy.orm import Session
 
 from api.deps import get_session
-from api.security import hash_secret, hash_token, new_code, new_session_token, verify_secret
+from api.security import (
+    hash_secret,
+    hash_token,
+    is_admin_email,
+    new_code,
+    new_session_token,
+    verify_secret,
+)
 from db.models import EmailCode, User, UserSession
 
 SESSION_COOKIE = "qy_session"
@@ -52,6 +59,12 @@ def require_user(request: Request, session: Session = Depends(get_session)) -> U
         )
     if user is None:
         raise HTTPException(status_code=401, detail="not logged in")
+    return user
+
+
+def require_admin(user: User = Depends(require_user)) -> User:
+    if not is_admin_email(user.email):
+        raise HTTPException(status_code=403, detail="not allowed")
     return user
 
 
