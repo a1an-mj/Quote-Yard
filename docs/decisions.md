@@ -104,7 +104,7 @@ Under `/api/v1`, docs at `/api/v1/docs`. Data routes are read-only and need a lo
 
 ## Matching (`matching/`, `db/match_writer.py`)
 
-**Types with model codes** (`matching/code_matcher.py`, version 1.2; TVs, washing machines and refrigerators so far): the key is `(product type, brand, model code)`, so colours with their own code stay separate. Different sizes under one code, or a price gap above 25%, send the group to review unmerged. Phones keep their own matcher below.
+**Types with model codes** (`matching/code_matcher.py`, version 1.3; TVs, washing machines, refrigerators, ACs and microwaves so far): the key is `(product type, brand, model code)`, so colours with their own code stay separate. Different sizes under one code, or a price gap above 25%, send the group to review unmerged. Phones keep their own matcher below.
 
 Phones first: the largest overlap (277 listings at all four shops), and the
 names carry brand, model, RAM and storage in four different formats.

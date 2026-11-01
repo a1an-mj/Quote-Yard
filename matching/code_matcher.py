@@ -6,7 +6,7 @@ not contradict each other. Anything doubtful goes to the review section of the
 report, never into a group by guess. Listings without a recognisable code are
 skipped. Writes only to reports/. No database.
 
-Rules (CODE_MATCHING_VERSION 1.2):
+Rules (CODE_MATCHING_VERSION 1.3):
   - Only brand_status "matched" listings take part.
   - The code is the last word in the name with both letters and digits, at
     least 4 characters, that is not a measurement or a feature ("55Inch", "4K",
@@ -20,8 +20,10 @@ Rules (CODE_MATCHING_VERSION 1.2):
     Samsung's "LXL", "TL", "HL" and "NL" endings and missing "UA" prefix, Impex's "EVOQ"
     prefix. IFB ("BXN 8012K") and Godrej ("WTEON VLVT 80 5.0 FDTS MTBK") write
     their codes as several words, which are joined; so does Liebherr ("DNBsiE 1911").
-  - Whirlpool refrigerators are skipped: one word such as "DF278" covers
-    different product lines.
+  - LG ACs: "ASNQ19QNXE" == "AS-Q19QNXE". Panasonic ACs: the "CS-" and "CS/CU-"
+    prefixes are ignored.
+  - Whirlpool refrigerators and Voltas ACs are skipped: one word such as "DF278"
+    or "123INV" covers different product lines and colours.
   - Different sizes under one code, or prices apart by more than PRICE_SPREAD_LIMIT,
     send the whole group to review, unmerged.
   - Possible misses (one code inside another) are reported, never merged.
@@ -37,7 +39,7 @@ from pathlib import Path
 
 from matching.extract_phones import load_records
 
-CODE_MATCHING_VERSION = "1.2"
+CODE_MATCHING_VERSION = "1.3"
 ROOT = Path(__file__).resolve().parent.parent
 PRICE_SPREAD_LIMIT = 1.25
 MIN_CODE_LENGTH = 4
@@ -46,14 +48,16 @@ SIZE_PATTERNS = {
     "Television": (re.compile(r"(\d{2,3})\s*(?:-|\")?\s*inch(?:es)?\b", re.I), "inch"),
     # Not "9/6/3KG" or "12/7KG": those are wash / dry capacities.
     "Refrigerator": (re.compile(r"(?<![\d./])(\d{2,4})\s*(?:l|ltrs?|litres?)\b", re.I), "L"),
+    "Microwave Oven": (re.compile(r"(?<![\d./])(\d{2,3})\s*(?:l|ltrs?|litres?)\b", re.I), "L"),
+    "Air Conditioner": (re.compile(r"(?<![\d./])(\d(?:\.\d+)?)\s*ton\b", re.I), "ton"),
     "Washing Machine": (re.compile(r"(?<![\d./])(\d{1,2}(?:\.\d)?)\s*kg\b(?!\s*/\d)", re.I), "kg"),
 }
-SHORT_NAMES = {"Television": "TV"}
+SHORT_NAMES = {"Television": "TV", "Air Conditioner": "AC"}
 
 TOKEN = re.compile(r"[A-Za-z0-9][A-Za-z0-9./\-]*[A-Za-z0-9]")
 NOT_A_CODE = re.compile(
     r"^(?:\d+(?:\.\d+)?(?:cm|m|mm|inch|inches|hz|k|w|ch|l|ltr|kg|gb|tb|ton|star)"
-    r"|hdr\d+|gen\d+|rpm\d+|\d+rpm|[\d./]+kg|\d+y(?:r|m|rm|mw|rmw)?)$",
+    r"|hdr\d+|gen\d+|rpm\d+|\d+rpm|[\d./]+kg|\d+y(?:r|m|rm|mw|rmw)?|\d+-?in-?\d+)$",
     re.I,
 )
 SPLIT_PREFIX = re.compile(r"\b(K|OLED)\s+(\d{2}[A-Za-z])")
@@ -62,10 +66,11 @@ GODREJ_CODE = re.compile(
     r"\b(?:W(?:FEON|TEON|SEDGE|S\s+EDGE)|R[DST]\s+E[A-Z]+)\b[^|,()]*?"
     r"(?=\s+(?:Fully|Direct)\b|\s*[|,()]|\s*$)", re.I)
 LIEBHERR_CODE = re.compile(r"\b([A-Za-z]{5,6})\s+(\d{4})\b")
-NO_RELIABLE_CODE = {("Refrigerator", "Whirlpool")}
+NO_RELIABLE_CODE = {("Refrigerator", "Whirlpool"), ("Air Conditioner", "Voltas")}
 VARIANT_AFTER_CODE = {"pro", "max", "plus", "ultra"}
 BRAND_RULES = {
-    "LG": lambda code: code.split(".", 1)[0],
+    "LG": lambda code: re.sub(r"^ASNQ", "ASQ", code.split(".", 1)[0]),
+    "Panasonic": lambda code: re.sub(r"^CS(?:/CU)?-", "", code),
     "Samsung": lambda code: re.sub(r"^(?=\d)", "UA", re.sub(r"(?:LXL|TL|HL|NL)$", "", code)),
     "Impex": lambda code: re.sub(r"^EVOQ(?=\d)", "", code),
 }

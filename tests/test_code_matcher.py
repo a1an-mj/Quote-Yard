@@ -40,6 +40,12 @@ def rec(shop, name, price=10000, brand="LG", status="matched"):
     ("Samsung 189 L 5 Star Refrigerator (RR21H2H25BR, Begonia Red)", "Samsung", "RR21H2H25BR"),
     ("Samsung Refrigerator | 189 L | Begonia Red | RR21H2H25BR/HL", "Samsung", "RR21H2H25BR"),
     ("SAMSUNG 236 LITRE FROST FREE 2 STAR RT-40H28W2PNL REFRIGERATOR", "Samsung", "RT40H28W2P"),
+    ("LG Inverter Split AC | 1.5 Ton | 3 Star | ASNQ19QNXE", "LG", "ASQ19QNXE"),
+    ("LG 1.5 TON 3 STAR INVERTER SPLIT AC AS-Q19QNXE.AMLG", "LG", "ASQ19QNXE"),
+    ("Panasonic Inverter Split AC | 1 Ton | CS-EU12CKY3F", "Panasonic", "EU12CKY3F"),
+    ("PANASONIC 1 TON 3 STAR INVERTER SPLIT AIR CONDITIONER, EU12CKY3F", "Panasonic", "EU12CKY3F"),
+    ("Panasonic EU 7 in 1 Convertible | 2 Ton | CS/CU-EU24BKY3", "Panasonic", "EU24BKY3"),
+    ("Lloyd Inverter Split AC | 6-in-1 Convertible | 1 Ton", "Lloyd", None),
     ("Godrej 244 L 2 Star (RT EONVALOR 280BN RI FS ST, Fossil Steel)", "Godrej", "RTEONVALOR280BNRIFSST"),
     ("Godrej 244 L 2 Star (RT EONCRYSTAL 280BN RI OB, Onyx Black)", "Godrej", "RTEONCRYSTAL280BNRIOB"),
     ("Godrej RD Emarvel 207CN TDF Direct Cool Single Door Refrigerator | 184 L", "Godrej", "RDEMARVEL207CNTDF"),
@@ -87,6 +93,23 @@ def test_whirlpool_refrigerators_are_skipped():
         rec("Pittappillil", "WHIRLPOOL 235 Litre NEO DF278 PRM", brand="Whirlpool"),
     ], "Refrigerator")
     assert not groups and [r["skip_reason"] for r in skipped] == ["no_model_code"] * 2
+
+
+def test_voltas_acs_are_skipped():
+    groups, _, skipped = match([
+        rec("Nandilath G Mart", "Voltas 1 Ton AC (123INV Vectra Elegant)", brand="Voltas"),
+        rec("myG", "Voltas AC | 1 Ton | 123INV Vertis Elite", brand="Voltas"),
+    ], "Air Conditioner")
+    assert not groups and len(skipped) == 2
+
+
+def test_ac_and_microwave_sizes():
+    assert extract_size("Lloyd AC | 1.5 Ton | 3 Star", "Air Conditioner") == 1.5
+    assert extract_size("LG Inverter | 3 Star | 1.5TON", "Air Conditioner") == 1.5
+    assert extract_size("LG 5.3 kW AC 2 Ton", "Air Conditioner") == 2
+    assert extract_size("Microwave Oven LG 20L SOLO MS2043DB", "Microwave Oven") == 20
+    groups, _, _ = match([rec("myG", "LG AC | 1.5 Ton | ASNQ19QNXE")], "Air Conditioner")
+    assert groups[0]["name"] == "LG 1.5 ton AC ASQ19QNXE"
 
 
 def test_refrigerator_sizes():
