@@ -28,6 +28,7 @@ cat > "$UNIT_DIR/$NAME.service" <<UNIT
 [Unit]
 Description=Quote Yard website and API
 After=network-online.target postgresql.service
+OnFailure=quote-yard-notify@%n.service
 
 [Service]
 WorkingDirectory=$REPO
@@ -41,6 +42,7 @@ RestartSec=5
 WantedBy=default.target
 UNIT
 
+"$REPO/deploy/install-notify.sh"
 systemctl --user daemon-reload
 systemctl --user enable "$NAME.service"
 systemctl --user restart "$NAME.service"

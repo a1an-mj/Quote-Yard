@@ -21,6 +21,7 @@ mkdir -p "$UNIT_DIR"
 cat > "$UNIT_DIR/$NAME.service" <<UNIT
 [Unit]
 Description=Quote Yard database and data backup
+OnFailure=quote-yard-notify@%n.service
 
 [Service]
 Type=oneshot
@@ -38,6 +39,7 @@ Persistent=true
 [Install]
 WantedBy=timers.target
 UNIT
+"$REPO/deploy/install-notify.sh"
 systemctl --user daemon-reload
 systemctl --user enable --now "$NAME.timer"
 systemctl --user list-timers "$NAME.timer" --no-pager

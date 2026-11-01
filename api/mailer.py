@@ -60,6 +60,9 @@ def send_safely(mailer, to: str, subject: str, body: str) -> None:
         mailer.send(to, subject, body)
     except Exception:
         log.exception("Could not send %r", subject)
+    else:
+        # The subject only: no address, and never the code in the body.
+        log.info("Sent %r", subject)
 
 
 if __name__ == "__main__":

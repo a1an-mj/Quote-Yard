@@ -133,6 +133,13 @@ emails and password hashes, so they stay private and out of git. To restore:
 `createdb quote_yard && pg_restore --no-owner -d quote_yard quote_yard-DATE.dump`, then
 `tar -xf data-DATE.tar` in the repo root.
 
+## When something fails
+
+If the nightly update, a backup or the website service fails, systemd runs
+`api/notify_failure.py`, which emails the log's last lines to
+`QUOTE_YARD_ALERT_EMAIL`. A retailer needing attention counts as a failure too.
+See failures with `systemctl --user --failed`. Sent emails are logged by subject only.
+
 ## Tests
 
 ```

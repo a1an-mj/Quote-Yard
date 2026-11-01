@@ -30,6 +30,7 @@ cat > "$UNIT_DIR/$NAME.service" <<UNIT
 [Unit]
 Description=Quote Yard daily update (scrape, process, load, match)
 Documentation=file://$REPO/README.md
+OnFailure=quote-yard-notify@%n.service
 
 [Service]
 Type=oneshot
@@ -56,6 +57,7 @@ Persistent=true
 WantedBy=timers.target
 UNIT
 
+"$REPO/deploy/install-notify.sh"
 systemctl --user daemon-reload
 systemctl --user enable --now "$NAME.timer"
 echo "Installed. Next run:"

@@ -67,6 +67,7 @@ def send_alerts(session: Session, mailer, dry_run: bool = False) -> dict:
             stats["failed"] += 1
             print(f"Could not email alert {alert.id}: {exc}", file=sys.stderr)
             continue
+        print(f"Sent alert {alert.id}")
         alert.last_notified_price = price
         alert.last_notified_at = datetime.now(timezone.utc)
         session.commit()
