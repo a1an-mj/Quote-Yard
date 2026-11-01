@@ -23,6 +23,7 @@ export async function api(path, { method = 'GET', body, signal } = {}) {
   })
   if (response.status === 204) return null
   const data = await response.json().catch(() => null)
+  if (response.status === 401) window.dispatchEvent(new Event('qy:unauthorized'))
   if (!response.ok) throw new ApiError(response.status, data?.detail)
   return data
 }

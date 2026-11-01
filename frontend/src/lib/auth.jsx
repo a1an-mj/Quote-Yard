@@ -15,6 +15,13 @@ export function AuthProvider({ children }) {
       .finally(() => setLoading(false))
   }, [])
 
+  // A session that ended while the app was open sends the person back to log in.
+  useEffect(() => {
+    const signedOut = () => setUser(null)
+    window.addEventListener('qy:unauthorized', signedOut)
+    return () => window.removeEventListener('qy:unauthorized', signedOut)
+  }, [])
+
   const logout = useCallback(async () => {
     await api('/auth/logout', { method: 'POST' })
     setUser(null)

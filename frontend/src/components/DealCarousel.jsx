@@ -8,7 +8,14 @@ function comparison(deal) {
     : `${formatPrice(deal.saving)} below its previous price`
 }
 
-function DealCard({ deal }) {
+// Deals carry no product id on purpose (they are public); search for the product instead.
+function searchFor(deal) {
+  const model = deal.name.split(/[[|,(]/)[0]
+  const words = model.split(/\s+/).filter((w) => /[\p{L}\p{N}]/u.test(w)).slice(0, 6)
+  return `/search?q=${encodeURIComponent(words.join(' '))}`
+}
+
+function DealCard({ deal, linked }) {
   return (
     <li className="qy-tile qy-deal">
       <div className="qy-img" aria-hidden="true" />
@@ -24,12 +31,13 @@ function DealCard({ deal }) {
         <span className="qy-badge qy-badge--solid" style={{ alignSelf: 'flex-start' }}>Save {formatPrice(deal.saving)}</span>
         <p className="qy-small">{comparison(deal)}</p>
         <p className="qy-small">{deal.retailer} · checked {timeAgo(deal.checked_at)}</p>
+        {linked && <Link className="qy-link" to={searchFor(deal)}>See prices</Link>}
       </div>
     </li>
   )
 }
 
-export default function DealCarousel({ deals, loading, error, onRetry }) {
+export default function DealCarousel({ deals, loading, error, onRetry, linked = false }) {
   const track = useRef(null)
   const scroll = (direction) =>
     track.current?.scrollBy({ left: direction * 416, behavior: 'smooth' })
@@ -71,7 +79,7 @@ export default function DealCarousel({ deals, loading, error, onRetry }) {
     <div className="qy-stack" style={{ gap: 16 }}>
       <ul className="qy-deals" ref={track} tabIndex={0} aria-label="Today's deals" style={{ listStyle: 'none', margin: 0, paddingInline: 0 }}>
         {deals.map((deal) => (
-          <DealCard key={`${deal.kind}-${deal.name}-${deal.retailer}`} deal={deal} />
+          <DealCard key={`${deal.kind}-${deal.name}-${deal.retailer}`} deal={deal} linked={linked} />
         ))}
       </ul>
       <div className="qy-between" style={{ alignItems: 'center' }}>
@@ -79,7 +87,7 @@ export default function DealCarousel({ deals, loading, error, onRetry }) {
           <button className="qy-btn qy-btn--icon qy-btn--quiet" type="button" aria-label="Previous deals" onClick={() => scroll(-1)}>←</button>
           <button className="qy-btn qy-btn--icon qy-btn--quiet" type="button" aria-label="Next deals" onClick={() => scroll(1)}>→</button>
         </div>
-        <Link className="qy-btn" to="/signup">Sign up to see every store's price</Link>
+        {!linked && <Link className="qy-btn" to="/signup">Sign up to see every store's price</Link>}
       </div>
     </div>
   )

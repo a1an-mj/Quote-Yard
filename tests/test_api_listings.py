@@ -216,6 +216,15 @@ def test_sorting_with_stable_ties(ctx, shop):
     assert get(client, sort="bogus").status_code == 422
 
 
+def test_current_filter_drops_listings_missing_from_the_latest_scrape(ctx, shop):
+    client, session = ctx
+    now = datetime.now(timezone.utc)
+    add_listing(session, shop, 1, name="Fresh", last_seen=now)
+    add_listing(session, shop, 2, name="Old", last_seen=datetime(2020, 1, 1, tzinfo=timezone.utc))
+    assert get(client).json()["total"] == 2
+    assert [i["name"] for i in get(client, current=True).json()["items"]] == ["Fresh"]
+
+
 def test_seen_since(ctx, shop):
     client, session = ctx
     add_listing(session, shop, 1, last_seen=datetime(2020, 1, 1, tzinfo=timezone.utc))

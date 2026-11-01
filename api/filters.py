@@ -6,6 +6,7 @@ from typing import Literal
 from fastapi import HTTPException, Query
 from sqlalchemy import func, select
 
+from api.freshness import is_current
 from db.models import Listing, ListingCategory, Retailer
 
 MAX_QUERY_WORDS = 8
@@ -28,6 +29,7 @@ class ListingFilters:
         max_price: int | None = Query(None, ge=0),
         availability: Literal["In stock", "Out of stock", "Unknown"] | None = None,
         seen_since: datetime | None = None,
+        current: bool = Query(False, description="Only listings from each retailer's latest, recent scrape"),
     ) -> None:
         if min_price is not None and max_price is not None and min_price > max_price:
             raise HTTPException(status_code=422, detail="min_price cannot exceed max_price")
@@ -40,6 +42,7 @@ class ListingFilters:
         self.max_price = max_price
         self.availability = availability
         self.seen_since = seen_since
+        self.current = current
 
 
 def base_query(*columns):
@@ -66,6 +69,8 @@ def apply_filters(stmt, f: ListingFilters):
         stmt = stmt.where(Listing.availability == f.availability)
     if f.seen_since:
         stmt = stmt.where(Listing.last_seen_at >= f.seen_since)
+    if f.current:
+        stmt = stmt.where(is_current)
 
     # EXISTS, not JOIN: a listing with two category rows must appear once.
     # Category and type must match on the SAME category row.
