@@ -11,7 +11,7 @@ Last updated 2026-10-31.
 | PostgreSQL + loader | ✅ 3,854 listings, 4,263 price-history rows |
 | Data API | ✅ `/api/v1`: listings, products, compare, catalog; read-only, and login required since 2026-10-31 |
 | Matching | ✅ **Phones only**: about 11% of listings. Other types not started. |
-| Pipeline and schedule | 🟡 Built; scheduled runs to be verified on the VivoBook |
+| Pipeline and schedule | ✅ Running on the VivoBook; first scheduled run passed 2026-11-01 (02:14, 32 minutes, all stages OK) |
 | Accounts backend | ✅ Sign-up, email codes, login, logout, forgot password |
 | Saved items, alerts, deals | ✅ API built; alert emails go through the pipeline's last stage |
 | React frontend | ⬜ Prototype on mock data; to be rebuilt from the new design |
@@ -21,7 +21,7 @@ Last updated 2026-10-31.
 Accounts come before the frontend because the platform requires a login, so
 no page is built against fake sessions.
 
-### Phase 6: Pipeline and scheduler (built; scheduled runs to be verified on the VivoBook)
+### Phase 6: Pipeline and scheduler ✅
 
 - ✅ `python -m pipeline`: scrape -> clean -> normalize -> brand -> load -> match. One retailer failing does not stop the others; empty or broken scrapes are restored from a backup; one run at a time; exit codes for the scheduler. 13 tests.
 - ✅ Comparisons use current offers only: `last_seen_at` comes from the scrape time, and `/products` / `/compare` count only listings from each retailer's latest, recent scrape.
@@ -81,7 +81,7 @@ Host on the Asus VivoBook. Public access and HTTPS. Set the email settings in th
 |:-:|-------|-------|
 | 1 | **myG truncation** | 8 of 11 categories have exactly 108 records (9 pages x 12), matching a 403 at page 10. Cause unknown. Test one at a time: open pages 9-11 in a normal browser; run `--only mobiles --max-pages 12`; check whether sorting or filters expose other products. Read `robots.txt` and the terms first. Do not spoof headers or rotate identities; if the cap is deliberate, ask myG for a feed. Until fixed, no "cheapest" claim where myG coverage could change the answer. |
 | 2 | ~~**myG TVs**~~ | ✅ Added back to the scraper (`tvs`, 2026-11-01). |
-| 3 | **Out-of-stock path untested** | Data has only `In stock` (2,796) and `Unknown` (179). Schema and loader allow `Out of stock`; nothing has exercised it end to end. |
+| 3 | ~~**Out-of-stock path**~~ | ✅ Real data now has it (127 records on 2026-11-01) and the run loaded them. |
 | 4 | **Pittappillil: 7 empty subcategories** | 55 configured, 48 present in the data. Confirm they are really empty, not a silent scraper stop. |
 | 5 | **Unmapped records (20%)** | 346 `parent_only`, 240 `unmapped`. Cheapest wins: an `Earbuds` type (Oxygen Gadgets, 23); a name-rule layer (`mapping_status: rule_mapped`, versioned) for mixed buckets such as Pittappillil Chimney & Hob. |
 | 6 | **Brand review records (10)** | Faber + LG (4, real ambiguity), Eureka Forbes + Aquaguard (4), Samsung + Symphony (2). Resolve by hand or a `same_company` rule. Optional brand batch: Hykon, Vidiem, Everest, Kuhl, Fingers, Indus Valley, Aquaneeta, `Blueberry` <- "blueberrys". |
