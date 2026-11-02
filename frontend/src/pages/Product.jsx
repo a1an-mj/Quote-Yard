@@ -90,7 +90,7 @@ function PriceTable({ compare }) {
   const lowest = compare.retailers.find((r) => r.cheapest_listed)?.best.price
   return (
     <div className="qy-tablebox">
-      <table className="qy-table">
+      <table className="qy-table qy-table--stack">
         <caption className="qy-honeypot">Current prices by store, lowest first</caption>
         <thead>
           <tr>
@@ -114,10 +114,10 @@ function PriceTable({ compare }) {
                   </span>
                   {row.best.box_note && <span className="qy-small" style={{ display: 'block' }}>Sold {row.best.box_note}</span>}
                 </th>
-                <td className="r"><span className="qy-price">{formatPrice(row.best.price)}</span></td>
-                <td className="r"><span className="qy-price qy-small">{out || lowest == null || row.best.price === lowest ? '–' : `+ ${formatPrice(row.best.price - lowest)}`}</span></td>
-                <td><Availability value={row.best.availability} /></td>
-                <td><Checked iso={row.best.last_seen_at} /></td>
+                <td className="r" data-label="Listed price"><span className="qy-price">{formatPrice(row.best.price)}</span></td>
+                <td className="r" data-label="vs lowest"><span className="qy-price qy-small">{out || lowest == null || row.best.price === lowest ? '–' : `+ ${formatPrice(row.best.price - lowest)}`}</span></td>
+                <td data-label="Availability"><Availability value={row.best.availability} /></td>
+                <td data-label="Checked"><Checked iso={row.best.last_seen_at} /></td>
                 <td className="r"><StoreLink offer={row.best} /></td>
               </tr>
             )

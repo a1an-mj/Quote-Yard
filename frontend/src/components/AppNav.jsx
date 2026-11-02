@@ -1,6 +1,7 @@
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
 import Logo from './Logo'
+import NavMenu from './NavMenu'
 import SearchBox from './SearchBox'
 import ThemeSwitch from './ThemeSwitch'
 
@@ -18,16 +19,18 @@ export default function AppNav({ search = true }) {
       <div className="qy-wrap qy-nav__in">
         <Logo to="/home" />
         {search && <SearchBox compact />}
-        <nav className="qy-navlinks" aria-label="Main">
-          <NavLink className={({ isActive }) => `qy-navlink ${isActive ? 'qy-navlink--on' : ''}`} to="/categories">Categories</NavLink>
-          <NavLink className={({ isActive }) => `qy-navlink ${isActive ? 'qy-navlink--on' : ''}`} to="/saved">Saved</NavLink>
-          {user?.is_admin && <NavLink className={({ isActive }) => `qy-navlink ${isActive ? 'qy-navlink--on' : ''}`} to="/admin">Shops</NavLink>}
-        </nav>
-        <div className="qy-row qy-appnav__user" style={{ flexWrap: 'wrap' }}>
-          <ThemeSwitch />
-          <span className="qy-small">Hi {user?.first_name}</span>
-          <button className="qy-btn qy-btn--ghost" type="button" onClick={leave}>Log out</button>
-        </div>
+        <NavMenu>
+          <nav className="qy-navlinks" aria-label="Main">
+            <NavLink className={({ isActive }) => `qy-navlink ${isActive ? 'qy-navlink--on' : ''}`} to="/categories">Categories</NavLink>
+            <NavLink className={({ isActive }) => `qy-navlink ${isActive ? 'qy-navlink--on' : ''}`} to="/saved">Saved</NavLink>
+            {user?.is_admin && <NavLink className={({ isActive }) => `qy-navlink ${isActive ? 'qy-navlink--on' : ''}`} to="/admin">Shops</NavLink>}
+          </nav>
+          <div className="qy-row qy-appnav__user" style={{ flexWrap: 'wrap' }}>
+            <ThemeSwitch />
+            <span className="qy-small">Hi {user?.first_name}</span>
+            <button className="qy-btn qy-btn--ghost" type="button" onClick={leave}>Log out</button>
+          </div>
+        </NavMenu>
       </div>
     </header>
   )

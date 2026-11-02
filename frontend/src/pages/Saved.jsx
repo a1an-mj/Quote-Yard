@@ -103,7 +103,7 @@ export default function Saved() {
             </div>
           ) : (
             <div className="qy-tablebox">
-              <table className="qy-table">
+              <table className="qy-table qy-table--stack">
                 <caption className="qy-honeypot">Your price alerts</caption>
                 <thead>
                   <tr>
@@ -123,11 +123,13 @@ export default function Saved() {
                           <Link to={`/product/${item.product.id}`} style={{ fontWeight: 500 }}>{item.product.name.split(' [')[0]}</Link>
                           <span className="qy-pcard__spec" style={{ display: 'block' }}>{specLine(item.product.specs)}</span>
                         </td>
-                        <td className="r"><span className="qy-price">{formatPrice(item.target_price)}</span></td>
-                        <td className="r">{item.product.min_price != null ? <span className="qy-price">{formatPrice(item.product.min_price)}</span> : <span className="qy-missing">None</span>}</td>
-                        <td>
-                          <span className={`qy-badge ${status.cls}`}>{status.label}</span>
-                          {item.last_notified_at && <span className="qy-small" style={{ display: 'block', marginTop: 4 }}>Emailed {timeAgo(item.last_notified_at)}</span>}
+                        <td className="r" data-label="Alert below"><span className="qy-price">{formatPrice(item.target_price)}</span></td>
+                        <td className="r" data-label="Lowest now">{item.product.min_price != null ? <span className="qy-price">{formatPrice(item.product.min_price)}</span> : <span className="qy-missing">None</span>}</td>
+                        <td data-label="Status">
+                          <div>
+                            <span className={`qy-badge ${status.cls}`}>{status.label}</span>
+                            {item.last_notified_at && <span className="qy-small" style={{ display: 'block', marginTop: 4 }}>Emailed {timeAgo(item.last_notified_at)}</span>}
+                          </div>
                         </td>
                         <td className="r">
                           <div className="qy-row" style={{ justifyContent: 'flex-end', gap: 8 }}>
