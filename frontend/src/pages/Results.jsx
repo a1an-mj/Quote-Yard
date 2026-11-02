@@ -248,8 +248,8 @@ export default function Results() {
 
           {kind === 'listings' && (
             <p className="qy-small">
-              Individual store listings, not matched across stores. Only phones are compared so far, so two
-              listings here may or may not be the same product.
+              Individual store listings, not matched across stores, so two listings here may or may not be
+              the same product.
             </p>
           )}
 

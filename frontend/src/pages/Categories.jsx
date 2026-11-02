@@ -46,7 +46,7 @@ export default function Categories() {
         <Breadcrumb current="Categories" />
         <h1 className="qy-h1" style={{ margin: '14px 0 8px' }}>Categories</h1>
         <p className="qy-body" style={{ marginBottom: 28 }}>
-          Counts are listings in each store's latest check. Only phones are matched across stores so far.
+          Counts are listings in each store's latest check. Phones, TVs, washing machines, refrigerators, ACs and microwaves are matched across stores so far.
         </p>
         {error ? (
           <ErrorBlock what="categories" onRetry={() => { categories.retry(); types.retry() }} />
