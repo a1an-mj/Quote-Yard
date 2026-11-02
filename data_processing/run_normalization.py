@@ -13,7 +13,8 @@ import shutil
 from collections import Counter
 from pathlib import Path
 
-from normalizer import ALIASES_FILE, TAXONOMY_FILE, Normalizer, load_json, normalize_file
+from normalizer import (ALIASES_FILE, NAME_RULES_FILE, TAXONOMY_FILE, Normalizer,
+                        load_json, normalize_file)
 
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 CLEANED_DATA_DIR = PROJECT_ROOT / "cleaned_data"
@@ -31,11 +32,13 @@ def write_json(path: Path, data) -> None:
 
 
 def main() -> None:
-    for path in (CLEANED_DATA_DIR, TAXONOMY_FILE, ALIASES_FILE):
+    for path in (CLEANED_DATA_DIR, TAXONOMY_FILE, ALIASES_FILE, NAME_RULES_FILE):
         if not path.exists():
             raise FileNotFoundError(f"Not found: {path}")
 
-    normalizer = Normalizer(load_json(TAXONOMY_FILE), load_json(ALIASES_FILE))
+    normalizer = Normalizer(
+        load_json(TAXONOMY_FILE), load_json(ALIASES_FILE), load_json(NAME_RULES_FILE)
+    )
 
     json_files = sorted(CLEANED_DATA_DIR.glob("*.json"))
     if not json_files:
@@ -47,6 +50,7 @@ def main() -> None:
 
     files_report = []
     status_counts: Counter = Counter()
+    typed_by_name = 0
     error_groups: dict[tuple, dict] = {}
     total_in = total_ok = 0
 
@@ -57,6 +61,7 @@ def main() -> None:
         total_in += len(records)
         total_ok += len(normalized)
         status_counts.update(r["mapping_status"] for r in normalized)
+        typed_by_name += sum(r["type_source"] == "name" for r in normalized)
 
         for err in errors:
             group = error_groups.setdefault(
@@ -85,6 +90,7 @@ def main() -> None:
         "normalized_records": total_ok,
         "errors": total_errors,
         "mapping_status_counts": dict(status_counts),
+        "typed_by_name": typed_by_name,
         "unmapped_combinations": [
             {"shop": k[0], "category": k[1], "subcategory": k[2], **v}
             for k, v in error_groups.items()
@@ -95,7 +101,7 @@ def main() -> None:
     write_json(NORMALIZATION_REPORT, report)
 
     print(f"\nInput: {total_in}  Normalized: {total_ok}  Errors: {total_errors}")
-    print(f"Status counts: {dict(status_counts)}")
+    print(f"Status counts: {dict(status_counts)}  Typed by name: {typed_by_name}")
     if unused:
         print(f"WARNING: {len(unused)} unused alias key(s), see report")
     print(f"Report: {NORMALIZATION_REPORT}")

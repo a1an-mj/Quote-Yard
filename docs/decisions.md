@@ -31,15 +31,16 @@ Pittappillil 878.
 ## Normalization (`data_processing/normalizer.py`, `taxonomy/`)
 
 Maps each retailer's categories onto Quote Yard's own taxonomy
-(`taxonomy.json`: 14 categories, 48 product types; `aliases.json`: 113
+(`taxonomy.json`: 14 categories, 66 product types; `aliases.json`: 113
 mappings). The database never depends on retailer category names.
 
 - **Key is `(retailer, raw_category, raw_subcategory)`**, because retailer categories are navigation, not product types (Pittappillil "Mobiles, Laptops and More" holds phones, laptops and watches). A missing subcategory uses the key `__none__`.
 - **Product type first, parent derived**: type names are unique, so the parent is looked up from the type.
-- **Explicit mappings only**, casefolded. No plural-stripping heuristics.
+- **Explicit mappings first**, casefolded. No plural-stripping heuristics.
+- **Name rules fill the gaps** (`name_rules.json`): only when the store's category gives no type, clear words in the product name can. The first matching rule wins, names that look like parts or add-ons get no type, and vague names stay untyped. A row typed this way is `mapped`; `type_source` in the normalized output says `name` (it is not stored in the database).
 - **Status per row**: `mapped` (type known), `parent_only` (category known, type null), `unmapped` (mixed bucket, both null). Unknown tuples raise `MappingError`, the run fails and the previous output is kept (written via a `.tmp` swap).
 - One type per big appliance (Refrigerator, Washing Machine, Television, Mobile Phone); door style, load type and so on are attributes for later. Genuinely different products stay separate (Washer Dryer, Chest Freezer, each fan type).
-- `taxonomy.json` `version` must equal `aliases.json` `taxonomy_version`, or the normalizer refuses to load. Bump both together.
+- `taxonomy.json` `version` must equal `taxonomy_version` in `aliases.json` and `name_rules.json`, or the normalizer refuses to load. Bump them together.
 - Raw values are kept next to canonical ones, so a mapping can be redone without re-scraping.
 
 Result: 2,389 mapped (80%), 346 `parent_only`, 240 `unmapped`. Accepted

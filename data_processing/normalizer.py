@@ -6,7 +6,8 @@ retailer/category/subcategory mappings (aliases.json).
 
 Rules:
 - Never modify raw or cleaned data.
-- Never guess a product type.
+- Never guess a product type: when a store's category gives none, only a clear
+  word in the product's name can give one (name_rules.json).
 - Preserve raw category/subcategory values.
 - Fail on unknown mapping combinations.
 - Deterministic and idempotent: reads raw_* fields when present.
@@ -15,6 +16,7 @@ Rules:
 from __future__ import annotations
 
 import json
+import re
 from pathlib import Path
 from typing import Any
 
@@ -22,6 +24,7 @@ BASE_DIR = Path(__file__).resolve().parent
 TAXONOMY_DIR = BASE_DIR / "taxonomy"
 TAXONOMY_FILE = TAXONOMY_DIR / "taxonomy.json"
 ALIASES_FILE = TAXONOMY_DIR / "aliases.json"
+NAME_RULES_FILE = TAXONOMY_DIR / "name_rules.json"
 
 NONE_KEY = "__none__"
 VALID_STATUSES = {"mapped", "parent_only", "unmapped"}
@@ -45,7 +48,7 @@ def fold(value: Any) -> str:
 
 
 class Normalizer:
-    def __init__(self, taxonomy: dict, aliases: dict) -> None:
+    def __init__(self, taxonomy: dict, aliases: dict, name_rules: dict) -> None:
         # Guardrail 4: both files must be versioned together.
         taxonomy_version = taxonomy.get("version")
         aliases_version = aliases.get("taxonomy_version")
@@ -82,6 +85,33 @@ class Normalizer:
                     self.index[key] = mapping
 
         self.used_keys: set[tuple[str, str, str]] = set()
+
+        if name_rules.get("taxonomy_version") != taxonomy_version:
+            raise MappingError(
+                f"Version mismatch: taxonomy.json version={taxonomy_version!r}, "
+                f"name_rules.json taxonomy_version="
+                f"{name_rules.get('taxonomy_version')!r}"
+            )
+        self.not_the_product = re.compile(name_rules["not_the_product"], re.I)
+        self.name_rules: list[tuple[str, re.Pattern]] = []
+        for rule in name_rules["rules"]:
+            if rule["product_type"] not in self.type_to_parent:
+                raise MappingError(
+                    f"Name rule type {rule['product_type']!r} not in taxonomy"
+                )
+            self.name_rules.append(
+                (rule["product_type"], re.compile(rule["pattern"], re.I))
+            )
+
+    def type_from_name(self, name: Any) -> str | None:
+        """The product type a clear word in the name gives, or None."""
+        text = str(name or "")
+        if self.not_the_product.search(text):
+            return None
+        for product_type, pattern in self.name_rules:
+            if pattern.search(text):
+                return product_type
+        return None
 
     def _check_mapping(self, key: tuple, mapping: dict) -> None:
         status = mapping.get("status")
@@ -141,12 +171,22 @@ class Normalizer:
         else:
             category = None
 
+        type_source = "category" if status == "mapped" else None
+        if status != "mapped":
+            named = self.type_from_name(product.get("name"))
+            if named:
+                product_type = named
+                category = self.type_to_parent[named]
+                status = "mapped"
+                type_source = "name"
+
         normalized = dict(product)
         normalized["raw_category"] = raw_category
         normalized["raw_subcategory"] = raw_subcategory
         normalized["category"] = category
         normalized["product_type"] = product_type
         normalized["mapping_status"] = status
+        normalized["type_source"] = type_source
         normalized["taxonomy_version"] = self.version
         return normalized
 

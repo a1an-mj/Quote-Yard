@@ -59,7 +59,7 @@ Rebuild from the Claude Design artifact "Quote Yard" (minimal style, see [`decis
 
 - ✅ TVs, washing machines, refrigerators, ACs and microwaves matched on model codes (`python -m matching.code_matcher --type Television` writes a report). Most Whirlpool washing machines have no model code in their names, and Whirlpool refrigerators share codes across product lines, so they stay unmatched; the same goes for Voltas ACs.
 - Other types, one at a time with a report first. A trial on exact codes found few or no cross-store matches for mixer grinders, ceiling fans and laptops.
-- Normalization coverage: about 20% of records are `parent_only` / `unmapped` (issue 5).
+- ✅ Normalization coverage: name rules give a type to listings whose store category gives none (`taxonomy/name_rules.json`, issue 5). Parts, add-ons and vague names stay untyped on purpose.
 
 ### Phase 10: Deployment
 
@@ -84,7 +84,7 @@ Host on the Asus VivoBook. Public access and HTTPS. Set the email settings in th
 | 2 | ~~**myG TVs**~~ | ✅ Added back to the scraper (`tvs`, 2026-11-01). |
 | 3 | ~~**Out-of-stock path**~~ | ✅ Real data now has it (127 records on 2026-11-01) and the run loaded them. |
 | 4 | **Pittappillil: 7 empty subcategories** | 55 configured, 48 present in the data. Confirm they are really empty, not a silent scraper stop. |
-| 5 | **Unmapped records (20%)** | 346 `parent_only`, 240 `unmapped`. Cheapest wins: an `Earbuds` type (Oxygen Gadgets, 23); a name-rule layer (`mapping_status: rule_mapped`, versioned) for mixed buckets such as Pittappillil Chimney & Hob. |
+| 5 | **Unmapped records** | Fixed by name rules (taxonomy 1.2), which added 18 product types. What remains is parts, add-ons, one-off items and vague names. |
 | 6 | **Brand review records (10)** | Faber + LG (4, real ambiguity), Eureka Forbes + Aquaguard (4), Samsung + Symphony (2). Resolve by hand or a `same_company` rule. Optional brand batch: Hykon, Vidiem, Everest, Kuhl, Fingers, Indus Valley, Aquaneeta, `Blueberry` <- "blueberrys". |
 | 7 | **Cleaning validator never fails** | 0 errors on real data. Check it can reject bad input; add per-category price warnings (not a flat ceiling). |
 | 8 | **Loader URL-origin warning** | Proposed: warn when a URL does not start with its retailer's `base_url`. |

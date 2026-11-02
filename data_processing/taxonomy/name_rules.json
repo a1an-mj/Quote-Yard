@@ -1,0 +1,231 @@
+{
+  "taxonomy_version": "1.2",
+  "_comment": "Used only when a store's own category gives no product type. Rules run in order; the first match wins, so specific rules come first. Patterns are case-insensitive. Names matching not_the_product are parts or add-ons and get no type.",
+  "not_the_product": "\\b(covers?|bracket|adapter|adaptor|cables?|chargers?|filter (cartridge|candle)s?|cartridges?|spare|replacement|bag|sleeve|protector|screen guard|strap|colorfilm|fun pack|toner|hose|duct|holder|hub|cleaning kit|rotary support)\\b",
+  "rules": [
+    {
+      "product_type": "Laptop",
+      "pattern": "\\b(laptop|macbook|vivobook|ideapad)\\b"
+    },
+    {
+      "product_type": "Desktop Computer",
+      "pattern": "\\b(desktop|mac mini|ideacentre)\\b"
+    },
+    {
+      "product_type": "Printer",
+      "pattern": "\\bprinter\\b"
+    },
+    {
+      "product_type": "Monitor",
+      "pattern": "\\bmonitor\\b"
+    },
+    {
+      "product_type": "Projector",
+      "pattern": "\\bprojector\\b"
+    },
+    {
+      "product_type": "Earbuds",
+      "pattern": "\\b(earbuds?|earpods|tws|airpods|buds\\d?)\\b"
+    },
+    {
+      "product_type": "Headphones",
+      "pattern": "\\b(head ?phones?|headsets?|neckband|earphones?)\\b"
+    },
+    {
+      "product_type": "Power Bank",
+      "pattern": "\\bpower ?banks?\\b"
+    },
+    {
+      "product_type": "Flash Drive",
+      "pattern": "\\b(flash drive|pen ?drive|dual drive)\\b"
+    },
+    {
+      "product_type": "Memory Card",
+      "pattern": "\\b(memory card|micro ?sd|sd card)\\b"
+    },
+    {
+      "product_type": "Hard Drive",
+      "pattern": "\\b(hard (disk|drive)|external (ssd|hdd))\\b"
+    },
+    {
+      "product_type": "Mouse & Keyboard",
+      "pattern": "\\b(mouse|keyboard)\\b"
+    },
+    {
+      "product_type": "Security Camera",
+      "pattern": "\\b(bullet|dome|cctv|security|outdoor|indoor|wi-?fi|ptz)\\b.*\\bcamera\\b"
+    },
+    {
+      "product_type": "Perfume",
+      "pattern": "\\b(perfume|de parfum)\\b"
+    },
+    {
+      "product_type": "Hair Dryer",
+      "pattern": "\\bhair ?dryer\\b"
+    },
+    {
+      "product_type": "Hair Straightener",
+      "pattern": "\\b(hair )?(straightener|straightner)\\b|\\bstraightening brush\\b"
+    },
+    {
+      "product_type": "Trimmer & Shaver",
+      "pattern": "\\b(trimmer|shaver|grooming kit|body groomer)\\b"
+    },
+    {
+      "product_type": "Smart Watch",
+      "pattern": "\\b(smart ?watch|apple watch)\\b|\\bcalling .*watch\\b"
+    },
+    {
+      "product_type": "Soundbar",
+      "pattern": "\\bsound ?bar\\b"
+    },
+    {
+      "product_type": "Speaker",
+      "pattern": "\\bspeaker\\b"
+    },
+    {
+      "product_type": "Ceiling Fan",
+      "pattern": "\\bceiling fan\\b"
+    },
+    {
+      "product_type": "Pedestal Fan",
+      "pattern": "\\bpedest(a|ra)l fan\\b"
+    },
+    {
+      "product_type": "Table Fan",
+      "pattern": "\\btable fan\\b"
+    },
+    {
+      "product_type": "Wall Fan",
+      "pattern": "\\bwall (mount(ed)? |li )?fan\\b"
+    },
+    {
+      "product_type": "Air Cooler",
+      "pattern": "\\bair cooler\\b"
+    },
+    {
+      "product_type": "Voltage Stabilizer",
+      "pattern": "\\bstabili[sz]er\\b"
+    },
+    {
+      "product_type": "Air Conditioner",
+      "pattern": "\\b\\d(\\.\\d)? ton\\b.*\\bstar\\b"
+    },
+    {
+      "product_type": "Air Fryer",
+      "pattern": "\\bair ?fryer\\b"
+    },
+    {
+      "product_type": "Mixer Grinder",
+      "pattern": "\\bmixer grinder\\b"
+    },
+    {
+      "product_type": "Wet Grinder",
+      "pattern": "\\bwet grinder\\b"
+    },
+    {
+      "product_type": "Food Processor",
+      "pattern": "\\bfood processor\\b"
+    },
+    {
+      "product_type": "Blender & Juicer",
+      "pattern": "\\b(juicer|blender)\\b"
+    },
+    {
+      "product_type": "Chimney",
+      "pattern": "\\bchimney\\b"
+    },
+    {
+      "product_type": "Hob",
+      "pattern": "\\bhob\\b"
+    },
+    {
+      "product_type": "Dishwasher",
+      "pattern": "\\bdishwasher\\b"
+    },
+    {
+      "product_type": "Noodle Maker",
+      "pattern": "\\bnoodle maker\\b"
+    },
+    {
+      "product_type": "Induction Cooker",
+      "pattern": "\\binduction (cooker|cooktop|cook top|stove)\\b|\\binduction [\\d.]+ ?\\w* cooktop\\b"
+    },
+    {
+      "product_type": "Gas Stove",
+      "pattern": "\\bgas stove\\b"
+    },
+    {
+      "product_type": "Microwave Oven",
+      "pattern": "\\bmicrowave oven\\b"
+    },
+    {
+      "product_type": "Oven Toaster Grill",
+      "pattern": "\\b(otg|oven toaster)\\b"
+    },
+    {
+      "product_type": "Electric Kettle",
+      "pattern": "\\bkettle\\b"
+    },
+    {
+      "product_type": "Rice Cooker",
+      "pattern": "\\brice cooker\\b"
+    },
+    {
+      "product_type": "Sandwich Maker",
+      "pattern": "\\bsandwich (maker|toaster|griller|press)\\b"
+    },
+    {
+      "product_type": "Cookware",
+      "pattern": "\\b(kadai|kadhai|tawa|fry ?pan|frying pan|grill pan|casserole|saucepan|sauce pan|pressure cooker|cookware|handi|wok|biriyani pot)\\b"
+    },
+    {
+      "product_type": "Lunch Box",
+      "pattern": "\\b(lunch box|tiffin)\\b"
+    },
+    {
+      "product_type": "Bottle & Flask",
+      "pattern": "\\b(water bottle|flask|vacuum bottle)\\b"
+    },
+    {
+      "product_type": "Iron",
+      "pattern": "\\b(dry|steam|steamer) iron\\b|\\biron box\\b"
+    },
+    {
+      "product_type": "Vacuum Cleaner",
+      "pattern": "\\b(vacuum|vaccum) cleaner\\b"
+    },
+    {
+      "product_type": "Water Purifier",
+      "pattern": "\\bwater purifier\\b"
+    },
+    {
+      "product_type": "Water Heater",
+      "pattern": "\\b(water heater|geyser)\\b"
+    },
+    {
+      "product_type": "Water Dispenser",
+      "pattern": "\\bwater dispenser\\b"
+    },
+    {
+      "product_type": "Battery",
+      "pattern": "\\binverter batter(y|ies)\\b|\\btubular batter(y|ies)\\b"
+    },
+    {
+      "product_type": "Inverter",
+      "pattern": "\\binverter\\b"
+    },
+    {
+      "product_type": "Chest Freezer",
+      "pattern": "\\b(deep|chest) freezer\\b"
+    },
+    {
+      "product_type": "Refrigerator",
+      "pattern": "\\brefrigerator\\b"
+    },
+    {
+      "product_type": "Clothes Dryer",
+      "pattern": "\\btumble dryer\\b"
+    }
+  ]
+}

@@ -6,10 +6,13 @@ import json, sys, glob, pathlib
 here = pathlib.Path(__file__).parent
 tax = json.loads((here / "taxonomy.json").read_text(encoding="utf-8"))
 ali = json.loads((here / "aliases.json").read_text(encoding="utf-8"))
+rules = json.loads((here / "name_rules.json").read_text(encoding="utf-8"))
 NONE = ali["null_subcategory_key"]
 errors, warnings = [], []
 if ali["taxonomy_version"] != tax["version"]:
     errors.append("aliases.taxonomy_version != taxonomy.version")
+if rules["taxonomy_version"] != tax["version"]:
+    errors.append("name_rules.taxonomy_version != taxonomy.version")
 owner = {}
 for cat, types in tax["categories"].items():
     for t in types:
@@ -33,6 +36,9 @@ for shop, cats in ali["mappings"].items():
             elif st == "unmapped":
                 if t or e.get("category"): errors.append(f"{where}: unmapped must be empty")
             else: errors.append(f"{where}: bad status {st!r}")
+for rule in rules["rules"]:
+    if rule["product_type"] not in owner: errors.append(f"name rule type {rule['product_type']!r} not in taxonomy")
+    used_types.add(rule["product_type"])
 for t in owner:
     if t not in used_types: warnings.append(f"taxonomy type never used by any alias: {t}")
 if len(sys.argv) > 1:
