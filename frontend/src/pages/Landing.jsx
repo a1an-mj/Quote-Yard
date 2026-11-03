@@ -384,9 +384,18 @@ function Story() {
 }
 
 function Tickets({ deals }) {
+  const track = useRef(null)
+  const less = usePrefersLessMotion()
   if (!deals?.length) return null
+  // One card's width plus the gap per press.
+  const scroll = (direction) => {
+    const card = track.current?.querySelector('.ql-ticket')
+    const step = card ? card.getBoundingClientRect().width + 16 : 316
+    track.current?.scrollBy({ left: direction * step, behavior: less ? 'auto' : 'smooth' })
+  }
   return (
-    <ul className="ql-tickets" aria-label="Today's deals">
+    <div className="qy-stack" style={{ gap: 16 }}>
+    <ul className="ql-tickets" ref={track} tabIndex={0} aria-label="Today's deals">
       {deals.map((deal) => (
         <li key={`${deal.kind}-${deal.name}-${deal.retailer}`} className="ql-ticket">
           <div className="ql-ticket__top">
@@ -409,6 +418,11 @@ function Tickets({ deals }) {
         </li>
       ))}
     </ul>
+    <div className="qy-row" style={{ gap: 8 }}>
+      <button className="qy-btn qy-btn--icon qy-btn--quiet" type="button" aria-label="Previous deals" onClick={() => scroll(-1)}>←</button>
+      <button className="qy-btn qy-btn--icon qy-btn--quiet" type="button" aria-label="Next deals" onClick={() => scroll(1)}>→</button>
+    </div>
+    </div>
   )
 }
 
