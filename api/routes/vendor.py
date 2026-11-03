@@ -26,6 +26,10 @@ router = APIRouter(prefix="/vendor", tags=["vendor"], dependencies=[Depends(requ
 
 VENDOR_COOKIE = "qy_vendor_session"
 RESET_LIFETIME = timedelta(hours=1)
+# Like customer codes: each reset email can be sent to someone's inbox by
+# anyone who knows the address, so cap them per address.
+RESET_RESEND_COOLDOWN = timedelta(seconds=60)
+RESET_MAX_PER_HOUR = 5
 BAD_LINK = "This link is wrong, has expired or was already used."
 MAX_OPEN_OFFERS = 200
 MAX_OFFER_DAYS = 31
@@ -287,6 +291,15 @@ def me(vendor: Vendor = Depends(require_vendor)):
     return VendorOut.model_validate(vendor, from_attributes=True)
 
 
+def _may_send_reset(session: Session, email: str) -> bool:
+    count, latest = session.execute(
+        select(func.count(VendorToken.id), func.max(VendorToken.created_at))
+        .where(VendorToken.email == email, VendorToken.purpose == "reset_password",
+               VendorToken.created_at > _now() - timedelta(hours=1))
+    ).one()
+    return count < RESET_MAX_PER_HOUR and not (latest and latest > _now() - RESET_RESEND_COOLDOWN)
+
+
 @router.post("/forgot-password", response_model=MessageOut, status_code=202)
 def forgot_password(body: EmailIn, request: Request, background: BackgroundTasks,
                     session: Session = Depends(get_write_session), mailer=Depends(get_mailer)):
@@ -294,7 +307,7 @@ def forgot_password(body: EmailIn, request: Request, background: BackgroundTasks
     _limit(request)
     _limit(request, "login", f"vendor-reset|{body.email}")
     vendor = session.scalar(select(Vendor).where(Vendor.email == body.email))
-    if vendor is not None:
+    if vendor is not None and _may_send_reset(session, vendor.email):
         token = issue_token(session, vendor.email, "reset_password", RESET_LIFETIME)
         session.commit()
         link = f"{site_url(request)}/vendor/reset#{token}"

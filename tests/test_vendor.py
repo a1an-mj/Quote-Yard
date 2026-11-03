@@ -17,7 +17,7 @@ from api.mailer import get_mailer
 from api.main import app
 from api.routes.vendor import VENDOR_COOKIE, today_in_india
 from api.security import hash_secret
-from db.models import (Base, CanonicalProduct, Listing, Retailer, User, Vendor, VendorAuditLog,
+from db.models import (Base, CanonicalProduct, Listing, Retailer, User, Vendor, VendorAuditLog, VendorToken,
                        VendorOffer)
 from db.session import get_engine
 
@@ -295,6 +295,31 @@ def test_password_reset_logs_out_and_reply_hides_unknown_shops(ctx):
     assert shop.get(f"{P}/vendor/me").status_code == 401
     assert shop.post(f"{P}/vendor/reset-password", json={"token": token, "new_password": "new password 2"}, headers=H).status_code == 400
     assert shop.post(f"{P}/vendor/login", json={"email": SHOP, "password": "new password 1"}, headers=H).status_code == 200
+
+
+def test_reset_emails_are_capped_per_shop(ctx):
+    from api.routes.vendor import RESET_MAX_PER_HOUR
+    session, mailer = ctx
+    _, shop = joined(session, mailer)
+
+    def ask():
+        before = len(mailer.sent)
+        r = shop.post(f"{P}/vendor/forgot-password", json={"email": SHOP}, headers=H)
+        assert r.status_code == 202
+        return len(mailer.sent) > before
+
+    def age_tokens():
+        for t in session.scalars(select(VendorToken).where(VendorToken.purpose == "reset_password")):
+            t.created_at -= timedelta(minutes=2)
+        session.flush()
+
+    assert ask()
+    assert not ask()  # within a minute of the last one
+    for _ in range(RESET_MAX_PER_HOUR - 1):
+        age_tokens()
+        assert ask()
+    age_tokens()
+    assert not ask()  # the hourly cap
 
 
 def test_shop_login_is_not_a_customer_login(ctx):

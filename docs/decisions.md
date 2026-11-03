@@ -84,7 +84,7 @@ delete listings (myG truncation would make them look removed); idempotent;
 
 ## API (`api/`)
 
-Under `/api/v1`, docs at `/api/v1/docs`. Data routes are read-only and need a login (`/health`, `/retailers` and `/public/deals` stay public); account routes are in [`accounts-and-vendors.md`](accounts-and-vendors.md).
+Under `/api/v1`; docs at `/api/v1/docs` only when `QUOTE_YARD_API_DOCS=true`. Data routes are read-only and need a login (`/health`, `/retailers` and `/public/deals` stay public); account routes are in [`accounts-and-vendors.md`](accounts-and-vendors.md).
 
 | Endpoint | Purpose |
 |----------|---------|

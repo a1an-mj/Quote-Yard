@@ -103,7 +103,8 @@ User timers only run while you are logged in; on a server run
 uvicorn api.main:app --reload
 ```
 
-Docs at http://127.0.0.1:8000/api/v1/docs. Most routes need a login, and during development
+With `QUOTE_YARD_API_DOCS=true`, docs are at http://127.0.0.1:8000/api/v1/docs (off by default,
+so the live site does not list its routes). Most routes need a login, and during development
 email codes print in this terminal. Session cookies are `Secure` by default; on plain http other
 than localhost set `QUOTE_YARD_COOKIE_SECURE=false`. All settings are listed in `.env.example`. Settings: `QUOTE_YARD_CORS_ORIGINS`
 (default `http://localhost:5173`), `QUOTE_YARD_RATE_LIMIT` (requests per minute

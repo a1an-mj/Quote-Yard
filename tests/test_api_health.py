@@ -52,6 +52,15 @@ def test_docs_live_under_the_prefix(client):
     assert client.get("/api/v1/openapi.json").status_code == 200
 
 
+def test_docs_are_off_unless_turned_on(monkeypatch):
+    from fastapi.testclient import TestClient
+    from api.main import create_app
+    monkeypatch.delenv("QUOTE_YARD_API_DOCS")
+    off = TestClient(create_app(rate_limit=0))
+    assert off.get("/api/v1/docs").status_code == 404
+    assert off.get("/api/v1/openapi.json").status_code == 404
+
+
 def test_cors_allows_the_vite_origin_for_get(client):
     r = client.get("/api/v1/health", headers={"Origin": "http://localhost:5173"})
     assert r.headers.get("access-control-allow-origin") == "http://localhost:5173"

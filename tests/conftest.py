@@ -26,6 +26,7 @@ os.environ["QUOTE_YARD_RATE_LIMIT"] = "0"
 os.environ["QUOTE_YARD_AUTH_RATE_LIMIT"] = "0"
 # The test client talks plain http, where a Secure cookie would not be sent back.
 os.environ["QUOTE_YARD_COOKIE_SECURE"] = "false"
+os.environ["QUOTE_YARD_API_DOCS"] = "true"
 
 
 def _ensure_database() -> None:

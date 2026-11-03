@@ -35,12 +35,18 @@ def rate_limit_per_minute() -> int:
     return value
 
 
+def api_docs_on() -> bool:
+    """The docs list every route, admin ones too, so they are off unless asked for."""
+    return os.environ.get("QUOTE_YARD_API_DOCS", "").lower() == "true"
+
+
 def create_app(rate_limit: int | None = None) -> FastAPI:
+    docs = api_docs_on()
     app = FastAPI(
         title="Quote Yard API",
         version="0.1.0",
-        openapi_url=f"{API_PREFIX}/openapi.json",
-        docs_url=f"{API_PREFIX}/docs",
+        openapi_url=f"{API_PREFIX}/openapi.json" if docs else None,
+        docs_url=f"{API_PREFIX}/docs" if docs else None,
         redoc_url=None,
     )
     limit = rate_limit_per_minute() if rate_limit is None else rate_limit
