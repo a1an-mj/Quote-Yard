@@ -62,6 +62,8 @@ export function Privacy() {
           <li>The offers the shop adds, and a record of changes to the shop's account.</li>
           <li>The shop's name, phone number, town and district are <strong>shown publicly</strong> next to its offers, with a map link made from its address, so customers can call or find the shop. The GST number is never shown.</li>
         </ul>
+        <h3 className="qy-h3">If you send feedback</h3>
+        <p>The feedback form's answers, and your name and email if you choose to give them, are emailed to the Quote Yard team. They are not stored on the site, and are used only to improve it and, if you asked, to reply.</p>
         <h3 className="qy-h3">What every visit sends</h3>
         <p>Like any website, our server receives your IP address and the page you ask for. We use them only to keep the site working and to slow down repeated login attempts. They are not linked to your account, and server logs are deleted automatically as they get old.</p>
       </Part>
@@ -87,7 +89,7 @@ export function Privacy() {
 
       <Part title="Who else is involved">
         <ul>
-          <li><strong>Google (Gmail)</strong> delivers the emails we send you, so your email address and the message pass through Google's mail service.</li>
+          <li><strong>Google (Gmail)</strong> delivers the emails we send you, and the team's feedback inbox is a Gmail account, so those messages pass through Google's mail service.</li>
           <li>Everything else runs on our own server in Kerala, India. The site's fonts are served by us too, so visiting does not contact Google or anyone else.</li>
           <li>We would only hand over data if Indian law required it.</li>
         </ul>

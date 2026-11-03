@@ -10,6 +10,7 @@ export default function Footer() {
           the store's page before you buy.
         </p>
         <div className="qy-row" style={{ gap: 16, flexWrap: 'wrap' }}>
+          <Link className="qy-small" to="/feedback">Send feedback</Link>
           <Link className="qy-small" to="/privacy">Privacy</Link>
           <Link className="qy-small" to="/terms">Terms</Link>
           <Link className="qy-small" to="/vendor/login">Shop owners: log in</Link>
