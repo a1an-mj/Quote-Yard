@@ -425,7 +425,8 @@ export default function Landing() {
       <main>
         <section className="ql-hero">
           <Contours />
-          <div className="qy-wrap ql-hero__grid">
+          <div className="qy-wrap">
+          <div className="ql-hero__grid ql-hero__panel">
             <div className="ql-hero__copy">
               <p className="qy-label">Price comparison · Kerala</p>
               <h1 className="qy-display ql-hero__title">Every price. One yard.</h1>
@@ -456,6 +457,7 @@ export default function Landing() {
                 </div>
               </Hud>
             </div>
+          </div>
           </div>
           <a className="ql-scroll" href="#how">See how it works <span aria-hidden="true">↓</span></a>
         </section>

@@ -43,14 +43,19 @@ html:has(.ql) { scroll-padding-top: 84px; }
 .ql-curve { animation: ql-sway calc(16s + var(--i) * 3s) ease-in-out calc(var(--i) * -2.5s) infinite alternate; will-change: transform; }
 .ql-curve__line { fill: none; stroke: var(--h-sky); stroke-width: 1.2; opacity: 0.42; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: ql-draw 3.2s var(--ql-glide) calc(0.3s + var(--i) * 0.22s) forwards; }
 .ql-curve:nth-child(even) .ql-curve__line { stroke: var(--h-violet); }
-.ql-curve__glow { fill: none; stroke: var(--h-sky); stroke-width: 2.2; stroke-linecap: round; opacity: 0; stroke-dasharray: 90 910; animation: ql-travel calc(11s + var(--i) * 2s) linear calc(3.4s + var(--i) * 0.6s) infinite; }
+.ql-curve__glow { fill: none; stroke: var(--h-sky); stroke-width: 4.5px; vector-effect: non-scaling-stroke; stroke-linecap: round; opacity: 0; stroke-dasharray: 90 910; animation: ql-travel calc(11s + var(--i) * 2s) linear calc(3.4s + var(--i) * 0.6s) infinite; }
 .ql-curve:nth-child(even) .ql-curve__glow { stroke: var(--h-violet); animation-direction: reverse; }
 @keyframes ql-draw { to { stroke-dashoffset: 0; } }
 @keyframes ql-sway { from { transform: translate(0, -10px); } to { transform: translate(-36px, 16px); } }
-@keyframes ql-travel { 0% { stroke-dashoffset: 1000; opacity: 0; } 8% { opacity: 0.75; } 92% { opacity: 0.75; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+@keyframes ql-travel { 0% { stroke-dashoffset: 1000; opacity: 0; } 8% { opacity: 0.9; } 92% { opacity: 0.9; } 100% { stroke-dashoffset: 0; opacity: 0; } }
 .ql-hero__grid { position: relative; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(300px, 380px) minmax(200px, 240px); gap: 40px; align-items: center; }
 .ql-hero__copy { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
-.ql .ql-hero__title { font-size: clamp(44px, 6.2vw, 92px); }
+/* One see-through white box behind the whole top row, clear of the screen
+   edges: the lines show through, faded. No backdrop blur, so it stays cheap
+   on low-end phones. */
+.ql-hero__panel { padding: clamp(24px, 3vw, 44px); border-radius: 36px; background: rgba(255, 255, 255, 0.66); border: 1px solid rgba(255, 255, 255, 0.85); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.9), 0 24px 60px rgba(20, 20, 20, 0.07); }
+.qy--dark .ql-hero__panel { background: color-mix(in srgb, var(--qy-surface) 72%, transparent); border-color: rgba(255, 255, 255, 0.09); box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 24px 60px rgba(0, 0, 0, 0.35); }
+.ql .ql-hero__title { font-size: clamp(44px, 5.2vw, 80px); }
 .ql-facts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 15px; color: var(--qy-ink-2); }
 .ql-facts li { display: flex; align-items: center; gap: 10px; }
 .ql-facts li::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--qy-good); flex: none; }
@@ -162,6 +167,7 @@ html:has(.ql) { scroll-padding-top: 84px; }
   .ql .ql-nav__menu { display: inline-flex; }
   .ql-hero { min-height: 0; padding-top: 28px; }
   .ql-hero__grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .ql-hero__panel { padding: 20px; border-radius: 26px; }
   .ql-box { max-width: 420px; width: 100%; }
   .ql-story { grid-template-columns: minmax(0, 1fr); gap: 0; }
   /* A strip of page colour above the box hides text scrolling up behind it. */
