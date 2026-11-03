@@ -231,6 +231,26 @@ def me(user: User = Depends(require_user)):
     return UserOut.model_validate(user, from_attributes=True)
 
 
+class DeleteAccountIn(BaseModel):
+    password: str = Field(max_length=128)
+
+
+@router.post("/delete-account", status_code=204)
+def delete_account(body: DeleteAccountIn, request: Request, response: Response,
+                   user: User = Depends(require_user),
+                   session: Session = Depends(get_write_session)):
+    """Removes the account for good: saved items, alerts, codes and logins go with it."""
+    _limit(request, "login", user.email)
+    if not verify_secret(user.password_hash, body.password):
+        # 400, not 401: a wrong password must not look like being logged out.
+        raise HTTPException(status_code=400, detail="Wrong password.")
+    row = session.get(User, user.id)
+    if row is not None:
+        session.delete(row)
+        session.commit()
+    response.delete_cookie(SESSION_COOKIE, path="/")
+
+
 @router.post("/forgot-password", response_model=MessageOut, status_code=202)
 def forgot_password(body: EmailIn, request: Request, background: BackgroundTasks,
                     session: Session = Depends(get_write_session), mailer=Depends(get_mailer)):

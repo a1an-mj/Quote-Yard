@@ -10,6 +10,7 @@ import Signup from './pages/auth/Signup'
 import Verify from './pages/auth/Verify'
 import Home from './pages/Home'
 import Landing from './pages/Landing'
+import { Privacy, Terms } from './pages/Legal'
 import NotFound from './pages/NotFound'
 import Product from './pages/Product'
 import Results from './pages/Results'
@@ -39,6 +40,8 @@ export default function App() {
       <Route path="/vendor/join" element={<VendorJoin />} />
       <Route path="/vendor/forgot-password" element={<VendorForgot />} />
       <Route path="/vendor/reset" element={<VendorReset />} />
+      <Route path="/privacy" element={<Privacy />} />
+      <Route path="/terms" element={<Terms />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
     </CrashScreen>

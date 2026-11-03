@@ -404,3 +404,41 @@ def test_auth_rate_limit(ctx, monkeypatch):
     finally:
         auth_routes._limiters.cache_clear()
     assert codes == [202, 202, 429]
+
+
+# ---- deleting an account ------------------------------------------------------
+
+def test_delete_account_removes_everything_and_logs_out(ctx):
+    from db.models import CanonicalProduct, PriceAlert, SavedProduct
+    client, s, mailer = ctx
+    signed_up(client, mailer)
+    user = s.scalar(select(User))
+    p = CanonicalProduct(brand="Testco", name="Zed 9", model="zed 9", model_code="Z9",
+                         match_key="delete-test", matching_version="1")
+    s.add(p)
+    s.flush()
+    s.add_all([SavedProduct(user_id=user.id, canonical_product_id=p.id),
+               PriceAlert(user_id=user.id, canonical_product_id=p.id, target_price=100)])
+    s.flush()
+
+    r = post(client, "delete-account", password=PASSWORD)
+    assert r.status_code == 204
+    s.expire_all()
+    assert s.scalar(select(User)) is None
+    for table in (UserSession, EmailCode, SavedProduct, PriceAlert):
+        assert s.scalar(select(table)) is None, table
+    assert me(client).status_code == 401
+    assert s.get(CanonicalProduct, p.id) is not None  # the product itself stays
+
+
+def test_delete_account_needs_the_right_password(ctx):
+    client, s, mailer = ctx
+    signed_up(client, mailer)
+    assert post(client, "delete-account", password="wrong one").status_code == 400
+    assert s.scalar(select(User)) is not None
+    assert me(client).status_code == 200
+
+
+def test_delete_account_needs_login(ctx):
+    client, _, _ = ctx
+    assert post(client, "delete-account", password=PASSWORD).status_code == 401

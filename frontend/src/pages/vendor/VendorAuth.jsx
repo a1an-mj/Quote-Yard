@@ -80,6 +80,7 @@ export function VendorJoin() {
         <Field id="password" label="Password" type="password" autoComplete="new-password" hint="At least 8 characters." required minLength={8} maxLength={128} value={form.password} onChange={set('password')} />
         {error && <p className="qy-form-error" role="alert">{error}</p>}
         <button className="qy-btn qy-btn--primary" type="submit" disabled={busy || !token}>{busy ? 'Sending…' : 'Send for review'}</button>
+        <p className="qy-small">By sending, you agree to the <Link className="qy-link" to="/terms">Terms</Link> (including the rules for shops) and the <Link className="qy-link" to="/privacy">Privacy policy</Link>.</p>
         {!token && <p className="qy-form-error" role="alert">Please open the full link from your invite email.</p>}
       </form>
     </AuthCard>

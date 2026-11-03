@@ -160,3 +160,21 @@ main { animation: qy-in 0.28s var(--qy-ease) both; }
   .qy-hero-band { border-radius: 20px; }
   .qy-ticon--lg { width: 56px; height: 56px; border-radius: 16px; }
 }
+
+/* ---------- privacy and terms ---------- */
+.qy-legal { max-width: 72ch; display: flex; flex-direction: column; gap: 12px; }
+.qy-legal__intro { font-size: 17px; margin-bottom: 12px; }
+.qy-legal__part { display: flex; flex-direction: column; gap: 10px; padding-top: 28px; margin-top: 8px; border-top: 1px solid var(--qy-line); }
+.qy-legal__part h3 { margin-top: 8px; }
+.qy-legal p, .qy-legal li { color: var(--qy-ink-2); line-height: 1.65; }
+.qy-legal p { margin: 0; }
+.qy-legal ul { margin: 0; padding-left: 20px; display: flex; flex-direction: column; gap: 6px; }
+.qy-legal strong { color: var(--qy-ink); font-weight: 600; }
+.qy-legal code { font: 500 13px var(--qy-mono); padding: 1px 6px; border-radius: 6px; background: var(--qy-sunken); }
+
+/* ---------- deleting an account ---------- */
+.qy-danger-zone { padding-top: 32px; border-top: 1px solid var(--qy-line); }
+.qy-btn--danger { color: var(--qy-bad); border-color: color-mix(in srgb, var(--qy-bad) 45%, transparent); }
+.qy-btn--danger:hover:not([disabled]) { background-color: var(--qy-bad-bg); border-color: var(--qy-bad); }
+.qy-btn--solid-danger, .qy-btn--solid-danger:hover:not([disabled]) { background-color: var(--qy-bad); border-color: var(--qy-bad); color: #fff; }
+.qy--dark .qy-btn--solid-danger { color: #1F0B09; }

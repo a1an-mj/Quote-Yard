@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import AppNav, { Breadcrumb } from '../components/AppNav'
 import ErrorBlock from '../components/ErrorBlock'
 import Footer from '../components/Footer'
@@ -28,6 +28,56 @@ function alertStatus(item) {
       : { label: 'Reached, email after next check', cls: 'qy-badge--ok' }
   }
   return { label: 'Watching', cls: '' }
+}
+
+// Asks for the password, then removes the account for good.
+function DeleteAccount() {
+  const { setUser } = useAuth()
+  const navigate = useNavigate()
+  const [open, setOpen] = useState(false)
+  const [password, setPassword] = useState('')
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState(null)
+
+  async function submit(e) {
+    e.preventDefault()
+    setBusy(true)
+    setError(null)
+    try {
+      await api('/auth/delete-account', { method: 'POST', body: { password } })
+      setUser(null)
+      navigate('/', { replace: true })
+    } catch (err) {
+      setError(errorMessage(err))
+      setBusy(false)
+    }
+  }
+
+  return (
+    <section className="qy-stack qy-danger-zone" style={{ gap: 12 }} aria-labelledby="account-title">
+      <h2 className="qy-h2" id="account-title">Your account</h2>
+      {!open ? (
+        <div className="qy-row" style={{ gap: 12, flexWrap: 'wrap' }}>
+          <button className="qy-btn qy-btn--danger" type="button" onClick={() => setOpen(true)}>Delete my account</button>
+          <Link className="qy-link" to="/privacy">How we use your data</Link>
+        </div>
+      ) : (
+        <form className="qy-tile qy-tile--pad qy-stack" style={{ gap: 12, maxWidth: 460 }} onSubmit={submit}>
+          <h3 className="qy-h3">Delete your account?</h3>
+          <p className="qy-small">Your account, saved items and price alerts are removed straight away. This can't be undone.</p>
+          <div className="qy-field">
+            <label className="qy-small" htmlFor="delete-password" style={{ color: 'var(--qy-ink)' }}>Type your password to confirm</label>
+            <input id="delete-password" className="qy-input" type="password" autoComplete="current-password" required maxLength={128} autoFocus value={password} onChange={(e) => setPassword(e.target.value)} />
+          </div>
+          {error && <p className="qy-form-error" role="alert">{error}</p>}
+          <div className="qy-row" style={{ gap: 8, flexWrap: 'wrap' }}>
+            <button className="qy-btn qy-btn--danger qy-btn--solid-danger" type="submit" disabled={busy || !password}>{busy ? 'Deleting…' : 'Delete for good'}</button>
+            <button className="qy-btn qy-btn--ghost" type="button" disabled={busy} onClick={() => { setOpen(false); setPassword(''); setError(null) }}>Cancel</button>
+          </div>
+        </form>
+      )}
+    </section>
+  )
 }
 
 export default function Saved() {
@@ -150,6 +200,8 @@ export default function Saved() {
             </div>
           )}
         </section>
+
+        <DeleteAccount />
       </main>
       <Footer />
     </>

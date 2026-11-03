@@ -43,6 +43,7 @@ export default function Signup() {
         </div>
         {error && <p className="qy-form-error" role="alert">{error}</p>}
         <button className="qy-btn qy-btn--primary" type="submit" disabled={busy}>{busy ? 'Creating…' : 'Sign up'}</button>
+        <p className="qy-small">By signing up you agree to the <Link className="qy-link" to="/terms">Terms</Link> and the <Link className="qy-link" to="/privacy">Privacy policy</Link>.</p>
       </form>
     </AuthCard>
   )

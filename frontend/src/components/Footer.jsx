@@ -9,7 +9,11 @@ export default function Footer() {
           Listed prices from Kerala retailers. Prices and stock change often; always confirm on
           the store's page before you buy.
         </p>
-        <Link className="qy-small" to="/vendor/login">Shop owners: log in</Link>
+        <div className="qy-row" style={{ gap: 16, flexWrap: 'wrap' }}>
+          <Link className="qy-small" to="/privacy">Privacy</Link>
+          <Link className="qy-small" to="/terms">Terms</Link>
+          <Link className="qy-small" to="/vendor/login">Shop owners: log in</Link>
+        </div>
       </div>
     </footer>
   )
