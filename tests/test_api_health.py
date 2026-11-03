@@ -75,3 +75,25 @@ def test_api_connection_is_read_only(db_up):
 def test_api_connection_has_a_statement_timeout(db_up):
     with Session(get_api_engine()) as s:
         assert s.scalar(text("SHOW statement_timeout")) in ("5s", "5000ms")
+
+def test_website_uses_its_own_database_login_when_set(monkeypatch):
+    from api.deps import api_database_url
+    monkeypatch.setenv("QUOTE_YARD_DATABASE_URL", "postgresql+psycopg:///owner")
+    monkeypatch.delenv("QUOTE_YARD_API_DATABASE_URL", raising=False)
+    assert api_database_url() == "postgresql+psycopg:///owner"
+    monkeypatch.setenv("QUOTE_YARD_API_DATABASE_URL", "postgresql+psycopg://web@127.0.0.1/quote_yard")
+    assert api_database_url() == "postgresql+psycopg://web@127.0.0.1/quote_yard"
+
+
+def test_harden_script_write_list_matches_the_tables():
+    """Every table is either one the website writes or a price table it only reads."""
+    import re
+    from pathlib import Path
+
+    from db.models import Base
+
+    script = Path(__file__).parent.parent / "deploy" / "harden-server.sh"
+    write = set(re.search(r'^WRITE_TABLES="([^"]+)"', script.read_text(), re.M).group(1).split())
+    price_tables = {"retailers", "canonical_products", "listings", "listing_categories", "price_history"}
+    assert write | price_tables == set(Base.metadata.tables)
+    assert not write & price_tables

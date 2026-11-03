@@ -1,5 +1,13 @@
-"""API database access: read-only connection with a query timeout."""
+"""API database access: read-only connection with a query timeout.
 
+On the server the website logs in as its own database role
+(QUOTE_YARD_API_DATABASE_URL, set by deploy/harden-server.sh). That role can
+read everything but write only accounts, saved items, alerts and shop data,
+so nothing reached through the website can change prices. The nightly update
+and migrations keep using QUOTE_YARD_DATABASE_URL.
+"""
+
+import os
 from collections.abc import Iterator
 from functools import lru_cache
 
@@ -12,10 +20,14 @@ from db.session import get_database_url
 STATEMENT_TIMEOUT_MS = 5000
 
 
+def api_database_url() -> str:
+    return os.environ.get("QUOTE_YARD_API_DATABASE_URL") or get_database_url()
+
+
 @lru_cache
 def get_api_engine() -> Engine:
     return create_engine(
-        get_database_url(),
+        api_database_url(),
         pool_pre_ping=True,
         connect_args={
             "options": (
@@ -35,7 +47,7 @@ def get_session() -> Iterator[Session]:
 def get_write_engine() -> Engine:
     """Only account code writes, through this connection."""
     return create_engine(
-        get_database_url(),
+        api_database_url(),
         pool_pre_ping=True,
         connect_args={"options": f"-c statement_timeout={STATEMENT_TIMEOUT_MS}"},
     )

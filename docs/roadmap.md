@@ -71,6 +71,7 @@ Host on the Asus VivoBook. Public access and HTTPS. Set the email settings in th
 
 - **Phase 11: myG 108-record cap** (issue 1), if it can be fixed within the site's rules. Confirmed again on the first pipeline run (2026-10-29): every myG category stopped at a 403 on page 10.
 - **Phase 12: Vendor system** ✅ built ahead of the first release: invited shops, an admin page, and local offers next to store prices ([`accounts-and-vendors.md`](accounts-and-vendors.md#vendors-built)). Real shops can use it once Phase 10 makes the site public.
+- **Off-site backups**, for the owner (Rohith Biju) to decide. The nightly backups stay on the VivoBook's own disk. Copying them to the lead dev's laptop (`deploy/pull-backup.sh`) is manual and last ran on 2026-11-01. The plan is an encrypted copy to a cloud account the owner controls.
 - **Excel upload for shops**, if real shops ask for it. Download a template listing our products with a code for each, fill in price and dates, upload, see each row as OK or with the reason it failed, then confirm. Rows match on the product code only, never a guess from typed names, and the existing offer rules apply to every row.
 
 ### Later
