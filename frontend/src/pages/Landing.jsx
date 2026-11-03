@@ -4,6 +4,7 @@ import Footer from '../components/Footer'
 import PublicNav from '../components/PublicNav'
 import { formatCount } from '../lib/format'
 import { useApi } from '../lib/useApi'
+import { storeHue } from '../lib/look'
 
 const STEPS = [
   ['01', 'We collect listings', 'Product pages from retailer websites are read every day. Each price keeps the time we saw it.'],
@@ -38,7 +39,8 @@ export default function Landing() {
     <>
       <PublicNav />
       <main>
-        <section className="qy-wrap qy-split" style={{ paddingBlock: '72px 56px' }}>
+        <section className="qy-wrap" style={{ paddingBlock: '28px 56px' }}>
+        <div className="qy-hero-band qy-split" style={{ padding: 'clamp(24px, 5vw, 64px)' }}>
           <div className="qy-stack" style={{ gap: 28, minWidth: 0 }}>
             <p className="qy-label">Price comparison · Kerala</p>
             <h1 className="qy-display qy-hero__title">Every listed price, side by side.</h1>
@@ -58,6 +60,7 @@ export default function Landing() {
               <Stat value={retailers.data ? formatCount(listings) : null} label="listings tracked" />
             </div>
           </aside>
+        </div>
         </section>
 
         <section id="deals" className="qy-wrap qy-section" aria-labelledby="deals-title" style={{ borderTop: '1px solid var(--qy-line)' }}>
@@ -88,7 +91,7 @@ export default function Landing() {
             <ul className="qy-grid-4" style={{ listStyle: 'none', margin: 0, padding: 0 }}>
               {stores.map((store) => (
                 <li key={store.id} className="qy-tile" style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px' }}>
-                  <span className="qy-dotnum" aria-hidden="true" style={{ width: 44, height: 44, flex: 'none', border: '1px solid var(--qy-ink)', borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: 18 }}>
+                  <span className={`qy-dotnum qy-hue--${storeHue(store.name)}`} aria-hidden="true" style={{ width: 44, height: 44, flex: 'none', background: 'var(--hue-bg)', color: 'var(--hue)', borderRadius: '50%', display: 'grid', placeItems: 'center', fontSize: 18 }}>
                     {store.name[0].toUpperCase()}
                   </span>
                   <span className="qy-stack" style={{ gap: 0, minWidth: 0 }}>

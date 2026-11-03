@@ -7,6 +7,7 @@ import ProductActions from '../components/ProductActions'
 import { formatPrice, isOutdated, specLine, timeAgo } from '../lib/format'
 import { lowestOverTime } from '../lib/history'
 import { useApi } from '../lib/useApi'
+import { Change, StoreName, TypeIcon } from '../components/Look'
 
 const OUT = 'Out of stock'
 
@@ -66,19 +67,19 @@ function Summary({ compare }) {
     )
   }
   return (
-    <div className="qy-tile qy-tile--pad qy-summary">
-      <div className="qy-stack" style={{ gap: 4 }}>
-        <p className="qy-label">Lowest listed</p>
+    <div className="qy-summary">
+      <div className="qy-tile qy-tile--pad qy-tile--good qy-stack" style={{ gap: 4 }}>
+        <p className="qy-label qy-good">Lowest listed</p>
         <span className="qy-price qy-price--lg">{formatPrice(low.best.price)}</span>
         <p className="qy-small">{lows}</p>
       </div>
-      <div className="qy-stack" style={{ gap: 4 }}>
+      <div className="qy-tile qy-tile--pad qy-stack" style={{ gap: 4 }}>
         <p className="qy-label">Highest listed</p>
         <span className="qy-price qy-price--lg">{formatPrice(high.best.price)}</span>
         <p className="qy-small">{high.retailer.name}</p>
       </div>
-      <div className="qy-stack" style={{ gap: 4 }}>
-        <p className="qy-label">Difference</p>
+      <div className="qy-tile qy-tile--pad qy-stack" style={{ gap: 4 }}>
+        <p className="qy-label">You save up to</p>
         <span className="qy-price qy-price--lg">{formatPrice(compare.spread)}</span>
         <p className="qy-small">Between the {buyable.length} stores with stock</p>
       </div>
@@ -109,13 +110,13 @@ function PriceTable({ compare }) {
               <tr key={row.retailer.id} className={row.cheapest_listed ? 'qy-row--best' : out ? 'qy-row--off' : ''}>
                 <th scope="row" style={{ font: 'inherit', textAlign: 'left', padding: '16px 20px', textTransform: 'none', letterSpacing: 0, color: 'inherit' }}>
                   <span className="qy-row" style={{ gap: 8, flexWrap: 'wrap' }}>
-                    <span style={{ fontWeight: 500 }}>{row.retailer.name}</span>
-                    {row.cheapest_listed && <span className="qy-badge qy-badge--solid">Lowest</span>}
+                    <StoreName name={row.retailer.name} bold />
+                    {row.cheapest_listed && <span className="qy-badge qy-badge--good">Lowest</span>}
                   </span>
                   {row.best.box_note && <span className="qy-small" style={{ display: 'block' }}>Sold {row.best.box_note}</span>}
                 </th>
                 <td className="r" data-label="Listed price"><span className="qy-price">{formatPrice(row.best.price)}</span></td>
-                <td className="r" data-label="vs lowest"><span className="qy-price qy-small">{out || lowest == null || row.best.price === lowest ? '–' : `+ ${formatPrice(row.best.price - lowest)}`}</span></td>
+                <td className="r" data-label="vs lowest">{out || lowest == null || row.best.price === lowest ? <span className="qy-small">–</span> : <Change amount={row.best.price - lowest} suffix=" more" />}</td>
                 <td data-label="Availability"><Availability value={row.best.availability} /></td>
                 <td data-label="Checked"><Checked iso={row.best.last_seen_at} /></td>
                 <td className="r"><StoreLink offer={row.best} /></td>
@@ -142,7 +143,7 @@ function OfferList({ offers }) {
           <div className="qy-stack" style={{ gap: 4, minWidth: 0 }}>
             <span style={{ fontSize: 14, fontWeight: 500 }}>{offer.name}</span>
             <span className="qy-small">
-              {offer.retailer.name} · {offer.availability} · checked {timeAgo(offer.last_seen_at)}
+              <StoreName name={offer.retailer.name} /> · {offer.availability} · checked {timeAgo(offer.last_seen_at)}
               {offer.box_note ? ` · ${offer.box_note}` : ''}
             </span>
           </div>
@@ -262,8 +263,13 @@ export default function Product() {
           <div className="qy-stack" style={{ gap: 32 }}>
             <div className="qy-stack" style={{ gap: 14 }}>
               <Breadcrumb current={data.brand} />
-              <p className="qy-label">{data.brand}{data.product_type ? ` · ${data.product_type}` : ''}</p>
-              <h1 className="qy-h1">{data.name.split(' [')[0]}</h1>
+              <div className="qy-row" style={{ gap: 16, alignItems: 'center' }}>
+                <TypeIcon type={data.product_type} category={data.category} size="lg" />
+                <div className="qy-stack" style={{ gap: 4, minWidth: 0 }}>
+                  <p className="qy-label">{data.brand}{data.product_type ? ` · ${data.product_type}` : ''}</p>
+                  <h1 className="qy-h1">{data.name.split(' [')[0]}</h1>
+                </div>
+              </div>
               <p className="qy-pcard__spec" style={{ fontSize: 14 }}>{specLine(data.specs)}{data.specs.package ? ` · ${data.specs.package}` : ''}</p>
               {variants.data?.length > 1 && (
                 <div className="qy-stack" style={{ gap: 8 }}>

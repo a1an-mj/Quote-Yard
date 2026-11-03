@@ -5,6 +5,8 @@ import ErrorBlock from '../components/ErrorBlock'
 import Footer from '../components/Footer'
 import ProductCard, { CardSkeletons } from '../components/ProductCard'
 import SearchBox from '../components/SearchBox'
+import { TypeIcon } from '../components/Look'
+import { hueOf } from '../lib/look'
 import { useAuth } from '../lib/auth'
 import { formatCount } from '../lib/format'
 import { useApi } from '../lib/useApi'
@@ -44,10 +46,12 @@ export default function Home() {
     <>
       <AppNav search={false} />
       <main>
-        <section className="qy-wrap qy-stack" style={{ paddingBlock: '56px', gap: 20 }}>
-          <p className="qy-label">Hi {user.first_name}</p>
-          <h1 className="qy-display qy-hero__title">What are you buying?</h1>
-          <SearchBox />
+        <section className="qy-wrap" style={{ paddingBlock: '28px 48px' }}>
+          <div className="qy-hero-band qy-stack" style={{ gap: 20, padding: 'clamp(24px, 5vw, 56px)' }}>
+            <p className="qy-label" style={{ color: 'var(--qy-ink-2)' }}>Hi {user.first_name}</p>
+            <h1 className="qy-display qy-hero__title">What are you buying?</h1>
+            <SearchBox />
+          </div>
         </section>
 
         <section className="qy-wrap qy-section" aria-labelledby="types-title" style={{ paddingTop: 0 }}>
@@ -60,7 +64,8 @@ export default function Home() {
           ) : (
             <div className="qy-row" style={{ flexWrap: 'wrap', gap: 8 }}>
               {topTypes.map((type) => (
-                <Link key={type.product_type} className="qy-chip" to={`/search?product_type=${encodeURIComponent(type.product_type)}`}>
+                <Link key={type.product_type} className={`qy-chip qy-hue--${hueOf(type.category)}`} to={`/search?product_type=${encodeURIComponent(type.product_type)}`}>
+                  <TypeIcon type={type.product_type} category={type.category} size="sm" />
                   {type.product_type} <span className="qy-num qy-small">{formatCount(type.listings)}</span>
                 </Link>
               ))}

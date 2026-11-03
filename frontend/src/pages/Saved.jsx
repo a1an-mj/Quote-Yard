@@ -8,6 +8,7 @@ import { api, errorMessage } from '../lib/api'
 import { useAuth } from '../lib/auth'
 import { formatPrice, specLine, timeAgo } from '../lib/format'
 import { useApi } from '../lib/useApi'
+import { Change } from '../components/Look'
 
 function priceChange(item) {
   const now = item.product.min_price
@@ -79,7 +80,11 @@ export default function Saved() {
               {saved.data.map((item) => (
                 <div key={item.product.id} className="qy-stack" style={{ gap: 8 }}>
                   <ProductCard product={item.product} />
-                  {priceChange(item) && <p className="qy-small">{priceChange(item)}</p>}
+                  {priceChange(item) && (
+                    <p className="qy-small qy-row" style={{ gap: 6, flexWrap: 'wrap' }}>
+                      <Change amount={item.product.min_price - item.price_when_saved} /> since you saved it
+                    </p>
+                  )}
                   <button className="qy-btn qy-btn--quiet qy-btn--sm" type="button" disabled={busy} aria-label={`Remove ${item.product.name} from saved`} onClick={() => remove(`/me/saved/${item.product.id}`, saved)}>Remove</button>
                 </div>
               ))}

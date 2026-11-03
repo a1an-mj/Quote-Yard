@@ -4,14 +4,19 @@ import ErrorBlock from '../components/ErrorBlock'
 import Footer from '../components/Footer'
 import { formatCount } from '../lib/format'
 import { useApi } from '../lib/useApi'
+import { TypeIcon } from '../components/Look'
+import { hueOf } from '../lib/look'
 
 const searchBy = (key, value) => `/search?${key}=${encodeURIComponent(value)}`
 
 function CategoryTile({ category, types }) {
   return (
-    <li className="qy-tile qy-tile--pad qy-stack" style={{ gap: 14 }}>
-      <div className="qy-between" style={{ alignItems: 'baseline' }}>
-        <h2 className="qy-h3" style={{ fontSize: 20 }}>{category.category}</h2>
+    <li className={`qy-tile qy-tile--pad qy-stack qy-cattile qy-hue--${hueOf(category.category)}`} style={{ gap: 14 }}>
+      <div className="qy-between" style={{ alignItems: 'center' }}>
+        <span className="qy-row" style={{ gap: 12 }}>
+          <TypeIcon category={category.category} />
+          <h2 className="qy-h3" style={{ fontSize: 20 }}>{category.category}</h2>
+        </span>
         <span className="qy-label">{formatCount(category.listings)} listings</span>
       </div>
       {types.length > 0 && (
@@ -19,6 +24,7 @@ function CategoryTile({ category, types }) {
           {types.map((type) => (
             <li key={type.product_type}>
               <Link className="qy-chip" to={searchBy('product_type', type.product_type)}>
+                <TypeIcon type={type.product_type} category={category.category} size="sm" />
                 {type.product_type} <span className="qy-num qy-small">{formatCount(type.listings)}</span>
               </Link>
             </li>

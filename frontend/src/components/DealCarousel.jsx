@@ -1,6 +1,8 @@
 import { useRef } from 'react'
 import { Link } from 'react-router-dom'
+import { TrendingDown } from 'lucide-react'
 import { formatPrice, timeAgo } from '../lib/format'
+import { StoreName } from './Look'
 
 function comparison(deal) {
   return deal.kind === 'store_gap'
@@ -18,19 +20,19 @@ function searchFor(deal) {
 function DealCard({ deal, linked }) {
   return (
     <li className="qy-tile qy-deal">
-      <div className="qy-img" aria-hidden="true" />
+      <div className="qy-deal__icon" aria-hidden="true"><TrendingDown strokeWidth={1.6} /></div>
       <div className="qy-stack" style={{ gap: 8, minWidth: 0 }}>
         <span className="qy-label">{deal.label}</span>
         <h3 className="qy-pcard__name qy-deal__name" title={deal.name}>{deal.name}</h3>
         <div className="qy-row" style={{ gap: 10, flexWrap: 'wrap' }}>
-          <span className="qy-price" style={{ fontSize: 20 }}>{formatPrice(deal.price)}</span>
+          <span className="qy-price qy-good" style={{ fontSize: 22 }}>{formatPrice(deal.price)}</span>
           <span className="qy-price qy-small" style={deal.kind === 'price_drop' ? { textDecoration: 'line-through' } : undefined}>
             {formatPrice(deal.compared_price)}
           </span>
         </div>
-        <span className="qy-badge qy-badge--solid" style={{ alignSelf: 'flex-start' }}>Save {formatPrice(deal.saving)}</span>
+        <span className="qy-badge qy-badge--good" style={{ alignSelf: 'flex-start' }}>Save {formatPrice(deal.saving)}</span>
         <p className="qy-small">{comparison(deal)}</p>
-        <p className="qy-small">{deal.retailer} · checked {timeAgo(deal.checked_at)}</p>
+        <p className="qy-small"><StoreName name={deal.retailer} /> · checked {timeAgo(deal.checked_at)}</p>
         {linked && <Link className="qy-link" to={searchFor(deal)}>See prices</Link>}
       </div>
     </li>

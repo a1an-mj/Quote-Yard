@@ -6,6 +6,7 @@ import Footer from '../components/Footer'
 import ProductCard, { CardSkeletons } from '../components/ProductCard'
 import { formatCount, formatPrice, isOutdated, timeAgo } from '../lib/format'
 import { useApi } from '../lib/useApi'
+import { StoreName, TypeIcon } from '../components/Look'
 
 const PAGE_SIZE = 24
 const AVAILABILITY = ['In stock', 'Out of stock', 'Unknown']
@@ -55,18 +56,22 @@ function AvailabilityBadge({ value }) {
 }
 
 function ListingRow({ listing }) {
-  const type = listing.categories.find((c) => c.product_type)?.product_type
+  const typed = listing.categories.find((c) => c.product_type) ?? listing.categories[0]
+  const type = typed?.product_type
   return (
     <li className="qy-tile qy-listing">
+      <div className="qy-row" style={{ gap: 14, alignItems: 'flex-start', minWidth: 0 }}>
+      <TypeIcon type={type} category={typed?.category} />
       <div className="qy-stack" style={{ gap: 6, minWidth: 0 }}>
         <h3 className="qy-pcard__name">{listing.name}</h3>
         <p className="qy-small">
-          {listing.retailer.name}{type ? ` · ${type}` : ''} · checked {timeAgo(listing.last_seen_at)}
+          <StoreName name={listing.retailer.name} />{type ? ` · ${type}` : ''} · checked {timeAgo(listing.last_seen_at)}
           {isOutdated(listing.last_seen_at) && <strong style={{ color: 'var(--qy-warn)', fontWeight: 500 }}> · may be outdated</strong>}
         </p>
         <div className="qy-row" style={{ flexWrap: 'wrap', gap: 8 }}>
           <AvailabilityBadge value={listing.availability} />
         </div>
+      </div>
       </div>
       <div className="qy-stack" style={{ gap: 8, alignItems: 'flex-end' }}>
         <span className="qy-price" style={{ fontSize: 18 }}>{formatPrice(listing.price)}</span>
