@@ -1,9 +1,13 @@
 from datetime import date, datetime
-from typing import Literal
+from typing import Annotated, Literal
 
-from pydantic import BaseModel, computed_field
+from pydantic import AfterValidator, BaseModel, computed_field
 
+from api.names import shown_name
 from api.security import is_admin_email
+
+# A listing or product name as the site shows it (see api/names.py).
+ShownName = Annotated[str, AfterValidator(shown_name)]
 
 
 class HealthOut(BaseModel):
@@ -56,7 +60,7 @@ class RetailerRef(BaseModel):
 
 class ListingOut(BaseModel):
     id: int
-    name: str
+    name: ShownName
     url: str
     retailer: RetailerRef
     brand: str | None
@@ -83,7 +87,7 @@ class ListingPage(BaseModel):
 
 class CheapestOut(BaseModel):
     id: int
-    name: str
+    name: ShownName
     url: str
     price: int
 
@@ -127,7 +131,7 @@ class ProductSpecs(BaseModel):
 
 class ProductOut(BaseModel):
     id: int
-    name: str
+    name: ShownName
     brand: str
     category: str | None
     product_type: str | None
@@ -151,7 +155,7 @@ class OfferOut(BaseModel):
     source: Literal["scraped_listing"] = "scraped_listing"
     listing_id: int
     retailer: RetailerRef
-    name: str
+    name: ShownName
     url: str
     price: int
     availability: str
@@ -243,7 +247,7 @@ class AlertOut(BaseModel):
 
 class DealOut(BaseModel):
     kind: str  # price_drop | store_gap
-    name: str
+    name: ShownName
     brand: str | None
     retailer: str
     price: int

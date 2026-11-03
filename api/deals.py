@@ -1,8 +1,11 @@
 """Today's deals for the public landing page. Everything comes from recorded prices.
 
 A price drop: a current, buyable listing at its lowest price of the last 90
-days, at least MIN_SAVING below the price it had before, changed in the last
-RECENT_DAYS, and (for a matched product) no store listing it for less.
+days, at least MIN_SAVING below its lowest price in the REFERENCE_DAYS before
+it changed, changed in the last RECENT_DAYS, and (for a matched product) no
+store listing it for less. Comparing with that lowest price, not just the
+price the day before, means a price pushed up briefly and then put back
+never shows as a big saving.
 A store gap: a matched product whose lowest store is at least MIN_SAVING below
 the next store. A price that never moved is not a deal, however low.
 """
@@ -22,6 +25,7 @@ from db.models import CanonicalProduct, Listing, PriceHistory, Retailer
 MIN_SAVING = 500
 HISTORY_DAYS = 90
 RECENT_DAYS = 7
+REFERENCE_DAYS = 30
 DEALS_PER_DAY = 5
 MAX_STORE_GAPS = 2
 LOCAL_TIME = ZoneInfo("Asia/Kolkata")
@@ -89,16 +93,22 @@ def find_deals(session: Session, now: datetime | None = None) -> list[Deal]:
             continue
         if pid is not None and price > lowest[pid]:
             continue
-        # Walk back to the last different price; the point after it is when it changed.
-        previous, changed_at = None, None
+        # Walk back over the current price to find when it started.
+        changed_at = None
         for value, recorded_at in reversed(points):
             if value != price:
-                previous = value
                 break
             changed_at = recorded_at
-        if previous is None or changed_at is None or previous - price < MIN_SAVING:
+        if changed_at is None or changed_at < now - timedelta(days=RECENT_DAYS):
             continue
-        if changed_at < now - timedelta(days=RECENT_DAYS):
+        # The saving is against the lowest price of the REFERENCE_DAYS before the
+        # change, so a price raised for a day and then put back is not a deal.
+        before = [value for value, recorded_at in points
+                  if changed_at - timedelta(days=REFERENCE_DAYS) <= recorded_at < changed_at]
+        if not before:
+            continue
+        previous = min(before)
+        if previous - price < MIN_SAVING:
             continue
         tracked = now - first_seen[listing.id] >= timedelta(days=HISTORY_DAYS)
         keep(Deal(

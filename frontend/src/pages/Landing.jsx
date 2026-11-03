@@ -163,7 +163,7 @@ function DealRows({ deal }) {
         {gap
           ? <span className={`qy-store__dot qy-hue--${storeHue(deal.compared_retailer)}`} aria-hidden="true" />
           : <span className="qy-store__dot qy-hue--slate" aria-hidden="true" />}
-        <span className="ql-row__store">{gap ? deal.compared_retailer : 'Before'}</span>
+        <span className="ql-row__store">{gap ? deal.compared_retailer : '30-day low'}</span>
         <span className="ql-row__price" style={gap ? undefined : { textDecoration: 'line-through' }}>{formatPrice(deal.compared_price)}</span>
       </li>
     </ul>
@@ -412,7 +412,7 @@ function Tickets({ deals }) {
               <span className="qy-store">
                 <span className={`qy-store__dot qy-hue--${storeHue(deal.retailer)}`} aria-hidden="true" />{deal.retailer}
               </span>
-              {deal.compared_retailer ? ` · vs ${deal.compared_retailer}` : ' · vs its earlier price'}
+              {deal.compared_retailer ? ` · vs ${deal.compared_retailer}` : ' · vs its 30-day low'}
             </span>
           </div>
         </li>

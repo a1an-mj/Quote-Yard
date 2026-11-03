@@ -7,7 +7,7 @@ import { StoreName } from './Look'
 function comparison(deal) {
   return deal.kind === 'store_gap'
     ? `${formatPrice(deal.saving)} less than ${deal.compared_retailer}`
-    : `${formatPrice(deal.saving)} below its previous price`
+    : `${formatPrice(deal.saving)} below its 30-day low`
 }
 
 // Deals carry no product id on purpose (they are public); search for the product instead.

@@ -159,6 +159,26 @@ def test_drop_older_than_a_week_is_not(s, shops):
     assert l and find_deals(s) == []
 
 
+def test_price_raised_for_a_day_then_put_back_is_not_a_big_saving(s, shops):
+    # The Oxygen laptops of 2026-11-02: 93,990, then 1,24,990 for one day, then 92,990.
+    listing(s, shops[0], 92990, [(93990, 4), (124990, 1)])
+    (d,) = find_deals(s)
+    assert (d.compared_price, d.saving) == (93990, 1000)
+
+
+def test_raised_and_put_back_to_the_same_price_is_not_a_deal(s, shops):
+    listing(s, shops[0], 93990, [(93990, 4), (124990, 1)])
+    assert find_deals(s) == []
+
+
+def test_saving_uses_the_lowest_of_the_30_days_before_the_drop(s, shops):
+    # Compared with 22,000 (the 30-day low), not 25,000 (the price just before).
+    # 21,000 forty days ago is outside the 30 days, so it does not count.
+    listing(s, shops[0], 20000, [(21000, 40), (22000, 20), (25000, 10)])
+    (d,) = find_deals(s)
+    assert (d.compared_price, d.saving) == (22000, 2000)
+
+
 def test_ninety_days_label_needs_ninety_days_of_history(s, shops):
     listing(s, shops[0], 19000, [(20000, 95), (20000, 1)])
     assert find_deals(s)[0].label == "Lowest in 90 days"
