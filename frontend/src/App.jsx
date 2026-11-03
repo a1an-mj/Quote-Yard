@@ -1,4 +1,5 @@
-import { Route, Routes } from 'react-router-dom'
+import { Route, Routes, useLocation } from 'react-router-dom'
+import CrashScreen from './components/CrashScreen'
 import { RequireLogin } from './lib/auth'
 import Admin from './pages/Admin'
 import Categories from './pages/Categories'
@@ -17,7 +18,9 @@ import { VendorForgot, VendorJoin, VendorLogin, VendorReset } from './pages/vend
 import VendorDashboard from './pages/vendor/VendorDashboard'
 
 export default function App() {
+  const { pathname } = useLocation()
   return (
+    <CrashScreen page={pathname}>
     <Routes>
       <Route path="/" element={<Landing />} />
       <Route path="/signup" element={<Signup />} />
@@ -38,5 +41,6 @@ export default function App() {
       <Route path="/vendor/reset" element={<VendorReset />} />
       <Route path="*" element={<NotFound />} />
     </Routes>
+    </CrashScreen>
   )
 }
