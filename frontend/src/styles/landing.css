@@ -1,0 +1,187 @@
+/* The landing page only. Everything is under .ql so no other page changes. */
+
+.ql { --ql-night: #141414; --ql-glide: cubic-bezier(0.22, 1, 0.36, 1); overflow-x: clip; }
+@media (prefers-reduced-motion: no-preference) {
+  html:has(.ql) { scroll-behavior: smooth; }
+}
+html:has(.ql) { scroll-padding-top: 84px; }
+
+/* ---------- header ---------- */
+.ql-nav { position: sticky; top: 0; z-index: 30; background: color-mix(in srgb, var(--qy-surface) 86%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--qy-line); }
+.ql-nav__in { display: flex; align-items: center; gap: var(--qy-5); min-height: 68px; }
+.ql-nav__links { display: flex; gap: 4px; flex: 1; }
+.ql-nav__end { display: flex; align-items: center; gap: var(--qy-3); }
+.ql .ql-nav__menu { display: none; margin-left: auto; }
+.ql .qy-logo:hover .qy-logo__mark i { animation: ql-ripple 0.9s var(--ql-glide); }
+.ql .qy-logo__mark i:nth-child(3n+2) { animation-delay: 60ms; }
+.ql .qy-logo__mark i:nth-child(3n) { animation-delay: 120ms; }
+.ql .qy-logo__mark i:nth-child(n+4) { animation-delay: 90ms; }
+.ql .qy-logo__mark i:nth-child(n+7) { animation-delay: 180ms; }
+@keyframes ql-ripple { 40% { transform: scale(0.4); } 100% { transform: scale(1); } }
+
+/* full-screen phone menu */
+/* Rendered at the end of <body>, outside the blurred header, so it can cover the screen. */
+.ql-overlay { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; padding: 20px 20px 28px; background: #141414; color: #F1F1EC; animation: ql-fade 0.35s var(--ql-glide); }
+.ql-overlay__top { display: flex; justify-content: space-between; align-items: center; min-height: 48px; }
+.ql-overlay__brand { font: 700 18px var(--qy-display); letter-spacing: 0.06em; text-transform: uppercase; }
+.ql-overlay__close { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.12); color: inherit; cursor: pointer; }
+.ql-overlay__links { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
+.ql-overlay__links a { color: #F1F1EC; text-decoration: none; font: 600 clamp(36px, 11vw, 56px)/1.15 var(--qy-sans); letter-spacing: -0.02em; animation: ql-in 0.6s var(--ql-glide) both; }
+.ql-overlay__links a:nth-child(2) { animation-delay: 80ms; }
+.ql-overlay__links a:nth-child(3) { animation-delay: 160ms; }
+.ql-overlay__links a:nth-child(4) { animation-delay: 240ms; }
+.ql-overlay__foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.16); }
+@keyframes ql-fade { from { opacity: 0; } }
+.ql-overlay.is-closing { animation: ql-fade-out 0.3s ease-in forwards; }
+@keyframes ql-fade-out { to { opacity: 0; transform: scale(0.985); } }
+@keyframes ql-in { from { opacity: 0; transform: translateY(14px); } }
+
+/* ---------- hero ---------- */
+.ql-hero { position: relative; padding-block: 48px 24px; min-height: min(760px, calc(100svh - 68px)); display: flex; flex-direction: column; justify-content: center; }
+.ql-contours { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible; }
+.ql-contours { opacity: 1; }
+.ql-curve { animation: ql-sway calc(16s + var(--i) * 3s) ease-in-out calc(var(--i) * -2.5s) infinite alternate; will-change: transform; }
+.ql-curve__line { fill: none; stroke: var(--h-sky); stroke-width: 1.2; opacity: 0.42; stroke-dasharray: 1000; stroke-dashoffset: 1000; animation: ql-draw 3.2s var(--ql-glide) calc(0.3s + var(--i) * 0.22s) forwards; }
+.ql-curve:nth-child(even) .ql-curve__line { stroke: var(--h-violet); }
+.ql-curve__glow { fill: none; stroke: var(--h-sky); stroke-width: 2.2; stroke-linecap: round; opacity: 0; stroke-dasharray: 90 910; animation: ql-travel calc(11s + var(--i) * 2s) linear calc(3.4s + var(--i) * 0.6s) infinite; }
+.ql-curve:nth-child(even) .ql-curve__glow { stroke: var(--h-violet); animation-direction: reverse; }
+@keyframes ql-draw { to { stroke-dashoffset: 0; } }
+@keyframes ql-sway { from { transform: translate(0, -10px); } to { transform: translate(-36px, 16px); } }
+@keyframes ql-travel { 0% { stroke-dashoffset: 1000; opacity: 0; } 8% { opacity: 0.75; } 92% { opacity: 0.75; } 100% { stroke-dashoffset: 0; opacity: 0; } }
+.ql-hero__grid { position: relative; display: grid; grid-template-columns: minmax(0, 1.15fr) minmax(300px, 380px) minmax(200px, 240px); gap: 40px; align-items: center; }
+.ql-hero__copy { display: flex; flex-direction: column; gap: 22px; min-width: 0; }
+.ql .ql-hero__title { font-size: clamp(44px, 6.2vw, 92px); }
+.ql-facts { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; font-size: 15px; color: var(--qy-ink-2); }
+.ql-facts li { display: flex; align-items: center; gap: 10px; }
+.ql-facts li::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--qy-good); flex: none; }
+.ql-scroll { position: relative; align-self: center; margin-top: 28px; font-size: 13px; color: var(--qy-ink-3); text-decoration: none; }
+.ql-scroll span { display: inline-block; animation: ql-bob 1.6s ease-in-out infinite; }
+@keyframes ql-bob { 50% { transform: translateY(4px); } }
+
+/* the price box */
+.ql-box { position: relative; border-radius: 24px; background: var(--qy-surface); box-shadow: 0 2px 4px rgba(20, 20, 20, 0.05), 0 24px 60px rgba(20, 20, 20, 0.14); transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 0.9s var(--ql-glide); will-change: transform; isolation: isolate; }
+.qy--dark .ql-box { box-shadow: 0 0 0 1px var(--qy-line), 0 24px 60px rgba(0, 0, 0, 0.5); }
+.ql-box__lid { position: absolute; inset: 0; z-index: 2; border-radius: 24px; display: grid; place-items: center; background: var(--ql-night); color: var(--qy-cta); font: 700 22px var(--qy-display); letter-spacing: 0.06em; text-transform: uppercase; transform-origin: top center; animation: ql-lid 1.4s 0.5s var(--ql-glide) forwards; pointer-events: none; }
+/* The lid lifts a little and fades, staying clear of the header. */
+@keyframes ql-lid { 45% { transform: translateY(-14%) rotateX(18deg); opacity: 0.95; } 100% { transform: translateY(-34%) rotateX(30deg); opacity: 0; } }
+.ql-box__body { padding: 22px; min-height: 330px; display: flex; }
+.ql-box__stack { display: grid; width: 100%; }
+.ql-box__face { grid-area: 1 / 1; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
+.ql-box__face.is-out { animation: ql-face-out 0.7s var(--ql-glide) forwards; pointer-events: none; }
+.ql-box__face.is-in { animation: ql-face-in 0.95s 0.15s var(--ql-glide) both; }
+@keyframes ql-face-out { to { opacity: 0; transform: translateY(-14px) scale(0.98); filter: blur(2px); } }
+@keyframes ql-face-in { from { opacity: 0; transform: translateY(16px) scale(0.98); filter: blur(2px); } }
+.ql-box__deal { all: unset; box-sizing: border-box; width: 100%; display: flex; flex-direction: column; gap: 14px; cursor: pointer; grid-area: 1 / 1; }
+.ql-box__deal:focus-visible { outline: 2px solid var(--qy-ink); outline-offset: 6px; border-radius: 12px; }
+.ql-box__head { display: flex; align-items: center; gap: 12px; }
+.ql-box__name { font: 600 19px/1.3 var(--qy-sans); color: var(--qy-ink); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ql-rows { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 6px; }
+.ql-row { display: flex; align-items: center; gap: 10px; padding: 12px 14px; border-radius: 12px; background: var(--qy-sunken); font-size: 14px; color: var(--qy-ink); }
+.ql-row--low { background: var(--qy-good-bg); }
+.ql-row--low .ql-row__price { color: var(--qy-good); }
+.ql-row__store { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.ql-row__price { font: 600 16px var(--qy-sans); font-variant-numeric: tabular-nums; }
+.ql-box__foot { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; margin-top: auto; }
+.ql-box__dots { display: flex; justify-content: center; gap: 6px; padding-bottom: 16px; }
+.ql-box__dots i { width: 18px; height: 6px; border-radius: 3px; background: var(--qy-line); transform: scaleX(0.34); transition: transform 0.8s var(--ql-glide), background 0.6s; }
+.ql-box__dots i.on { transform: none; background: var(--qy-ink); }
+
+/* corner-bracket info boxes */
+.ql-hero__hud { display: flex; flex-direction: column; gap: 28px; }
+.ql-hud { position: relative; padding: 14px 16px; background: linear-gradient(var(--qy-ink), var(--qy-ink)) top left / 12px 1.5px no-repeat, linear-gradient(var(--qy-ink), var(--qy-ink)) top left / 1.5px 12px no-repeat, linear-gradient(var(--qy-ink), var(--qy-ink)) top right / 12px 1.5px no-repeat, linear-gradient(var(--qy-ink), var(--qy-ink)) top right / 1.5px 12px no-repeat, linear-gradient(var(--qy-ink), var(--qy-ink)) bottom left / 12px 1.5px no-repeat, linear-gradient(var(--qy-ink), var(--qy-ink)) bottom left / 1.5px 12px no-repeat, linear-gradient(var(--qy-ink), var(--qy-ink)) bottom right / 12px 1.5px no-repeat, linear-gradient(var(--qy-ink), var(--qy-ink)) bottom right / 1.5px 12px no-repeat; }
+.ql-hud__title { margin: 0 0 8px; font: 500 11px var(--qy-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--h-sky); }
+.ql-hud__big { display: block; margin: 0; font: 700 34px/1 var(--qy-display); font-variant-numeric: tabular-nums; color: var(--qy-ink); }
+.ql-hud__big.qy-good { color: var(--qy-good); }
+.ql-hud__line { margin-top: 6px; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ql-hud__stats { display: flex; gap: 24px; }
+.ql-hud__stats > span { display: flex; flex-direction: column; gap: 4px; font-size: 12px; color: var(--qy-ink-3); }
+
+/* ---------- story ---------- */
+.ql-story { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); gap: 64px; padding-block: 56px 24px; }
+.ql-story__stage { position: sticky; top: 100px; align-self: start; height: min(460px, 70vh); }
+.ql-story__box { position: relative; container-type: size; height: 100%; border-radius: 28px; background: var(--qy-surface); box-shadow: 0 1px 2px rgba(20, 20, 20, 0.05), 0 18px 48px rgba(20, 20, 20, 0.1); overflow: hidden; }
+.qy--dark .ql-story__box { box-shadow: 0 0 0 1px var(--qy-line); }
+.ql-story__example { position: absolute; top: 16px; right: 18px; font: 500 11px var(--qy-mono); letter-spacing: 0.08em; text-transform: uppercase; color: var(--qy-ink-3); }
+.ql-tag { position: absolute; top: 0; left: 0; width: min(80%, 380px); display: grid; grid-template-columns: minmax(0, 1fr) auto 76px; align-items: center; gap: 12px; padding: 14px 18px; border-radius: 14px; background: var(--qy-sunken); border: 1px solid transparent; font-size: 15px; color: var(--qy-ink); transform: translate(calc(var(--x) * 1cqw), calc(var(--y) * 1cqh)) rotate(var(--r)); transition: transform 1.25s var(--ql-glide) var(--d), background 0.8s, box-shadow 0.8s, border-color 0.8s; will-change: transform; }
+.ql-story__box[data-scene="0"] .ql-tag { background: var(--qy-surface); border-color: var(--qy-line); box-shadow: 0 8px 22px rgba(20, 20, 20, 0.09); }
+.ql-tag__price { font: 600 17px var(--qy-sans); font-variant-numeric: tabular-nums; text-align: right; transition: color 0.5s; }
+.ql-tag__extra { display: flex; justify-content: flex-end; opacity: 0; transform: translateX(-6px); transition: opacity 0.6s 0.6s, transform 0.8s 0.6s var(--ql-glide); }
+.ql-tag__extra.is-on { opacity: 1; transform: none; }
+.ql-tag--low { background: var(--qy-good-bg); }
+.ql-tag--low .ql-tag__price { color: var(--qy-good); }
+.ql-variant { position: absolute; top: 9%; left: 6%; right: 6%; display: flex; flex-direction: column; gap: 6px; opacity: 0; transform: translateY(-8px); transition: opacity 0.7s, transform 0.9s var(--ql-glide); font-size: 13px; }
+.ql-variant.is-on { opacity: 1; transform: none; }
+.ql-variant span { display: flex; justify-content: space-between; gap: 8px; padding: 8px 12px; border-radius: 10px; }
+.ql-variant b { font-weight: 600; }
+.ql-variant__keep { background: var(--h-sky-bg); color: var(--h-sky); }
+.ql-variant__drop { background: var(--qy-sunken); color: var(--qy-ink-3); text-decoration: line-through; transition: transform 1s 0.3s var(--ql-glide); }
+.ql-variant.is-on .ql-variant__drop { transform: translateX(14px); }
+.ql-story__save { position: absolute; left: 6%; bottom: 7%; padding: 10px 16px; border-radius: var(--qy-r-pill); background: var(--qy-good); color: #fff; font: 600 15px var(--qy-sans); opacity: 0; transform: translateY(12px) scale(0.96); transition: opacity 0.7s 0.5s, transform 0.9s 0.5s var(--ql-glide); }
+.qy--dark .ql-story__save { color: #0B1F12; }
+.ql-story__save.is-on { opacity: 1; transform: none; }
+.ql-story__scenes { list-style: none; margin: 0; padding: 0; }
+.ql-scene { min-height: 72vh; display: flex; flex-direction: column; justify-content: center; gap: 14px; }
+.ql-scene > * { opacity: 0.25; transform: translateY(12px); transition: opacity 0.8s, transform 1.1s var(--ql-glide); }
+.ql-scene > :nth-child(2) { transition-delay: 80ms; }
+.ql-scene > :nth-child(3) { transition-delay: 160ms; }
+.ql-scene.is-on > * { opacity: 1; transform: none; }
+.ql-scene__n { font-size: 28px; color: var(--h-sky); }
+
+/* ---------- deal tickets ---------- */
+.ql-tickets { list-style: none; margin: 0; padding: 4px 2px 12px; display: flex; gap: 16px; overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; }
+.ql-tickets::-webkit-scrollbar { display: none; }
+.ql-ticket { will-change: transform; position: relative; flex: 0 0 min(300px, 80vw); scroll-snap-align: start; display: flex; flex-direction: column; border-radius: 20px; background: var(--qy-surface); box-shadow: 0 1px 2px rgba(20, 20, 20, 0.05); transition: transform 0.4s var(--ql-glide), box-shadow 0.4s; }
+.ql-ticket:hover { transform: translateY(-3px); box-shadow: var(--qy-lift); }
+.qy--dark .ql-ticket { box-shadow: 0 0 0 1px var(--qy-line); }
+.ql-ticket__top { padding: 18px 20px 16px; display: flex; flex-direction: column; gap: 6px; }
+.ql-ticket__name { margin: 0; font: 600 16px/1.3 var(--qy-sans); display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; }
+.ql-ticket__bottom { position: relative; padding: 16px 20px 20px; display: flex; flex-direction: column; gap: 10px; border-top: 2px dashed var(--qy-line); }
+.ql-ticket__bottom::before, .ql-ticket__bottom::after { content: ""; position: absolute; top: -11px; width: 20px; height: 20px; border-radius: 50%; background: var(--qy-bg); }
+.ql-ticket__bottom::before { left: -10px; }
+.ql-ticket__bottom::after { right: -10px; }
+
+/* ---------- stores ---------- */
+.ql-store { display: flex; align-items: center; gap: 14px; padding: 18px; }
+.ql-store__dot { position: relative; width: 14px; height: 14px; border-radius: 50%; background: var(--hue); flex: none; }
+.ql-store__dot::after { content: ""; position: absolute; inset: 0; border-radius: 50%; background: var(--hue); opacity: 0; }
+.ql-store:hover .ql-store__dot::after { animation: ql-pulse 1s ease-out infinite; }
+@keyframes ql-pulse { from { transform: scale(1); opacity: 0.5; } to { transform: scale(2.6); opacity: 0; } }
+
+/* ---------- ending ---------- */
+.ql-final { display: flex; flex-direction: column; align-items: flex-start; gap: 18px; padding: clamp(28px, 6vw, 72px); }
+.ql .ql-final__title { font-size: clamp(40px, 6vw, 80px); }
+
+/* ---------- smaller screens ---------- */
+@media (max-width: 1100px) {
+  .ql-hero__grid { grid-template-columns: minmax(0, 1fr) minmax(280px, 360px); }
+  .ql-hero__hud { grid-column: 1 / -1; flex-direction: row; flex-wrap: wrap; }
+  .ql-hud { flex: 1 1 220px; }
+}
+@media (max-width: 900px) {
+  .ql-nav__links, .ql-nav__end { display: none; }
+  .ql .ql-nav__menu { display: inline-flex; }
+  .ql-hero { min-height: 0; padding-top: 28px; }
+  .ql-hero__grid { grid-template-columns: minmax(0, 1fr); gap: 28px; }
+  .ql-box { max-width: 420px; width: 100%; }
+  .ql-story { grid-template-columns: minmax(0, 1fr); gap: 0; }
+  /* A strip of page colour above the box hides text scrolling up behind it. */
+  .ql-story__stage { top: 68px; height: 356px; z-index: 1; padding-top: 12px; margin-inline: -16px; padding-inline: 16px; background: linear-gradient(var(--qy-bg) 92%, transparent); }
+  .ql-scene { min-height: 75vh; justify-content: flex-end; padding-bottom: 8vh; }
+  .ql-scene .qy-h1 { font-size: 26px; }
+}
+@media (max-width: 640px) {
+  .ql .ql-hero__title { font-size: 44px; }
+  .ql-hud__big { font-size: 28px; }
+  .ql-tag { padding: 10px 14px; font-size: 14px; }
+  .ql-tag { grid-template-columns: minmax(0, 1fr) auto 64px; gap: 8px; }
+}
+
+/* ---------- less motion ---------- */
+@media (prefers-reduced-motion: reduce) {
+  .ql-box__lid { display: none; }
+  .ql-curve__line { animation: none; stroke-dashoffset: 0; }
+  .ql-curve__glow { display: none; }
+  .ql-curve, .ql-curve__glow, .ql-box__face, .ql-overlay, .ql-overlay.is-closing, .ql-overlay__links a, .ql-scroll span, .ql .qy-logo:hover .qy-logo__mark i { animation: none; }
+  .ql-box, .ql-tag, .ql-tag__extra, .ql-variant, .ql-variant__drop, .ql-story__save, .ql-scene > *, .ql-ticket, .ql-box__dots i { transition: none; }
+  .ql-store:hover .ql-store__dot::after { animation: none; }
+}
