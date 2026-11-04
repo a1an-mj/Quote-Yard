@@ -1,5 +1,12 @@
 /* Additions to the design's qy.css. Keep qy.css as the design delivered it. */
 html, body { margin: 0; }
+/* iPhone Safari enlarges text by itself when the phone turns sideways; keep our sizes. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+/* A long model code ("WOE70AG0IN") wraps instead of running off a small screen. */
+.qy { overflow-wrap: break-word; }
+.qy-h1, .qy-h2, .qy-display, .qy-pcard__name, .ql-box__name, .ql-ticket__name { overflow-wrap: anywhere; }
+/* Small phones: page titles a size down, so long product names fit (the phone design used 26px). */
+@media (max-width: 400px) { .qy-h1 { font-size: 28px; } }
 html.qy { min-height: 100%; }
 
 .qy-deals { display: flex; gap: var(--qy-4); overflow-x: auto; scroll-snap-type: x mandatory; scrollbar-width: none; padding-block: 2px; }
@@ -22,7 +29,7 @@ html.qy { min-height: 100%; }
 
 .qy-searchbox { position: relative; flex: 1; min-width: 220px; max-width: 560px; }
 .qy-searchbox--lg { max-width: 720px; }
-.qy-searchbox__input { flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--qy-ink); font: inherit; min-height: 44px; }
+.qy-searchbox__input { -webkit-appearance: none; appearance: none; border-radius: 0; flex: 1; min-width: 0; border: 0; outline: 0; background: transparent; color: var(--qy-ink); font: inherit; min-height: 44px; }
 .qy-searchbox__input::-webkit-search-cancel-button { display: none; }
 .qy-search:focus-within { box-shadow: 0 0 0 1px var(--qy-ink); }
 .qy .qy-searchbox__input:focus-visible { outline: none; } /* the pill's ring shows focus */

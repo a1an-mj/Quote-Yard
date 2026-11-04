@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useId, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { Check, Send } from 'lucide-react'
 import Footer from '../components/Footer'
@@ -21,13 +21,16 @@ const EMPTY = {
   questions: '', suggestions: '', device: '', name: '', email: '', website: '',
 }
 
+// A plain box with a heading, not <fieldset>/<legend>: iPhone Safari puts a
+// legend on the box's top border, so the title hung half outside the card.
 function Question({ n, title, hint, children }) {
+  const id = useId()
   return (
-    <fieldset className="qy-fb__q">
-      <legend className="qy-fb__legend"><span className="qy-dotnum qy-fb__n">0{n}</span>{title}</legend>
+    <div className="qy-fb__q" role="group" aria-labelledby={id}>
+      <h2 className="qy-fb__legend" id={id}><span className="qy-dotnum qy-fb__n" aria-hidden="true">0{n}</span>{title}</h2>
       {hint && <p className="qy-small">{hint}</p>}
       {children}
-    </fieldset>
+    </div>
   )
 }
 
