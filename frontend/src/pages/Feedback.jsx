@@ -7,9 +7,9 @@ import { api, errorMessage } from '../lib/api'
 
 // The highlight colours testers can try. Keys match api/routes/feedback.py.
 const COLOURS = [
-  { key: 'neon-green', name: 'Neon green', hex: '#4DFF00', on: '#141414', note: 'Now' },
+  { key: 'neon-green', name: 'Neon green', hex: '#4DFF00', on: '#141414', note: 'Before' },
   { key: 'sunflower', name: 'Sunflower', hex: '#FFD23F', on: '#141414' },
-  { key: 'coral', name: 'Coral', hex: '#FF8A65', on: '#141414' },
+  { key: 'coral', name: 'Coral', hex: '#FF8A65', on: '#141414', note: 'Now' },
   { key: 'sky', name: 'Sky', hex: '#6CC4FF', on: '#141414' },
   { key: 'lavender', name: 'Lavender', hex: '#B9A4FF', on: '#141414' },
   { key: 'ink', name: 'Ink', hex: 'var(--qy-ink)', on: 'var(--qy-surface)', label: 'Black (white in dark mode)' },
@@ -17,7 +17,7 @@ const COLOURS = [
 const FATIGUE = [['not-at-all', 'Not at all'], ['a-little', 'A little'], ['quite', 'Quite tiring'], ['very', 'Very tiring']]
 const DEVICES = [['phone', 'Phone'], ['computer', 'Computer'], ['tablet', 'Tablet']]
 const EMPTY = {
-  colour: '', colour_note: '', fatigue: '', fatigue_note: '', problems: '', mistakes: '',
+  rating: '', colour: '', colour_note: '', fatigue: '', fatigue_note: '', problems: '', mistakes: '',
   questions: '', suggestions: '', device: '', name: '', email: '', website: '',
 }
 
@@ -68,7 +68,7 @@ export default function Feedback() {
     setBusy(true)
     setError(null)
     try {
-      await api('/public/feedback', { method: 'POST', body: form })
+      await api('/public/feedback', { method: 'POST', body: { ...form, rating: form.rating ? Number(form.rating) : null } })
       setSent(true)
       window.scrollTo({ top: 0 })
     } catch (err) {
@@ -100,7 +100,18 @@ export default function Feedback() {
               <p className="qy-body" style={{ fontSize: 17 }}>Quote Yard isn't finished yet. Answer as many or as few questions as you like; every answer is read.</p>
             </div>
 
-            <Question n={1} title="The highlight colour" hint="The bright colour on main buttons like Sign up and Search. Tap one to try it on this page.">
+            <Question n={1} title="Overall, how would you rate Quote Yard?" hint="1 is poor, 10 is excellent.">
+              <div className="qy-fb__rating" role="radiogroup" aria-label="Rating out of 10">
+                {Array.from({ length: 10 }, (_, i) => String(i + 1)).map((n) => (
+                  <label key={n} className="qy-pick">
+                    <input type="radio" name="rating" value={n} checked={form.rating === n} onChange={() => set('rating')(n)} aria-label={`${n} out of 10`} />
+                    {n}
+                  </label>
+                ))}
+              </div>
+            </Question>
+
+            <Question n={2} title="The highlight colour" hint="The bright colour on main buttons like Sign up and Search. Tap one to try it on this page.">
               <div className="qy-fb__swatches" role="radiogroup" aria-label="Highlight colour">
                 {COLOURS.map((c) => (
                   <label key={c.key} className="qy-swatch">
@@ -117,35 +128,35 @@ export default function Feedback() {
                   <span className="qy-small">Tell us below</span>
                 </label>
               </div>
-              <p className="qy-small">Green also marks the lowest price everywhere on the site, so a different highlight could make the green prices stand out more.</p>
+              <p className="qy-small">Green marks the lowest price everywhere on the site, so the highlight should stay clearly different from it.</p>
               <div className="qy-field">
                 <label className="qy-small" htmlFor="colour-note" style={{ color: 'var(--qy-ink)' }}>Why, or which other colour? (optional)</label>
                 <input id="colour-note" className="qy-input" maxLength={300} value={form.colour_note} onChange={(e) => set('colour_note')(e.target.value)} />
               </div>
             </Question>
 
-            <Question n={2} title="Does the site feel tiring to look at?">
+            <Question n={3} title="Does the site feel tiring to look at?">
               <Pills name="fatigue" options={FATIGUE} value={form.fatigue} onChange={set('fatigue')} />
               <Box id="fatigue-note" label="What felt tiring, or what felt good? (optional)" value={form.fatigue_note} onChange={set('fatigue_note')} rows={2} />
             </Question>
 
-            <Question n={3} title="Did anything go wrong?" hint="Something that didn't work, was confusing, slow, or looked broken. Which page, and what did you do?">
+            <Question n={4} title="Did anything go wrong?" hint="Something that didn't work, was confusing, slow, or looked broken. Which page, and what did you do?">
               <Box id="problems" label="Problems" value={form.problems} onChange={set('problems')} />
             </Question>
 
-            <Question n={4} title="Spelling mistakes or wrong details?" hint="A typo, a wrong price or product name, or wrong store information.">
+            <Question n={5} title="Spelling mistakes or wrong details?" hint="A typo, a wrong price or product name, or wrong store information.">
               <Box id="mistakes" label="Mistakes" value={form.mistakes} onChange={set('mistakes')} />
             </Question>
 
-            <Question n={5} title="Anything you want to ask?">
+            <Question n={6} title="Anything you want to ask?">
               <Box id="questions" label="Your questions" value={form.questions} onChange={set('questions')} />
             </Question>
 
-            <Question n={6} title="Any other ideas?" hint="Stores, features, or anything you'd change.">
+            <Question n={7} title="Any other ideas?" hint="Stores, features, or anything you'd change.">
               <Box id="suggestions" label="Suggestions" value={form.suggestions} onChange={set('suggestions')} />
             </Question>
 
-            <Question n={7} title="About you (optional)">
+            <Question n={8} title="About you (optional)">
               <p className="qy-small">What did you use?</p>
               <Pills name="device" options={DEVICES} value={form.device} onChange={set('device')} />
               <div className="qy-fb__who">

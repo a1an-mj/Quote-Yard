@@ -15,7 +15,7 @@
   --qy-line: #D8D8D3;        /* hairlines */
   --qy-accent: #141414;      /* primary action + lowest price */
   --qy-on-accent: #FFFFFF;
-  --qy-cta: #4DFF00;         /* key action buttons (Search, Sign in, Compare…) */
+  --qy-cta: #FF8A65;         /* key action buttons (Search, Sign in, Compare…) */
   --qy-on-cta: #141414;      /* text on CTA — ~15:1 contrast */
   --qy-best: #EDEDE8;        /* lowest-price row tint */
   --qy-diff: #F7F7F4;        /* "differs" row tint in compare */

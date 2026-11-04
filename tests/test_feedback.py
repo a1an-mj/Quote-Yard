@@ -44,6 +44,20 @@ def test_feedback_is_emailed_to_the_team(monkeypatch):
     assert "Sunflower #FFD23F" in body and "A little" in body and "Typo on the landing page" in body
 
 
+def test_a_rating_alone_is_enough(monkeypatch):
+    c, mailer = client(monkeypatch)
+    assert c.post(URL, headers=HEADERS, json={"rating": 7}).status_code == 202
+    ((_, _, body),) = mailer.sent
+    assert "Overall rating:\n7/10" in body
+
+
+def test_rating_must_be_1_to_10(monkeypatch):
+    c, mailer = client(monkeypatch)
+    for bad in (0, 11):
+        assert c.post(URL, headers=HEADERS, json={"rating": bad, "problems": "x"}).status_code == 422
+    assert mailer.sent == []
+
+
 def test_empty_feedback_is_refused(monkeypatch):
     c, mailer = client(monkeypatch)
     assert c.post(URL, headers=HEADERS, json={"name": "Anu"}).status_code == 422
