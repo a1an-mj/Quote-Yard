@@ -12,7 +12,8 @@
 #     A migration that adds a table the website must WRITE needs a GRANT for
 #     quote_yard_web (new tables are readable automatically).
 #  2. SSH: keys only, no passwords, no root login.
-#  3. Firewall: SSH and the site only from the home network, nothing else in.
+#  3. Firewall: SSH and the site only from the home network, SSH over
+#     Tailscale (how the laptop reaches it from another house), nothing else in.
 #  4. Security updates may restart the machine at 04:30 when they need to.
 #  5. Battery charge capped at 80% (the laptop is always plugged in).
 #  6. Proves last night's backup restores, in a throwaway database.
@@ -89,13 +90,15 @@ fi
 # ---------------------------------------------------------------- 3. firewall
 step "3/6 Firewall"
 echo "Current rules:"; ufw status numbered || true
-read -r -p "Replace them with: SSH and port $SITE_PORT from $HOME_NET only, nothing else in? [y/N] " ok
+read -r -p "Replace them with: SSH and port $SITE_PORT from $HOME_NET, SSH over Tailscale, nothing else in? [y/N] " ok
 if [[ "$ok" == [yY] ]]; then
   ufw --force reset >/dev/null
   ufw default deny incoming
   ufw default allow outgoing
   ufw allow from "$HOME_NET" to any port 22 proto tcp comment 'ssh, home network'
   ufw allow from "$HOME_NET" to any port "$SITE_PORT" proto tcp comment 'quote yard, home network'
+  # Kept so a re-run cannot lock out remote access once the server lives elsewhere.
+  ufw allow in on tailscale0 to any port 22 proto tcp comment 'ssh over tailscale'
   ufw --force enable
   ufw status verbose
 else

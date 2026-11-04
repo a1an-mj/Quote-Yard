@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Copy the server's newest backup to this laptop, so a dead server loses nothing.
 #
-#   deploy/pull-backup.sh user@192.168.1.14
+#   deploy/pull-backup.sh user@quote-yard-server   (its Tailscale name; works from any network)
 #
 # Saved in ~/quote-yard-offsite-backups; the newest 7 are kept.
 set -euo pipefail

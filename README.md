@@ -116,7 +116,7 @@ The API serves the built frontend from `frontend/dist`, so one service is the wh
 
 ```
 deploy/install-api.sh [--lan]            # on the server, once
-deploy/deploy.sh user@192.168.1.14       # from the laptop, after git push
+deploy/deploy.sh user@quote-yard-server  # from the laptop, after git push (over Tailscale)
 ```
 
 `deploy.sh` builds the site, updates the server's code and database, and restarts
@@ -126,7 +126,7 @@ the service. It refuses to run with unpushed commits or during the nightly updat
 
 ```
 deploy/install-backup.sh                 # on the server: daily at 03:30
-deploy/pull-backup.sh user@192.168.1.14  # from the laptop: copy the newest one here
+deploy/pull-backup.sh user@quote-yard-server  # from the laptop: copy the newest one here
 ```
 
 Kept in `~/quote-yard-backups` on the server: 14 daily and 6 monthly. They hold user

@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Update the server from this laptop. Run from the repo root, after git push.
 #
-#   deploy/deploy.sh user@192.168.1.14
+#   deploy/deploy.sh user@quote-yard-server   (its Tailscale name; works from any network)
 #
 # Refuses to run while the nightly update runs or with unpushed commits.
 set -euo pipefail
