@@ -1,5 +1,5 @@
 import { useLayoutEffect } from 'react'
-import { Route, Routes, useLocation } from 'react-router-dom'
+import { Route, Routes, useLocation, useNavigationType } from 'react-router-dom'
 import CrashScreen from './components/CrashScreen'
 import { RequireLogin } from './lib/auth'
 import { noteEntry } from './lib/motion'
@@ -24,6 +24,12 @@ import VendorDashboard from './pages/vendor/VendorDashboard'
 export default function App() {
   const { pathname, key } = useLocation()
   useLayoutEffect(noteEntry, [key]) // for the Back circle
+  const how = useNavigationType()
+  // A new page opens at its top. Back/Forward (POP) keep the browser's place, and
+  // filters or tabs on the same page (same pathname) don't jump.
+  useLayoutEffect(() => {
+    if (how !== 'POP') window.scrollTo(0, 0)
+  }, [pathname]) // eslint-disable-line react-hooks/exhaustive-deps
   return (
     <CrashScreen page={pathname}>
     <Routes>
