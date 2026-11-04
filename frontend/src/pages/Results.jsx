@@ -4,6 +4,7 @@ import AppNav, { Breadcrumb } from '../components/AppNav'
 import ErrorBlock from '../components/ErrorBlock'
 import Footer from '../components/Footer'
 import ProductCard, { CardSkeletons } from '../components/ProductCard'
+import TabBar from '../components/TabBar'
 import { formatCount, formatPrice, isOutdated, timeAgo } from '../lib/format'
 import { useApi } from '../lib/useApi'
 import { StoreName, TypeIcon } from '../components/Look'
@@ -223,13 +224,14 @@ export default function Results() {
       <div className="qy-wrap qy-side" style={{ paddingBlock: '24px 64px' }}>
         <Filters key={kind} kind={kind} params={params} update={update} clear={clear} />
         <main className="qy-stack" style={{ gap: 20, minWidth: 0 }}>
-          <div className="qy-tabs" role="tablist" aria-label="Result type">
+          <div className="qy-tabs qy-tabs--slide" role="tablist" aria-label="Result type">
             <button className="qy-tab-btn" type="button" role="tab" aria-selected={kind === 'products'} onClick={() => update({ view: 'products' })}>
               Matched products <span className="qy-num">{productCount.data ? formatCount(productCount.data.total) : ''}</span>
             </button>
             <button className="qy-tab-btn" type="button" role="tab" aria-selected={kind === 'listings'} onClick={() => update({ view: 'listings' })}>
               All listings <span className="qy-num">{listingCount.data ? formatCount(listingCount.data.total) : ''}</span>
             </button>
+            <TabBar />
           </div>
 
           <div className="qy-between" style={{ alignItems: 'center' }}>

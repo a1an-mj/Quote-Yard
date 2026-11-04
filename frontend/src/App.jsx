@@ -1,6 +1,8 @@
+import { useLayoutEffect } from 'react'
 import { Route, Routes, useLocation } from 'react-router-dom'
 import CrashScreen from './components/CrashScreen'
 import { RequireLogin } from './lib/auth'
+import { noteEntry } from './lib/motion'
 import Admin from './pages/Admin'
 import Categories from './pages/Categories'
 import ForgotPassword from './pages/auth/ForgotPassword'
@@ -20,7 +22,8 @@ import { VendorForgot, VendorJoin, VendorLogin, VendorReset } from './pages/vend
 import VendorDashboard from './pages/vendor/VendorDashboard'
 
 export default function App() {
-  const { pathname } = useLocation()
+  const { pathname, key } = useLocation()
+  useLayoutEffect(noteEntry, [key]) // for the Back circle
   return (
     <CrashScreen page={pathname}>
     <Routes>

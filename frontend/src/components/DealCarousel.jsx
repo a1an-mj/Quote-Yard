@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { TrendingDown } from 'lucide-react'
+import { CircleLink } from '../lib/motion'
 import { formatPrice, timeAgo } from '../lib/format'
 import { StoreName } from './Look'
 
@@ -89,7 +90,7 @@ export default function DealCarousel({ deals, loading, error, onRetry, linked = 
           <button className="qy-btn qy-btn--icon qy-btn--quiet" type="button" aria-label="Previous deals" onClick={() => scroll(-1)}>←</button>
           <button className="qy-btn qy-btn--icon qy-btn--quiet" type="button" aria-label="Next deals" onClick={() => scroll(1)}>→</button>
         </div>
-        {!linked && <Link className="qy-btn" to="/signup">Sign up to see every store's price</Link>}
+        {!linked && <CircleLink className="qy-btn" to="/signup">Sign up to see every store's price</CircleLink>}
       </div>
     </div>
   )

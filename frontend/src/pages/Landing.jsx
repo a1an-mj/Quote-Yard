@@ -8,6 +8,7 @@ import Footer from '../components/Footer'
 import Logo from '../components/Logo'
 import ThemeSwitch from '../components/ThemeSwitch'
 import { useAuth } from '../lib/auth'
+import { CircleLink } from '../lib/motion'
 import { formatCount, formatPrice, timeAgo } from '../lib/format'
 import { storeHue } from '../lib/look'
 import { useApi } from '../lib/useApi'
@@ -116,8 +117,8 @@ function LandingNav() {
             <Link className="qy-btn qy-btn--primary" to="/home">Open Quote Yard</Link>
           ) : (
             <>
-              <Link className="qy-btn qy-btn--ghost" to="/login">Log in</Link>
-              <Link className="qy-btn qy-btn--primary" to="/signup">Sign up</Link>
+              <CircleLink className="qy-btn qy-btn--ghost" to="/login">Log in</CircleLink>
+              <CircleLink className="qy-btn qy-btn--primary" to="/signup">Sign up</CircleLink>
             </>
           )}
         </div>
@@ -135,12 +136,12 @@ function LandingNav() {
           </div>
           <nav className="ql-overlay__links" aria-label="Menu links">
             {links.map(([href, label]) => <a key={href} href={href} onClick={() => setOpen(false)}>{label}</a>)}
-            {!user && <Link to="/login">Log in</Link>}
+            {!user && <CircleLink to="/login">Log in</CircleLink>}
           </nav>
           <div className="ql-overlay__foot">
-            <Link className="qy-btn qy-btn--primary" to={user ? '/home' : '/signup'}>
+            <CircleLink className="qy-btn qy-btn--primary" to={user ? '/home' : '/signup'}>
               {user ? 'Open Quote Yard' : 'Sign up free'} <ArrowRight size={16} aria-hidden="true" />
-            </Link>
+            </CircleLink>
             <ThemeSwitch />
           </div>
         </div>,
@@ -450,8 +451,8 @@ export default function Landing() {
                 <li>Only prices the stores publish</li>
               </ul>
               <div className="qy-row" style={{ flexWrap: 'wrap' }}>
-                <Link className="qy-btn qy-btn--primary" to="/signup">Sign up free <ArrowRight size={16} aria-hidden="true" /></Link>
-                <Link className="qy-btn" to="/login">Log in</Link>
+                <CircleLink className="qy-btn qy-btn--primary" to="/signup">Sign up free <ArrowRight size={16} aria-hidden="true" /></CircleLink>
+                <CircleLink className="qy-btn" to="/login">Log in</CircleLink>
               </div>
             </div>
             <PriceBox deals={deals.data} loading={deals.loading} />
@@ -524,7 +525,7 @@ export default function Landing() {
           <div className="qy-hero-band ql-final">
             <h2 className="qy-display ql-final__title">Find your price.</h2>
             <p className="qy-body">Free to use. Sign up with your email and see every store's price side by side.</p>
-            <Link className="qy-btn qy-btn--primary" to="/signup">Sign up free <ArrowRight size={16} aria-hidden="true" /></Link>
+            <CircleLink className="qy-btn qy-btn--primary" to="/signup">Sign up free <ArrowRight size={16} aria-hidden="true" /></CircleLink>
           </div>
         </section>
       </main>

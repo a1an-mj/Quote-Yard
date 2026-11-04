@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import { useAuth } from '../lib/auth'
+import { CircleLink } from '../lib/motion'
 import Logo from './Logo'
 import NavMenu from './NavMenu'
 import ThemeSwitch from './ThemeSwitch'
@@ -22,8 +23,8 @@ export default function PublicNav() {
               <Link className="qy-btn qy-btn--primary" to="/home">Open Quote Yard</Link>
             ) : (
               <>
-                <Link className="qy-btn qy-btn--ghost" to="/login">Log in</Link>
-                <Link className="qy-btn qy-btn--primary" to="/signup">Sign up</Link>
+                <CircleLink className="qy-btn qy-btn--ghost" to="/login">Log in</CircleLink>
+                <CircleLink className="qy-btn qy-btn--primary" to="/signup">Sign up</CircleLink>
               </>
             )}
           </div>

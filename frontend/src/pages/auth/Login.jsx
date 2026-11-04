@@ -4,6 +4,7 @@ import AuthCard from '../../components/AuthCard'
 import Field from '../../components/Field'
 import { api, errorMessage } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
+import { CircleLink, circleTo, middleOf } from '../../lib/motion'
 
 export default function Login() {
   const navigate = useNavigate()
@@ -16,11 +17,12 @@ export default function Login() {
 
   async function submit(e) {
     e.preventDefault()
+    const from = middleOf(e.nativeEvent.submitter ?? e.currentTarget) // Home grows from the button
     setBusy(true)
     setError(null)
     try {
       setUser(await api('/auth/login', { method: 'POST', body: { email, password } }))
-      navigate(state?.from ?? '/home', { replace: true })
+      circleTo(navigate, state?.from ?? '/home', from, { replace: true })
     } catch (err) {
       if (err.detail === 'email_not_verified') {
         await api('/auth/resend-code', { method: 'POST', body: { email } }).catch(() => {})
@@ -35,7 +37,7 @@ export default function Login() {
   return (
     <AuthCard
       title="Log in"
-      footer={<>New here? <Link className="qy-link" to="/signup">Create an account</Link></>}
+      footer={<>New here? <CircleLink className="qy-link" to="/signup">Create an account</CircleLink></>}
     >
       <form className="qy-stack" style={{ gap: 16 }} onSubmit={submit}>
         {state?.notice && <p className="qy-form-note" role="status">{state.notice}</p>}

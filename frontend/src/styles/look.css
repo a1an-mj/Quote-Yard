@@ -118,8 +118,8 @@ main { animation: qy-in 0.28s var(--qy-ease) both; }
   transition: background-color 0.25s ease, color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease,
     text-decoration-color 0.25s ease, opacity 0.25s ease, transform 0.2s var(--qy-ease);
 }
-.qy-btn:hover:not([disabled]) { background-color: var(--qy-sunken); }
-.qy-btn--primary:hover:not([disabled]) { background-color: var(--qy-cta); box-shadow: inset 0 0 0 1px var(--qy-ink), 0 6px 18px rgba(77, 255, 0, 0.28); transform: translateY(-1px); }
+.qy-btn:hover:not([disabled]), .qy-btn.qy-hovered { background-color: var(--qy-sunken); }
+.qy-btn--primary:hover:not([disabled]), .qy-btn--primary.qy-hovered { background-color: var(--qy-cta); box-shadow: inset 0 0 0 1px var(--qy-ink), 0 6px 18px rgba(77, 255, 0, 0.28); transform: translateY(-1px); }
 .qy-btn--quiet:hover:not([disabled]) { border-color: var(--qy-ink-3); }
 .qy-btn:active:not([disabled]) { transform: scale(0.97); }
 .qy-link, .qy-foot a, .qy a.qy-small, nav[aria-label="Breadcrumb"] a { text-decoration-color: color-mix(in srgb, currentColor 45%, transparent); }
@@ -144,10 +144,26 @@ main { animation: qy-in 0.28s var(--qy-ease) both; }
 .qy-theming *, .qy-theming *::before, .qy-theming *::after { transition: none !important; }
 .qy-theming .qy-seg__pill { transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1) !important; }
 ::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.45s; animation-timing-function: ease; }
+
+/* Log in / Sign up: the new page grows in a circle from the click; Back shrinks it (lib/circle.jsx) */
+:root[data-qy-circle]::view-transition-old(root), :root[data-qy-circle]::view-transition-new(root) { animation: none; mix-blend-mode: normal; }
+:root[data-qy-circle="close"]::view-transition-old(root) { z-index: 1; }
+
+/* Home's big search box flies into the Results top bar, and back (lib/motion.jsx) */
+:root[data-qy-morph="search"] .qy-search { view-transition-name: qy-search; }
+:root[data-qy-morph]::view-transition-old(root) { animation-duration: 0.18s; } /* old page gone quickly, no ghost text */
+:root[data-qy-morph]::view-transition-new(root) { animation-duration: 0.3s; }
+:root[data-qy-morph]::view-transition-group(qy-search) { animation-duration: 0.55s; animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1); }
+:root[data-qy-morph]::view-transition-old(qy-search), :root[data-qy-morph]::view-transition-new(qy-search) { animation-duration: 0.3s; height: 100%; object-fit: fill; }
+
+/* tabs: one underline that slides to the chosen tab (components/TabBar.jsx) */
+.qy-tabs--slide { position: relative; }
+.qy-tabs--slide .qy-tab-btn[aria-selected="true"] { border-bottom-color: transparent; }
+.qy-tabs__bar { position: absolute; height: 2px; border-radius: 2px; background: var(--qy-ink); pointer-events: none; transition: left 0.35s cubic-bezier(0.22, 1, 0.36, 1), width 0.35s cubic-bezier(0.22, 1, 0.36, 1), top 0.35s cubic-bezier(0.22, 1, 0.36, 1); }
 .qy-theme-fade, .qy-theme-fade * { transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, fill 0.4s ease, stroke 0.4s ease !important; }
 
 @media (prefers-reduced-motion: reduce) {
-  .qy-btn, .qy-navlink, .qy-chip, .qy-seg button, .qy-tab-btn, .qy-suggest__item, .qy-select, .qy-input, .qy-link, .ql-store, .qy-seg__pill { transition: none; }
+  .qy-btn, .qy-navlink, .qy-chip, .qy-seg button, .qy-tab-btn, .qy-suggest__item, .qy-select, .qy-input, .qy-link, .ql-store, .qy-seg__pill, .qy-tabs__bar { transition: none; }
   .qy-btn--primary:hover:not([disabled]), .ql-store:hover { transform: none; }
   ::view-transition-old(root), ::view-transition-new(root) { animation: none; }
   main, .qy-grid-3 > *, .qy-grid-4 > *, .qy-deals > *, .qy-listing, .qy-btn[aria-pressed="true"] { animation: none; }

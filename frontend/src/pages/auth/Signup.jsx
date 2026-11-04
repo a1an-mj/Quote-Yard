@@ -3,6 +3,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import AuthCard from '../../components/AuthCard'
 import Field from '../../components/Field'
 import { api, errorMessage } from '../../lib/api'
+import { CircleLink } from '../../lib/motion'
 
 export default function Signup() {
   const navigate = useNavigate()
@@ -30,7 +31,7 @@ export default function Signup() {
     <AuthCard
       title="Create your account"
       intro="We'll email you a code to confirm your address."
-      footer={<>Already have an account? <Link className="qy-link" to="/login">Log in</Link></>}
+      footer={<>Already have an account? <CircleLink className="qy-link" to="/login">Log in</CircleLink></>}
     >
       <form className="qy-stack" style={{ gap: 16 }} onSubmit={submit}>
         <Field id="first-name" label="First name" autoComplete="given-name" required maxLength={50} value={form.first_name} onChange={set('first_name')} />

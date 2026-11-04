@@ -4,6 +4,7 @@ import AuthCard from '../../components/AuthCard'
 import Field from '../../components/Field'
 import { api, errorMessage } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
+import { circleTo, middleOf } from '../../lib/motion'
 
 const COOLDOWN_S = 60
 
@@ -26,12 +27,13 @@ export default function Verify() {
 
   async function submit(e) {
     e.preventDefault()
+    const from = middleOf(e.nativeEvent.submitter ?? e.currentTarget) // Home grows from the button
     setBusy(true)
     setError(null)
     setNote(null)
     try {
       setUser(await api('/auth/verify-email', { method: 'POST', body: { email, code } }))
-      navigate('/home', { replace: true })
+      circleTo(navigate, '/home', from, { replace: true })
     } catch (err) {
       setError(err.status === 422 ? 'Enter the 6-digit code from the email.' : errorMessage(err))
       setBusy(false)

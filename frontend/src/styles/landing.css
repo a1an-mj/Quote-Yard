@@ -8,7 +8,7 @@ html:has(.ql) { scroll-padding-top: 84px; }
 
 /* ---------- header ---------- */
 .ql-nav { position: sticky; top: 0; z-index: 30; background: color-mix(in srgb, var(--qy-surface) 86%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--qy-line); }
-.ql-nav__in { display: flex; align-items: center; gap: var(--qy-5); min-height: 68px; }
+.ql-nav__in { display: flex; align-items: center; gap: var(--qy-5); min-height: 72px; } /* same as .qy-nav__in, so the circle to Log in / Sign up does not shift the buttons */
 .ql-nav__links { display: flex; gap: 4px; flex: 1; }
 .ql-nav__end { display: flex; align-items: center; gap: var(--qy-3); }
 .ql .ql-nav__menu { display: none; margin-left: auto; }

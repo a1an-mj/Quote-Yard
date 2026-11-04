@@ -2,6 +2,7 @@ import { useEffect, useId, useRef, useState } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import { api } from '../lib/api'
 import { formatPrice } from '../lib/format'
+import { searchTo } from '../lib/motion'
 
 const RECENT_KEY = 'qy-recent-searches'
 const MIN_CHARS = 2
@@ -85,7 +86,10 @@ export default function SearchBox({ compact = false }) {
   function goSearch(q) {
     remember(q)
     setOpen(false)
-    navigate(`/search?q=${encodeURIComponent(q)}`)
+    const to = `/search?q=${encodeURIComponent(q)}`
+    // From Home's big box the box flies up into the Results top bar.
+    if (compact) navigate(to)
+    else searchTo(navigate, to)
   }
 
   function goProduct(product) {
