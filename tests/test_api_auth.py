@@ -135,13 +135,13 @@ def test_bad_email_rejected(ctx, email):
     assert post(client, "register", email=email, password=PASSWORD).status_code == 422
 
 
-def test_existing_account_gets_the_same_reply_and_no_email(ctx):
+def test_existing_account_is_told_and_nothing_changes(ctx):
     client, s, mailer = ctx
     signed_up(client, mailer)
     before = s.scalar(select(User)).password_hash
     sent = len(mailer.sent)
     r = post(client, "register", email=EMAIL, password="another password")
-    assert r.status_code == 202 and r.json()["message"] == auth_routes.CHECK_EMAIL
+    assert r.status_code == 409 and r.json()["detail"] == auth_routes.EMAIL_TAKEN
     assert len(mailer.sent) == sent and s.scalar(select(User)).password_hash == before
 
 

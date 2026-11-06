@@ -34,6 +34,7 @@ router = APIRouter(prefix="/auth", tags=["auth"], dependencies=[Depends(require_
 CHECK_EMAIL = "If that address can use this, a code is on its way."
 BAD_CODE = "That code is wrong or has expired."
 BAD_LOGIN = "Wrong email or password."
+EMAIL_TAKEN = "This email already has an account."
 EMAIL_RE = re.compile(r"[^@\s]+@[^@\s]+\.[^@\s]+")
 
 
@@ -147,7 +148,10 @@ def _set_cookie(response: Response, token: str) -> None:
 @router.post("/register", response_model=MessageOut, status_code=202)
 def register(body: RegisterIn, request: Request, background: BackgroundTasks,
              session: Session = Depends(get_write_session), mailer=Depends(get_mailer)):
-    """The reply is the same whether or not the address already has an account."""
+    """A confirmed address gets 409, so the person can log in or reset the password
+    instead of waiting for a code that never comes. An unconfirmed one takes the new
+    details and gets a fresh code. The register limit (20 a day) slows anyone
+    checking which addresses have accounts."""
     _limit(request)
     _limit(request, "register")
     password_hash = hash_secret(body.password)
@@ -168,7 +172,7 @@ def register(body: RegisterIn, request: Request, background: BackgroundTasks,
         user.password_hash = password_hash
         user.first_name, user.last_name = body.first_name, body.last_name
     else:
-        return MessageOut(message=CHECK_EMAIL)
+        raise HTTPException(status_code=409, detail=EMAIL_TAKEN)
     _send_verify(background, mailer, session, user)
     return MessageOut(message=CHECK_EMAIL)
 

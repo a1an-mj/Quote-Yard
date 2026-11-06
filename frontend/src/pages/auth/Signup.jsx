@@ -9,6 +9,7 @@ export default function Signup() {
   const navigate = useNavigate()
   const [form, setForm] = useState({ first_name: '', last_name: '', email: '', password: '', website: '' })
   const [error, setError] = useState(null)
+  const [taken, setTaken] = useState(null) // the email that already has an account
   const [busy, setBusy] = useState(false)
   const set = (key) => (e) => setForm({ ...form, [key]: e.target.value })
 
@@ -16,11 +17,13 @@ export default function Signup() {
     e.preventDefault()
     setBusy(true)
     setError(null)
+    setTaken(null)
     try {
       await api('/auth/register', { method: 'POST', body: form })
       navigate('/verify', { state: { email: form.email.trim() } })
     } catch (err) {
-      setError(err.status === 422
+      if (err.status === 409) setTaken(form.email.trim())
+      else setError(err.status === 422
         ? 'Enter your first name, a valid email and a password of at least 8 characters.'
         : errorMessage(err))
       setBusy(false)
@@ -43,6 +46,15 @@ export default function Signup() {
           <input id="website" tabIndex={-1} autoComplete="off" value={form.website} onChange={set('website')} />
         </div>
         {error && <p className="qy-form-error" role="alert">{error}</p>}
+        {taken && (
+          <div className="qy-form-error qy-stack" role="alert" style={{ gap: 6 }}>
+            <p style={{ margin: 0 }}>This email already has an account. Log in, or reset your password if you've forgotten it.</p>
+            <p className="qy-row" style={{ margin: 0, gap: 16, flexWrap: 'wrap' }}>
+              <Link className="qy-link" to="/login" state={{ email: taken }}>Log in</Link>
+              <Link className="qy-link" to="/forgot-password" state={{ email: taken }}>Reset password</Link>
+            </p>
+          </div>
+        )}
         <button className="qy-btn qy-btn--primary" type="submit" disabled={busy}>{busy ? 'Creating…' : 'Sign up'}</button>
         <p className="qy-small">By signing up you agree to the <Link className="qy-link" to="/terms">Terms</Link> and the <Link className="qy-link" to="/privacy">Privacy policy</Link>.</p>
       </form>

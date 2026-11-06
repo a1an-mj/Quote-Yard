@@ -1,12 +1,13 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, useLocation, useNavigate } from 'react-router-dom'
 import AuthCard from '../../components/AuthCard'
 import Field from '../../components/Field'
 import { api, errorMessage } from '../../lib/api'
 
 export default function ForgotPassword() {
   const navigate = useNavigate()
-  const [email, setEmail] = useState('')
+  const { state } = useLocation()
+  const [email, setEmail] = useState(state?.email ?? '')
   const [error, setError] = useState(null)
   const [busy, setBusy] = useState(false)
 
