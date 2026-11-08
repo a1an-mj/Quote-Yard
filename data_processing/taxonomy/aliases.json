@@ -349,6 +349,11 @@
           "status": "mapped",
           "product_type": "Air Fryer"
         },
+        "Appachatty": {
+          "status": "mapped",
+          "product_type": "Other Kitchen & Home Item",
+          "note": "Non-kitchen-appliance item, per decision"
+        },
         "Barbeque": {
           "status": "mapped",
           "product_type": "Other Kitchen & Home Item",
