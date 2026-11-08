@@ -62,3 +62,5 @@ Thumbs.db
 # Logs (pipeline runs, including the data/ backup of each run)
 logs/
 *.log
+# Sample files from shops (real prices and details; never commit)
+vendor-samples/
