@@ -74,3 +74,19 @@ def test_failures_are_flagged_in_the_subject():
 def test_outcome_without_a_run():
     assert outcome({"ActiveState": "inactive"}) == "has not run since the server started"
     assert outcome({"ActiveState": "activating"}) == "running now"
+
+
+def test_skipped_categories_are_listed_without_alarming_the_subject():
+    skipped = [{"shop": "Pittappillil", "category": "Kitchen Appliances",
+                "subcategory": "Appachatty", "count": 1}]
+    subject, body = compose(report(normalization={"skipped": skipped, "held": []}))
+    assert "CHECK THE SERVER" not in subject
+    assert "Needs a look: new store categories to add." in body
+    assert "Pittappillil / Kitchen Appliances / Appachatty (1)" in body
+
+
+def test_a_held_back_store_flags_the_report():
+    held = [{"shop": "Oxygen", "skipped": 40, "products": 300}]
+    subject, body = compose(report(normalization={"skipped": [], "held": held}))
+    assert subject.endswith("CHECK THE SERVER")
+    assert "Oxygen: 40 of 300 products in unknown categories" in body

@@ -8,13 +8,15 @@ Counts only: no names or email addresses go in the report. It only reads.
 
 import argparse
 import glob
+import json
 import os
 import re
 import socket
 import subprocess
 import time as clock
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from datetime import datetime, time, timedelta
+from pathlib import Path
 from zoneinfo import ZoneInfo
 
 from sqlalchemy import text
@@ -28,6 +30,7 @@ BACKUP = "quote-yard-backup.service"
 SERVICES = {"Website": "quote-yard-api.service", "Preview link": "quote-yard-preview-tunnel.service"}
 TUNNEL_LINK = re.compile(r"https://[a-z0-9-]+\.trycloudflare\.com")
 FAILED_LOGIN = re.compile(r'"POST /api/v1/auth/login HTTP/[\d.]+" 401')
+NORMALIZATION_REPORT = Path(__file__).resolve().parent.parent / "reports" / "normalization_report.json"
 
 
 # ---------------------------------------------------------------- the period
@@ -84,6 +87,17 @@ def activity(start: datetime, end: datetime) -> dict[str, int]:
     return {"signups": signups, "signups_confirmed": confirmed, "logins": logins,
             "login_people": people, "users": total, "users_confirmed": total_confirmed,
             "saved": saved, "alerts": alerts}
+
+
+def normalization() -> dict:
+    """From the latest price update: products skipped for a new store category."""
+    try:
+        with open(NORMALIZATION_REPORT) as f:
+            report = json.load(f)
+    except (OSError, ValueError):
+        return {}
+    return {"skipped": report.get("unmapped_combinations", []),
+            "held": report.get("held_back_shops", [])}
 
 
 def failed_logins(start: datetime) -> int:
@@ -169,6 +183,7 @@ class Report:
     battery: tuple[str | None, str | None]
     disk_used: int | None
     wifi: str | None
+    normalization: dict = field(default_factory=dict)
 
 
 def outcome(info: dict[str, str]) -> str:
@@ -187,9 +202,21 @@ def compose(r: Report) -> tuple[str, str]:
     problems = [n for n, s in r.services.items() if s != "active"]
     if "FAILED" in outcome(r.pipeline) or "FAILED" in outcome(r.backup):
         problems.append("nightly jobs")
+    held = r.normalization.get("held", [])
+    skipped = r.normalization.get("skipped", [])
+    problems += [f"{h['shop']} prices held back" for h in held]
+    notes = ["new store categories to add"] if skipped else []
     subject = (f"Quote Yard report {r.end:%d %b %H:%M}: "
                f"{a['signups']} new sign-up{'s' * (a['signups'] != 1)}, {a['logins']} login{'s' * (a['logins'] != 1)}"
                + (" - CHECK THE SERVER" if problems else ""))
+    jobs_extra = []
+    if skipped:
+        jobs_extra.append(f"  Skipped products    {sum(c['count'] for c in skipped)}, in new store categories:")
+        jobs_extra += [f"    {c['shop']} / {c['category']} / {c['subcategory']} ({c['count']})"
+                       for c in skipped]
+    for h in held:
+        jobs_extra.append(f"  Held back           {h['shop']}: {h['skipped']} of {h['products']} products "
+                          "in unknown categories, kept yesterday's prices")
     level, status = r.battery
     lines = [
         f"Quote Yard report, {span}",
@@ -205,6 +232,7 @@ def compose(r: Report) -> tuple[str, str]:
         "NIGHTLY JOBS",
         f"  Price update        {outcome(r.pipeline)}",
         f"  Backup              {outcome(r.backup)}",
+        *jobs_extra,
         "",
         "SERVER",
         *[f"  {name:<20}{'running' if s == 'active' else s.upper()}" for name, s in r.services.items()],
@@ -218,8 +246,8 @@ def compose(r: Report) -> tuple[str, str]:
         "",
         "Sent by the Quote Yard server at 07:00 and 14:00 every day.",
     ]
-    if problems:
-        lines[0:0] = [f"Needs a look: {', '.join(problems)}.", ""]
+    if problems or notes:
+        lines[0:0] = [f"Needs a look: {', '.join(problems + notes)}.", ""]
     return subject, "\n".join(lines) + "\n"
 
 
@@ -232,7 +260,7 @@ def gather(now: datetime) -> Report:
         services={name: run("systemctl", "--user", "is-active", unit) or "unknown"
                   for name, unit in SERVICES.items()},
         preview=preview_link(), uptime=uptime(), cpu_temp=cpu_temp(), screen=screen(),
-        battery=battery(), disk_used=disk_used(), wifi=wifi(),
+        battery=battery(), disk_used=disk_used(), wifi=wifi(), normalization=normalization(),
     )
 
 
