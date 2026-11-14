@@ -27,6 +27,8 @@ os.environ["QUOTE_YARD_AUTH_RATE_LIMIT"] = "0"
 # The test client talks plain http, where a Secure cookie would not be sent back.
 os.environ["QUOTE_YARD_COOKIE_SECURE"] = "false"
 os.environ["QUOTE_YARD_API_DOCS"] = "true"
+# FastAPI's TestClient names its host "testserver".
+os.environ.setdefault("QUOTE_YARD_ALLOWED_HOSTS", "testserver,localhost,127.0.0.1,*.trycloudflare.com")
 
 
 def _ensure_database() -> None:

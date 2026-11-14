@@ -4,9 +4,11 @@ import os
 
 from fastapi import Depends, FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette.middleware.trustedhost import TrustedHostMiddleware
 
 from api.auth import require_user
 from api.ratelimit import RateLimiter, RateLimitMiddleware
+from api.safety import SafetyHeadersMiddleware, allowed_hosts
 from api.site import add_site
 from api.routes import admin, auth, catalog, feedback, health, listings, me, products, public, vendor
 
@@ -57,7 +59,9 @@ def create_app(rate_limit: int | None = None) -> FastAPI:
             exempt_paths=(f"{API_PREFIX}/health",),
             prefix=API_PREFIX,
         )
-    # Added last, so it is outermost: even 429 responses carry CORS headers.
+    # A request naming any other site address is refused (400).
+    app.add_middleware(TrustedHostMiddleware, allowed_hosts=allowed_hosts())
+    # Added after the limiter, so even 429 responses carry CORS headers.
     app.add_middleware(
         CORSMiddleware,
         allow_origins=cors_origins(),
@@ -65,6 +69,8 @@ def create_app(rate_limit: int | None = None) -> FastAPI:
         allow_headers=["Content-Type", "X-Quote-Yard"],
         allow_credentials=True,
     )
+    # Outermost: every response gets the browser safety headers.
+    app.add_middleware(SafetyHeadersMiddleware)
     app.include_router(health.router, prefix=API_PREFIX)
     app.include_router(catalog.router, prefix=API_PREFIX)
     app.include_router(auth.router, prefix=API_PREFIX)
