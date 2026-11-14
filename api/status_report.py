@@ -14,6 +14,7 @@ import re
 import socket
 import subprocess
 import time as clock
+import urllib.request
 from dataclasses import dataclass, field
 from datetime import datetime, time, timedelta
 from pathlib import Path
@@ -65,10 +66,56 @@ def first(pattern: str) -> str | None:
     return found[0] if found else None
 
 
+# Only systemd's own lines: the job's output could say "Finished" too.
+JOB_DONE = re.compile(r"^(\d{4}-\d\d-\d\dT\d\d:\d\d)\S*\s\S+\ssystemd\[\d+\]: (Finished |\S+: Failed with result|Failed to start )")
+
+
+def last_run_in_logs(unit: str) -> dict[str, str]:
+    """After a restart systemd forgets the last run, but the logs keep it."""
+    log = run("journalctl", "--user", "-u", unit, "--no-pager", "-o", "short-iso", "-n", "400")
+    for line in reversed(log.splitlines()):
+        found = JOB_DONE.match(line)
+        if found:
+            when, what = found.groups()
+            return {"LoggedFinish": when.replace("T", " "),
+                    "LoggedResult": "success" if what == "Finished " else "failed"}
+    return {}
+
+
 def unit_info(unit: str) -> dict[str, str]:
     out = run("systemctl", "--user", "show", unit,
               "-p", "ActiveState", "-p", "Result", "-p", "ExecMainExitTimestamp")
-    return dict(line.split("=", 1) for line in out.splitlines() if "=" in line)
+    info = dict(line.split("=", 1) for line in out.splitlines() if "=" in line)
+    if not info.get("ExecMainExitTimestamp"):
+        info.update(last_run_in_logs(unit))
+    return info
+
+
+def link_works(link: str | None, timeout: float = 15) -> bool:
+    """Opens the public link's health check the way a visitor would."""
+    if not link:
+        return False
+    request = urllib.request.Request(f"{link}/api/v1/health", headers={"User-Agent": "quote-yard-status"})
+    try:
+        with urllib.request.urlopen(request, timeout=timeout) as response:
+            return response.status == 200
+    except (OSError, ValueError):
+        return False
+
+
+def boot_time() -> datetime | None:
+    for line in (read("/proc/stat") or "").splitlines():
+        if line.startswith("btime "):
+            return datetime.fromtimestamp(int(line.split()[1]), IST)
+    return None
+
+
+def last_shutdown_clean() -> bool | None:
+    """Did the boot before this one end with a proper shutdown? None: no record."""
+    log = run("journalctl", "-b", "-1", "-n", "40", "--no-pager", "-o", "cat")
+    if not log:
+        return None
+    return any(mark in log for mark in ("shutdown.target", "System Reboot", "System Power Off"))
 
 
 def activity(start: datetime, end: datetime) -> dict[str, int]:
@@ -184,16 +231,23 @@ class Report:
     disk_used: int | None
     wifi: str | None
     normalization: dict = field(default_factory=dict)
+    booted: datetime | None = None
+    clean_shutdown: bool | None = None
 
 
 def outcome(info: dict[str, str]) -> str:
-    when = info.get("ExecMainExitTimestamp", "")
-    when = f" (finished {when.split(' ', 1)[-1][:16]})" if when else ""
     if info.get("ActiveState") in ("active", "activating"):
         return "running now"
-    if not when:
-        return "has not run since the server started"
-    return ("success" if info.get("Result") == "success" else "FAILED") + when
+    when = info.get("ExecMainExitTimestamp", "")
+    if when:
+        ok = info.get("Result") == "success"
+        when = f" (finished {when.split(' ', 1)[-1][:16]})"
+    elif info.get("LoggedFinish"):
+        ok = info.get("LoggedResult") == "success"
+        when = f" (finished {info['LoggedFinish']}, before the server restarted)"
+    else:
+        return "no record of it running"
+    return ("success" if ok else "FAILED") + when
 
 
 def compose(r: Report) -> tuple[str, str]:
@@ -206,6 +260,9 @@ def compose(r: Report) -> tuple[str, str]:
     skipped = r.normalization.get("skipped", [])
     problems += [f"{h['shop']} prices held back" for h in held]
     notes = ["new store categories to add"] if skipped else []
+    restarted = r.booted is not None and r.booted >= r.start
+    if restarted and r.clean_shutdown is False:
+        notes.append("the server restarted unexpectedly (power cut or crash?)")
     subject = (f"Quote Yard report {r.end:%d %b %H:%M}: "
                f"{a['signups']} new sign-up{'s' * (a['signups'] != 1)}, {a['logins']} login{'s' * (a['logins'] != 1)}"
                + (" - CHECK THE SERVER" if problems else ""))
@@ -238,6 +295,9 @@ def compose(r: Report) -> tuple[str, str]:
         *[f"  {name:<20}{'running' if s == 'active' else s.upper()}" for name, s in r.services.items()],
         f"  Preview address     {r.preview or 'not found'}",
         f"  Up for              {r.uptime}",
+        *([f"  Restarted           {r.booted:%d %b %H:%M}"
+           + (", planned" if r.clean_shutdown else ", unexpected" if r.clean_shutdown is False else "")
+           + " (so the preview link changed)"] if restarted else []),
         f"  CPU temperature     {f'{r.cpu_temp} C' if r.cpu_temp is not None else 'unknown'}",
         f"  Screen              {r.screen}",
         f"  Battery             {f'{level}% ({status.lower()})' if level else 'unknown'}",
@@ -251,16 +311,26 @@ def compose(r: Report) -> tuple[str, str]:
     return subject, "\n".join(lines) + "\n"
 
 
+def services(link: str | None) -> dict[str, str]:
+    """A running tunnel can still hand out a dead link, so the link itself is opened."""
+    state = {name: run("systemctl", "--user", "is-active", unit) or "unknown"
+             for name, unit in SERVICES.items()}
+    if state["Preview link"] == "active" and not link_works(link):
+        state["Preview link"] = "not working"
+    return state
+
+
 def gather(now: datetime) -> Report:
     start, end = period(now)
+    link = preview_link()
     return Report(
         start=start, end=end, host=socket.gethostname(),
         activity=activity(start, end), failed_logins=failed_logins(start),
         pipeline=unit_info(PIPELINE), backup=unit_info(BACKUP),
-        services={name: run("systemctl", "--user", "is-active", unit) or "unknown"
-                  for name, unit in SERVICES.items()},
-        preview=preview_link(), uptime=uptime(), cpu_temp=cpu_temp(), screen=screen(),
+        services=services(link),
+        preview=link, uptime=uptime(), cpu_temp=cpu_temp(), screen=screen(),
         battery=battery(), disk_used=disk_used(), wifi=wifi(), normalization=normalization(),
+        booted=boot_time(), clean_shutdown=last_shutdown_clean(),
     )
 
 
