@@ -3,9 +3,9 @@ import Footer from '../components/Footer'
 import PublicNav from '../components/PublicNav'
 
 // Shown on both pages. Change the date whenever either page changes.
-const UPDATED = '14 November 2026'
+const UPDATED = '15 November 2026'
 const OPERATOR = 'Rohith Biju'
-const CONTACT = 'rohithbijurandom@gmail.com'
+const CONTACT = 'quoteyard.alerts@gmail.com'
 
 function Contact() {
   return <a className="qy-link" href={`mailto:${CONTACT}`}>{CONTACT}</a>
@@ -44,7 +44,7 @@ export function Privacy() {
       intro="What Quote Yard keeps about you, why, and how to have it removed. In short: only what an account needs, no ads, no tracking, and nothing is sold."
     >
       <Part title="Who runs Quote Yard">
-        <p>Quote Yard is a price comparison site for Kerala, run by {OPERATOR} in Kerala, India. For any question about your data, or to make a request or complaint, email <Contact />.</p>
+        <p>Quote Yard (<a className="qy-link" href="https://quoteyard.in">quoteyard.in</a>) is a price comparison site for Kerala, run by {OPERATOR} in Kerala, India. For any question about your data, or to make a request or complaint, email <Contact />.</p>
       </Part>
 
       <Part title="What we keep">
@@ -91,7 +91,9 @@ export function Privacy() {
       <Part title="Who else is involved">
         <ul>
           <li><strong>Google (Gmail)</strong> delivers the emails we send you, and the team's feedback inbox is a Gmail account, so those messages pass through Google's mail service.</li>
-          <li>Everything else runs on our own server in Kerala, India. The site's fonts are served by us too, so visiting does not contact Google or anyone else.</li>
+          <li><strong>Cloudflare</strong> carries the site's traffic between your browser and our server and protects it from attacks, so it sees your IP address and the pages you ask for. It does not get your account details.</li>
+          <li><strong>Google sign-in:</strong> the login and sign-up pages load Google's button from Google, so Google sees that you opened those pages. If you use <strong>Continue with Google</strong>, Google's own privacy policy applies to it.</li>
+          <li>Everything else runs on our own server in Kerala, India. The site's fonts are served by us too.</li>
           <li>We would only hand over data if Indian law required it.</li>
         </ul>
       </Part>
@@ -133,7 +135,7 @@ export function Terms() {
       intro="The rules for using Quote Yard. By using the site or creating an account, you agree to them."
     >
       <Part title="What Quote Yard is">
-        <p>Quote Yard shows the prices that Kerala stores list on their own websites (myG, Oxygen, Pittappillil and Nandilath G Mart), side by side. It is run by {OPERATOR}. We don't sell anything, and we are not part of, paid by or endorsed by any of these stores. Store and brand names belong to their owners.</p>
+        <p>Quote Yard (<a className="qy-link" href="https://quoteyard.in">quoteyard.in</a>) shows the prices that Kerala stores list on their own websites (myG, Oxygen, Pittappillil and Nandilath G Mart), side by side. It is run by {OPERATOR}. We don't sell anything, and we are not part of, paid by or endorsed by any of these stores. Store and brand names belong to their owners.</p>
       </Part>
 
       <Part title="Prices can be out of date or wrong">

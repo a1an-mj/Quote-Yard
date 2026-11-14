@@ -9,24 +9,24 @@ account (its nameservers set at the seller). Then, in this order:
    `quoteyard.in` and `www.quoteyard.in` (`deploy/install-site-tunnel.sh`,
    service `quote-yard-tunnel`). The quick tunnel and its watchdog are removed;
    the status report opens `QUOTE_YARD_SITE_URL`.
-   - Still to do: redirect `www.quoteyard.in` to `quoteyard.in` (a Cloudflare
-     redirect rule; today both show the site).
+   - Cloudflare: "Always Use HTTPS" is on, and a "Redirect from WWW to root"
+     rule sends `www.quoteyard.in` to `quoteyard.in` (both done 2026-11-14).
 2. **Done 2026-11-14. Server settings** (`.env` on the server):
    - `QUOTE_YARD_SITE_URL=https://quoteyard.in`, used in shop invite and reset links.
    - `QUOTE_YARD_ALLOWED_HOSTS=quoteyard.in,www.quoteyard.in,localhost,127.0.0.1`.
    - `QUOTE_YARD_COOKIE_SECURE=true`.
-3. **Google sign-in** (the code is live but hidden):
+3. **Done 2026-11-15. Google sign-in** (client in Rohith's Google Cloud, app in production):
    - In Google Cloud (Rohith's account), add `https://quoteyard.in` under
      Authorised JavaScript origins.
    - Set `QUOTE_YARD_GOOGLE_CLIENT_ID` on the server.
    - Publish the OAuth consent screen: app name, logo, the Privacy and Terms
      links on quoteyard.in, and verify the domain. Until it is published, only
      listed test users can sign in.
-4. **Contact email** such as `contact@quoteyard.in`, forwarded free with Cloudflare
+4. **Skipped for now: contact email** such as `contact@quoteyard.in`, forwarded free with Cloudflare
    Email Routing. Put it on the Privacy and Terms pages.
-5. **Update the Privacy and Terms pages** with the domain and contact address,
-   and change their "Last updated" date.
-6. **Update the care guide** (https://claude.ai/artifact/PXqbtjJs6AD487DwGCc5zJ)
+5. **Done 2026-11-15. Privacy and Terms pages:** quoteyard.in, contact
+   quoteyard.alerts@gmail.com, Cloudflare and Google sign-in listed, new date.
+6. **Done 2026-11-14. Update the care guide** (https://claude.ai/artifact/PXqbtjJs6AD487DwGCc5zJ)
    and tell testers the new address.
 
 ## Could do
