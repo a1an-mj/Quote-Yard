@@ -37,6 +37,7 @@ export default function Login() {
 
   return (
     <AuthCard
+      eyes
       title="Log in"
       footer={<>New here? <CircleLink className="qy-link" to="/signup">Create an account</CircleLink></>}
     >

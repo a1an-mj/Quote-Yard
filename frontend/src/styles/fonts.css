@@ -1,0 +1,26 @@
+/* Brand fonts, served by the site itself (no requests to Google).
+   Anek Malayalam — UI, body, prices (Latin + Malayalam, ₹, tabular figures). OFL.
+   Bricolage Grotesque — display headlines and the wordmark. OFL.
+   Licences: src/assets/fonts/OFL-*.txt. Width axis pinned to 100 to keep files small. */
+
+@font-face {
+  font-family: 'Anek Malayalam';
+  src: url('../assets/fonts/AnekMalayalam-latin.woff') format('woff');
+  font-weight: 100 800;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2013-2014, U+2018-201E, U+2022, U+2026, U+20B9, U+2122, U+2190-2193, U+2212;
+}
+@font-face {
+  font-family: 'Anek Malayalam';
+  src: url('../assets/fonts/AnekMalayalam-malayalam.woff') format('woff');
+  font-weight: 100 800;
+  font-display: swap;
+  unicode-range: U+0D00-0D7F, U+200C-200D, U+25CC;
+}
+@font-face {
+  font-family: 'Bricolage Grotesque';
+  src: url('../assets/fonts/BricolageGrotesque-latin.woff') format('woff');
+  font-weight: 500 800;
+  font-display: swap;
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2013-2014, U+2018-201E, U+2022, U+2026, U+20B9, U+2122, U+2190-2193, U+2212;
+}

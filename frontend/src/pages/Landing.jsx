@@ -5,7 +5,7 @@ import {
   AirVent, ArrowRight, Laptop, Menu, Microwave, Refrigerator, Smartphone, Tag, Tv, WashingMachine, X,
 } from 'lucide-react'
 import Footer from '../components/Footer'
-import Logo from '../components/Logo'
+import Logo, { LogoMark, Wordmark } from '../components/Logo'
 import ThemeSwitch from '../components/ThemeSwitch'
 import { useAuth } from '../lib/auth'
 import { CircleLink } from '../lib/motion'
@@ -129,7 +129,7 @@ function LandingNav() {
       {open && createPortal(
         <div id="ql-menu" className={`ql-overlay ${closing ? 'is-closing' : ''}`} role="dialog" aria-modal="true" aria-label="Menu">
           <div className="ql-overlay__top">
-            <span className="ql-overlay__brand">Quote Yard</span>
+            <span className="ql-overlay__brand" aria-label="Quote Yard"><LogoMark size={30} /><Wordmark height={22} /></span>
             <button className="ql-overlay__close" type="button" aria-label="Close menu" onClick={() => setOpen(false)} autoFocus>
               <X size={20} aria-hidden="true" />
             </button>
@@ -444,7 +444,7 @@ export default function Landing() {
           <div className="ql-hero__grid ql-hero__panel">
             <div className="ql-hero__copy">
               <p className="qy-label">Price comparison · Kerala</p>
-              <h1 className="qy-display ql-hero__title">Every price. One yard.</h1>
+              <h1 className="qy-display qy-brand-type ql-hero__title">Give every price the side-eye.</h1>
               <ul className="ql-facts">
                 <li>Kerala stores, side by side</li>
                 <li>{stores.length || 4} stores, checked every day</li>

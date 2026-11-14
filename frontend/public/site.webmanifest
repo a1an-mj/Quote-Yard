@@ -1,0 +1,14 @@
+{
+  "name": "Quote Yard",
+  "short_name": "Quote Yard",
+  "description": "Every listed price, side by side.",
+  "icons": [
+    { "src": "/icon-192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/icon-512.png", "sizes": "512x512", "type": "image/png" },
+    { "src": "/maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" }
+  ],
+  "theme_color": "#F2492B",
+  "background_color": "#FFF8EF",
+  "display": "standalone",
+  "start_url": "/"
+}

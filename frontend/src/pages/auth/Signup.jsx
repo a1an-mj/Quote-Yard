@@ -33,6 +33,7 @@ export default function Signup() {
 
   return (
     <AuthCard
+      eyes
       title="Create your account"
       intro="We'll email you a code to confirm your address."
       footer={<>Already have an account? <CircleLink className="qy-link" to="/login">Log in</CircleLink></>}

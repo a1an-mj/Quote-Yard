@@ -22,11 +22,28 @@ html.qy { min-height: 100%; }
 
 .qy-auth { display: flex; justify-content: center; padding-block: 56px; }
 .qy-auth__card { width: 100%; max-width: 440px; display: flex; flex-direction: column; gap: 20px; }
+/* Log in and Sign up: a red panel with the logo's eyes beside the form (above it on phones) */
+.qy-auth--eyes { flex-direction: column; align-items: center; gap: 16px; padding-block: 24px 56px; }
+.qy-auth__eyes { width: 100%; max-width: 440px; display: grid; place-items: center; background: var(--qy-red); border-radius: var(--qy-r-lg); padding: 28px 16px; }
+.qy-auth__eyes svg { width: min(160px, 45%); height: auto; overflow: visible; }
+.qy-auth__whites { fill: var(--qy-cream); }
+.qy-auth__pupils { fill: #1A1413; animation: qy-glance 0.9s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both; transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
+.qy-auth__eyes:hover .qy-auth__pupils { transform: translateX(-30px); }
+@keyframes qy-glance { from { transform: translateX(-30px); } to { transform: none; } }
+@media (min-width: 900px) {
+  .qy-auth--eyes { display: grid; grid-template-columns: 1fr minmax(0, 440px); align-items: stretch; gap: 24px; padding-block: 56px; }
+  .qy-auth__eyes { max-width: none; min-height: 520px; padding: 48px; order: 0; }
+  .qy-auth__eyes svg { width: min(340px, 70%); }
+}
+@media (prefers-reduced-motion: reduce) { .qy-auth__pupils { animation: none; transition: none; } }
 .qy-honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .qy-form-error { margin: 0; color: var(--qy-err); font-size: 14px; }
 .qy-form-note { margin: 0; color: var(--qy-ok); font-size: 14px; }
 /* Continue with Google: Google draws the button; we centre it and add the "or" line. */
 .qy-google__button { display: flex; justify-content: center; min-height: 44px; }
+/* Google sizes its button once, sometimes before the form has its width; keep it inside the form */
+.qy-google__button > div { max-width: 100%; }
+.qy-google__button [role="button"] { max-width: 100% !important; }
 .qy-google__or { display: flex; align-items: center; gap: 12px; margin: 0; color: var(--qy-ink-2); }
 .qy-google__or::before, .qy-google__or::after { content: ""; flex: 1; height: 1px; background: var(--qy-line); }
 .qy-input--code { font-family: var(--qy-mono); font-size: 22px; letter-spacing: 0.3em; }

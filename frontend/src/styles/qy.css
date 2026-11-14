@@ -1,34 +1,42 @@
 /* ============================================================
    QUOTE YARD — shared tokens + components (qy-*)
    Change the palette here; every artboard reads these tokens.
-   Layout concept: hairline 12-col grid, mono labels, dot-matrix
-   display numerals, content on white tiles over a pale ground.
+   Brand: "Side-eye" — tomato red, cream, ink. Red is the BRAND colour
+   (logo, CTA, headlines), never a data colour: lowest price is green
+   (--qy-good), price up is --qy-bad. See brand/README.md.
    ============================================================ */
 :root {
-  /* color — neutral placeholders, swap freely */
-  --qy-bg: #F3F3F1;          /* page ground */
+  /* brand */
+  --qy-red: #F2492B;         /* Side-eye red — logo, CTA fills, big headlines (≥24px). Not for small text */
+  --qy-red-deep: #C8341A;    /* red for small text / links on light grounds (4.9:1 on cream) */
+  --qy-cream: #FFF4E4;       /* eye white, warm panels */
+
+  /* color */
+  --qy-bg: #FFF8EF;          /* page ground — warm paper */
   --qy-surface: #FFFFFF;     /* tiles, cards, tables */
-  --qy-sunken: #EAEAE6;      /* image wells, inputs on surface */
-  --qy-ink: #141414;         /* primary text, strong borders */
-  --qy-ink-2: #4F4F4A;       /* secondary text */
-  --qy-ink-3: #6A6A64;       /* tertiary text, labels */
-  --qy-line: #D8D8D3;        /* hairlines */
-  --qy-accent: #141414;      /* primary action + lowest price */
+  --qy-sunken: #F6EDE1;      /* image wells, inputs on surface */
+  --qy-ink: #1A1413;         /* primary text, strong borders */
+  --qy-ink-2: #5B4F49;       /* secondary text (7.5:1) */
+  --qy-ink-3: #7A6D66;       /* tertiary text, labels (4.7:1) */
+  --qy-line: #EADFD2;        /* hairlines */
+  --qy-accent: #1A1413;      /* primary action outline + selected states */
   --qy-on-accent: #FFFFFF;
-  --qy-cta: #FF8A65;         /* key action buttons (Search, Sign in, Compare…) */
-  --qy-on-cta: #141414;      /* text on CTA — ~15:1 contrast */
-  --qy-best: #EDEDE8;        /* lowest-price row tint */
-  --qy-diff: #F7F7F4;        /* "differs" row tint in compare */
-  --qy-inv-1: #E2E2DE;       /* body text on inverted (ink) panels */
-  --qy-inv-2: #C9C9C3;       /* labels on inverted (ink) panels */
-  --qy-dot: #C9C9C3;         /* image placeholder dots */
-  --qy-ok: #2D6547;          /* in stock */
-  --qy-warn: #7A5300;        /* limited / stale */
-  --qy-err: #9E2F28;         /* out of stock / error */
+  --qy-cta: #F2492B;         /* key action buttons (Search, Sign in, Compare…) */
+  --qy-on-cta: #1A1413;      /* ink on red — 5.0:1 */
+  --qy-best: #E2F5E8;        /* lowest-price row tint (green, never red) */
+  --qy-diff: #FBF4EA;        /* "differs" row tint in compare */
+  --qy-inv-1: #F2EBE3;       /* body text on inverted (ink) panels */
+  --qy-inv-2: #C9BDB3;       /* labels on inverted (ink) panels */
+  --qy-dot: #E3D6C7;         /* image placeholder dots */
+  --qy-ok: #127A3E;          /* in stock */
+  --qy-warn: #8A5A00;        /* limited / stale */
+  --qy-err: #A3203B;         /* out of stock / error — crimson, kept apart from brand red */
 
   /* type */
-  --qy-display: 'Doto', 'Geist Mono', ui-monospace, monospace;
-  --qy-sans: 'Geist', 'Helvetica Neue', Arial, system-ui, sans-serif;
+  --qy-brand: 'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif; /* brand moments only: hero line, Log in / Sign up titles */
+  --qy-dots: 'Doto', 'Geist Mono', ui-monospace, monospace; /* dot-matrix numbers, as before */
+  --qy-display: 'Geist', 'Anek Malayalam', 'Helvetica Neue', Arial, sans-serif;
+  --qy-sans: 'Geist', 'Anek Malayalam', 'Helvetica Neue', Arial, system-ui, sans-serif; /* Anek only fills in Malayalam letters */
   --qy-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
   /* spacing (4-pt) */
@@ -41,22 +49,27 @@
 
 /* dark theme — add class "qy--dark" next to "qy" on a screen's root */
 .qy.qy--dark {
-  --qy-bg: #0F0F0E;
-  --qy-surface: #181817;
-  --qy-sunken: #232321;
-  --qy-ink: #F1F1EC;
-  --qy-ink-2: #BDBDB6;
-  --qy-ink-3: #93938C;
-  --qy-line: #30302D;
-  --qy-best: #24241F;
-  --qy-diff: #1E1E1C;
-  --qy-inv-1: #2A2A27;
-  --qy-inv-2: #4F4F4A;
-  --qy-dot: #3B3B37;
+  --qy-red: #FF6B4A;         /* lifted for dark grounds (6.6:1 on bg) */
+  --qy-red-deep: #FF8A6E;
+  --qy-bg: #121212;
+  --qy-surface: #1C1C1C;
+  --qy-sunken: #262626;
+  --qy-ink: #F2EBE3;
+  --qy-ink-2: #C7C2BC;
+  --qy-ink-3: #9A958F;
+  --qy-line: #333333;
+  --qy-accent: #F2EBE3;
+  --qy-cta: #FF6B4A;
+  --qy-on-cta: #121212;
+  --qy-best: #15301F;
+  --qy-diff: #202020;
+  --qy-inv-1: #262626;
+  --qy-inv-2: #5C5C5C;
+  --qy-dot: #3A3A3A;
   --qy-ok: #74D39C;
   --qy-warn: #E3B45A;
-  --qy-err: #F2867B;
-  --qy-on-accent: #141414;
+  --qy-err: #F58BA0;
+  --qy-on-accent: #121212;
   color-scheme: dark;
 }
 .qy--dark .qy-btn--primary, .qy--dark .qy-badge--solid { border-color: var(--qy-cta); }
@@ -84,8 +97,9 @@
 @media (max-width: 640px) { .qy-grid-4, .qy-grid-5, .qy-grid-3 { grid-template-columns: minmax(0, 1fr); } .qy-wrap { padding-inline: 16px; } }
 
 /* ---------- type ---------- */
-.qy-display { font-family: var(--qy-display); font-weight: 700; font-size: 64px; line-height: 0.95; letter-spacing: 0.01em; text-transform: uppercase; margin: 0; text-wrap: balance; }
+.qy-display { font-family: var(--qy-display); font-weight: 600; font-size: 64px; line-height: 1; letter-spacing: -0.03em; margin: 0; text-wrap: balance; }
 .qy-h1 { font-size: 36px; line-height: 1.1; font-weight: 500; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+.qy-brand-type { font-family: var(--qy-brand); font-weight: 800; letter-spacing: -0.015em; font-variation-settings: 'opsz' 96; }
 .qy-h2 { font-size: 24px; line-height: 1.2; font-weight: 500; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
 .qy-h3 { font-size: 17px; line-height: 1.3; font-weight: 500; margin: 0; }
 .qy-body { font-size: 15px; line-height: 1.55; color: var(--qy-ink-2); margin: 0; max-width: 62ch; }
@@ -94,15 +108,20 @@
 .qy-num { font-family: var(--qy-mono); font-variant-numeric: tabular-nums; }
 .qy-price { font-family: var(--qy-mono); font-variant-numeric: tabular-nums; font-weight: 500; letter-spacing: 0.02em; white-space: nowrap; }
 .qy-price--lg { font-size: 28px; }
-.qy-dotnum { font-family: var(--qy-display); font-weight: 700; font-variant-numeric: tabular-nums; }
+.qy-dotnum { font-family: var(--qy-dots); font-weight: 800; font-variant-numeric: tabular-nums; color: var(--qy-red); }
 
 /* ---------- nav ---------- */
 .qy-nav { background: var(--qy-surface); border-bottom: 1px solid var(--qy-line); }
 .qy-nav__in { display: flex; align-items: center; gap: var(--qy-5); min-height: 72px; flex-wrap: wrap; }
-.qy-logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; font-family: var(--qy-display); font-weight: 700; font-size: 22px; letter-spacing: 0.04em; text-transform: uppercase; color: var(--qy-ink); }
-.qy-logo__mark { width: 22px; height: 22px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
-.qy-logo__mark i { display: block; border-radius: 50%; background: var(--qy-ink); }
-.qy-logo__mark i.o { background: transparent; border: 1px solid var(--qy-ink); }
+.qy-logo { display: inline-flex; align-items: center; gap: 10px; text-decoration: none; color: var(--qy-ink); line-height: 0; }
+.qy-mark { display: block; flex: none; overflow: visible; }
+.qy-mark__tile { fill: var(--qy-red); }
+.qy-mark__eyes { fill: var(--qy-cream); }
+.qy-mark__pupils { fill: #1A1413; transition: transform 0.45s cubic-bezier(0.22, 1, 0.36, 1); }
+.qy-wordmark { display: block; flex: none; }
+/* the eyes glance the other way on hover: checking the other shop */
+.qy-logo:hover .qy-mark__pupils, .qy-logo:focus-visible .qy-mark__pupils { transform: translateX(-30px); }
+@media (prefers-reduced-motion: reduce) { .qy-mark__pupils { transition: none; } }
 .qy-navlinks { display: flex; gap: var(--qy-1); flex-wrap: wrap; }
 .qy-navlink { display: inline-flex; align-items: center; min-height: 44px; padding: 0 14px; border-radius: var(--qy-r-pill); text-decoration: none; font-size: 14px; color: var(--qy-ink-2); }
 .qy-navlink:hover, .qy-navlink--on { color: var(--qy-ink); background: var(--qy-sunken); }
