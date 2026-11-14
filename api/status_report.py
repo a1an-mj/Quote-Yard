@@ -28,8 +28,7 @@ IST = ZoneInfo("Asia/Kolkata")
 SLOTS = (time(7, 0), time(14, 0))  # keep in step with deploy/install-report.sh
 PIPELINE = "quote-yard-pipeline.service"
 BACKUP = "quote-yard-backup.service"
-SERVICES = {"Website": "quote-yard-api.service", "Preview link": "quote-yard-preview-tunnel.service"}
-TUNNEL_LINK = re.compile(r"https://[a-z0-9-]+\.trycloudflare\.com")
+SERVICES = {"Website": "quote-yard-api.service", "Site link": "quote-yard-tunnel.service"}
 FAILED_LOGIN = re.compile(r'"POST /api/v1/auth/login HTTP/[\d.]+" 401')
 NORMALIZATION_REPORT = Path(__file__).resolve().parent.parent / "reports" / "normalization_report.json"
 
@@ -153,10 +152,9 @@ def failed_logins(start: datetime) -> int:
     return len(FAILED_LOGIN.findall(log))
 
 
-def preview_link() -> str | None:
-    log = run("journalctl", "--user", "-u", SERVICES["Preview link"], "-b", "--no-pager", "-o", "cat")
-    links = TUNNEL_LINK.findall(log)
-    return links[-1] if links else None
+def site_link() -> str | None:
+    """The public address (QUOTE_YARD_SITE_URL), e.g. https://quoteyard.in."""
+    return os.environ.get("QUOTE_YARD_SITE_URL", "").strip().rstrip("/") or None
 
 
 def cpu_temp(settle: float = 8) -> int | None:
@@ -223,7 +221,7 @@ class Report:
     pipeline: dict[str, str]
     backup: dict[str, str]
     services: dict[str, str]
-    preview: str | None
+    site: str | None
     uptime: str
     cpu_temp: int | None
     screen: str
@@ -293,11 +291,11 @@ def compose(r: Report) -> tuple[str, str]:
         "",
         "SERVER",
         *[f"  {name:<20}{'running' if s == 'active' else s.upper()}" for name, s in r.services.items()],
-        f"  Preview address     {r.preview or 'not found'}",
+        f"  Site address        {r.site or 'not set'}",
         f"  Up for              {r.uptime}",
         *([f"  Restarted           {r.booted:%d %b %H:%M}"
            + (", planned" if r.clean_shutdown else ", unexpected" if r.clean_shutdown is False else "")
-           + " (so the preview link changed)"] if restarted else []),
+           ] if restarted else []),
         f"  CPU temperature     {f'{r.cpu_temp} C' if r.cpu_temp is not None else 'unknown'}",
         f"  Screen              {r.screen}",
         f"  Battery             {f'{level}% ({status.lower()})' if level else 'unknown'}",
@@ -312,23 +310,23 @@ def compose(r: Report) -> tuple[str, str]:
 
 
 def services(link: str | None) -> dict[str, str]:
-    """A running tunnel can still hand out a dead link, so the link itself is opened."""
+    """A running tunnel can still lead nowhere, so the site address itself is opened."""
     state = {name: run("systemctl", "--user", "is-active", unit) or "unknown"
              for name, unit in SERVICES.items()}
-    if state["Preview link"] == "active" and not link_works(link):
-        state["Preview link"] = "not working"
+    if state["Site link"] == "active" and not link_works(link):
+        state["Site link"] = "not working"
     return state
 
 
 def gather(now: datetime) -> Report:
     start, end = period(now)
-    link = preview_link()
+    link = site_link()
     return Report(
         start=start, end=end, host=socket.gethostname(),
         activity=activity(start, end), failed_logins=failed_logins(start),
         pipeline=unit_info(PIPELINE), backup=unit_info(BACKUP),
         services=services(link),
-        preview=link, uptime=uptime(), cpu_temp=cpu_temp(), screen=screen(),
+        site=link, uptime=uptime(), cpu_temp=cpu_temp(), screen=screen(),
         battery=battery(), disk_used=disk_used(), wifi=wifi(), normalization=normalization(),
         booted=boot_time(), clean_shutdown=last_shutdown_clean(),
     )

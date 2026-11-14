@@ -35,8 +35,8 @@ def report(**changes):
                   "ExecMainExitTimestamp": "Fri 2026-11-06 02:46:15 IST"},
         backup={"ActiveState": "inactive", "Result": "success",
                 "ExecMainExitTimestamp": "Fri 2026-11-06 03:30:02 IST"},
-        services={"Website": "active", "Preview link": "active"},
-        preview="https://a-b-c.trycloudflare.com", uptime="1d 2h 3m", cpu_temp=41,
+        services={"Website": "active", "Site link": "active"},
+        site="https://quoteyard.in", uptime="1d 2h 3m", cpu_temp=41,
         screen="off (lid open)", battery=("100", "Not charging"), disk_used=3,
         wifi="HUAWEI-8aDA (67% signal)",
     )
@@ -65,7 +65,7 @@ def test_one_of_each_is_singular():
 def test_failures_are_flagged_in_the_subject():
     subject, body = compose(report(pipeline={"Result": "exit-code",
                                              "ExecMainExitTimestamp": "Fri 2026-11-06 02:46:15 IST"},
-                                   services={"Website": "failed", "Preview link": "active"}))
+                                   services={"Website": "failed", "Site link": "active"}))
     assert subject.endswith("CHECK THE SERVER")
     assert body.startswith("Needs a look: Website, nightly jobs.")
     assert "Price update        FAILED" in body
@@ -92,7 +92,7 @@ def test_a_held_back_store_flags_the_report():
     assert "Oxygen: 40 of 300 products in unknown categories" in body
 
 
-# ---- after a restart, and the preview link -----------------------------------
+# ---- after a restart, and the site link --------------------------------------
 
 from api import status_report  # noqa: E402
 
@@ -138,22 +138,29 @@ def test_systemd_record_wins_over_the_logs(monkeypatch):
 def test_a_running_tunnel_with_a_dead_link_is_a_problem(monkeypatch):
     monkeypatch.setattr(status_report, "run", fake_run({"is-active": "active"}))
     monkeypatch.setattr(status_report, "link_works", lambda link: False)
-    state = status_report.services("https://a-b.trycloudflare.com")
-    assert state == {"Website": "active", "Preview link": "not working"}
+    state = status_report.services("https://quoteyard.in")
+    assert state == {"Website": "active", "Site link": "not working"}
     subject, body = compose(report(services=state))
     assert subject.endswith("CHECK THE SERVER")
-    assert "Preview link        NOT WORKING" in body
+    assert "Site link           NOT WORKING" in body
 
 
 def test_a_working_link_is_running(monkeypatch):
     monkeypatch.setattr(status_report, "run", fake_run({"is-active": "active"}))
     monkeypatch.setattr(status_report, "link_works", lambda link: True)
-    assert status_report.services("https://a-b.trycloudflare.com")["Preview link"] == "active"
+    assert status_report.services("https://quoteyard.in")["Site link"] == "active"
+
+
+def test_the_site_link_comes_from_the_site_url(monkeypatch):
+    monkeypatch.setenv("QUOTE_YARD_SITE_URL", "https://quoteyard.in/")
+    assert status_report.site_link() == "https://quoteyard.in"
+    monkeypatch.delenv("QUOTE_YARD_SITE_URL")
+    assert status_report.site_link() is None
 
 
 def test_a_planned_restart_is_shown_without_alarm():
     subject, body = compose(report(booted=at(6, 4, 30), clean_shutdown=True))
-    assert "Restarted           06 Nov 04:30, planned (so the preview link changed)" in body
+    assert "Restarted           06 Nov 04:30, planned" in body
     assert "Needs a look" not in body and "CHECK" not in subject
 
 

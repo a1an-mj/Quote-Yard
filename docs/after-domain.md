@@ -5,17 +5,16 @@ account (its nameservers set at the seller). Then, in this order:
 
 ## Must do
 
-1. **Permanent link: a named Cloudflare tunnel** for `quoteyard.in` (and
-   `www.quoteyard.in`, redirecting to it). It replaces the quick tunnel, whose
-   link changes on every restart.
-   - Remove the quick tunnel: `systemctl --user disable --now quote-yard-preview-tunnel.service`
-   - Remove the watchdog: `deploy/install-tunnel-watchdog.sh --remove`
-   - Status report: test `https://quoteyard.in` instead of the preview link.
-2. **Server settings** (`.env` on the server):
+1. **Done 2026-11-14. Permanent link: a named Cloudflare tunnel** for
+   `quoteyard.in` and `www.quoteyard.in` (`deploy/install-site-tunnel.sh`,
+   service `quote-yard-tunnel`). The quick tunnel and its watchdog are removed;
+   the status report opens `QUOTE_YARD_SITE_URL`.
+   - Still to do: redirect `www.quoteyard.in` to `quoteyard.in` (a Cloudflare
+     redirect rule; today both show the site).
+2. **Done 2026-11-14. Server settings** (`.env` on the server):
    - `QUOTE_YARD_SITE_URL=https://quoteyard.in`, used in shop invite and reset links.
-   - `QUOTE_YARD_ALLOWED_HOSTS=quoteyard.in,www.quoteyard.in,localhost,127.0.0.1`
-     (drops `*.trycloudflare.com`).
-   - `QUOTE_YARD_COOKIE_SECURE=true`, already set on 2026-11-14; keep it.
+   - `QUOTE_YARD_ALLOWED_HOSTS=quoteyard.in,www.quoteyard.in,localhost,127.0.0.1`.
+   - `QUOTE_YARD_COOKIE_SECURE=true`.
 3. **Google sign-in** (the code is live but hidden):
    - In Google Cloud (Rohith's account), add `https://quoteyard.in` under
      Authorised JavaScript origins.
