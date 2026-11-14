@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useLocation, useNavigate } from 'react-router-dom'
 import AuthCard from '../../components/AuthCard'
 import Field from '../../components/Field'
+import GoogleButton from '../../components/GoogleButton'
 import { api, errorMessage } from '../../lib/api'
 import { useAuth } from '../../lib/auth'
 import { CircleLink, circleTo, middleOf } from '../../lib/motion'
@@ -41,6 +42,7 @@ export default function Login() {
     >
       <form className="qy-stack" style={{ gap: 16 }} onSubmit={submit}>
         {state?.notice && <p className="qy-form-note" role="status">{state.notice}</p>}
+        <GoogleButton text="continue_with" />
         <Field id="email" label="Email" type="email" autoComplete="email" required value={email} onChange={(e) => setEmail(e.target.value)} />
         <Field id="password" label="Password" type="password" autoComplete="current-password" required value={password} onChange={(e) => setPassword(e.target.value)} />
         {error && <p className="qy-form-error" role="alert">{error}</p>}

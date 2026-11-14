@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import AuthCard from '../../components/AuthCard'
 import Field from '../../components/Field'
+import GoogleButton from '../../components/GoogleButton'
 import { api, errorMessage } from '../../lib/api'
 import { CircleLink } from '../../lib/motion'
 
@@ -37,6 +38,7 @@ export default function Signup() {
       footer={<>Already have an account? <CircleLink className="qy-link" to="/login">Log in</CircleLink></>}
     >
       <form className="qy-stack" style={{ gap: 16 }} onSubmit={submit}>
+        <GoogleButton text="signup_with" />
         <Field id="first-name" label="First name" autoComplete="given-name" required maxLength={50} value={form.first_name} onChange={set('first_name')} />
         <Field id="last-name" label="Last name (optional)" autoComplete="family-name" maxLength={50} value={form.last_name} onChange={set('last_name')} />
         <Field id="email" label="Email" type="email" autoComplete="email" required value={form.email} onChange={set('email')} />

@@ -1,7 +1,7 @@
 from datetime import date, datetime
 from typing import Annotated, Literal
 
-from pydantic import AfterValidator, BaseModel, computed_field
+from pydantic import AfterValidator, BaseModel, Field, computed_field
 
 from api.names import shown_name
 from api.security import is_admin_email
@@ -211,6 +211,13 @@ class UserOut(BaseModel):
     first_name: str
     last_name: str | None
     created_at: datetime
+    password_hash: str | None = Field(default=None, exclude=True)
+
+    @computed_field
+    @property
+    def has_password(self) -> bool:
+        """False for Google-only accounts, so the page can skip the password box."""
+        return self.password_hash is not None
 
     @computed_field
     @property

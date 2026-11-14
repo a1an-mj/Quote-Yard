@@ -3,7 +3,7 @@ import Footer from '../components/Footer'
 import PublicNav from '../components/PublicNav'
 
 // Shown on both pages. Change the date whenever either page changes.
-const UPDATED = '3 November 2026'
+const UPDATED = '14 November 2026'
 const OPERATOR = 'Rohith Biju'
 const CONTACT = 'rohithbijurandom@gmail.com'
 
@@ -52,6 +52,7 @@ export function Privacy() {
         <ul>
           <li>Your first name, your last name if you give it, and your email address.</li>
           <li>Your password, stored only in a scrambled form (a hash) that cannot be turned back into the password. Nobody, us included, can read it.</li>
+          <li>If you use <strong>Continue with Google</strong>: Google tells us your name, your email address and that Google has confirmed it, plus an account number Google gives you for our site. We keep only those. We never see your Google password, and we don't get your contacts, photos or anything else from your Google account. When you use Google sign-in, Google's own privacy policy also applies to it.</li>
           <li>The products you save and their lowest price when you saved them, and the price alerts you set.</li>
           <li>When you last logged in, and a record of each login so you stay signed in. Each login stops working after 14 days.</li>
           <li>One-time codes we email you to confirm your address or reset your password. They are also stored scrambled and expire soon after.</li>

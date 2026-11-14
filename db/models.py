@@ -245,7 +245,10 @@ class User(Base):
     email: Mapped[str] = mapped_column(Text, unique=True)
     first_name: Mapped[str] = mapped_column(Text)
     last_name: Mapped[str | None] = mapped_column(Text)
-    password_hash: Mapped[str] = mapped_column(Text)
+    # NULL for accounts made with "Continue with Google" that never set a password.
+    password_hash: Mapped[str | None] = mapped_column(Text)
+    # Google's id for the person, set the first time they use "Continue with Google".
+    google_sub: Mapped[str | None] = mapped_column(Text)
     is_active: Mapped[bool] = mapped_column(Boolean, server_default=true())
     # NULL until the sign-up code is entered; unverified accounts cannot log in.
     email_verified_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
@@ -256,6 +259,7 @@ class User(Base):
 
     __table_args__ = (
         CheckConstraint("email = lower(email)", name="ck_users_email_lowercase"),
+        UniqueConstraint("google_sub", name="uq_users_google_sub"),
     )
 
 

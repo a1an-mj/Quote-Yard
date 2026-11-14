@@ -442,3 +442,137 @@ def test_delete_account_needs_the_right_password(ctx):
 def test_delete_account_needs_login(ctx):
     client, _, _ = ctx
     assert post(client, "delete-account", password=PASSWORD).status_code == 401
+
+
+# ---- continue with Google -----------------------------------------------------
+
+from api import google_login  # noqa: E402
+from api.google_login import GoogleIdentity, GoogleTokenError  # noqa: E402
+
+CLIENT_ID = "test-client.apps.googleusercontent.com"
+
+
+@pytest.fixture
+def google(monkeypatch):
+    """Google's answer for the next token: set .person, or .error to fail."""
+    class Answer:
+        person = GoogleIdentity(sub="g-123", email=EMAIL, first_name="Anu", last_name="K")
+        error = False
+        audience = None
+
+    answer = Answer()
+
+    def fake_verify(token, audience):
+        answer.audience = audience
+        if answer.error:
+            raise GoogleTokenError("bad")
+        return answer.person
+
+    monkeypatch.setenv("QUOTE_YARD_GOOGLE_CLIENT_ID", CLIENT_ID)
+    monkeypatch.setattr(google_login, "verify", fake_verify)
+    return answer
+
+
+def google_post(client):
+    return post(client, "google", credential="x" * 40)
+
+
+def test_google_config_is_empty_when_not_set_up(ctx, monkeypatch):
+    client, _, _ = ctx
+    monkeypatch.delenv("QUOTE_YARD_GOOGLE_CLIENT_ID", raising=False)
+    assert client.get(f"{PREFIX}/auth/google-config").json() == {"client_id": None}
+    assert google_post(client).status_code == 404
+
+
+def test_google_config_gives_the_client_id(ctx, google):
+    client, _, _ = ctx
+    assert client.get(f"{PREFIX}/auth/google-config").json() == {"client_id": CLIENT_ID}
+
+
+def test_google_makes_a_confirmed_account_without_a_password(ctx, google):
+    client, s, mailer = ctx
+    r = google_post(client)
+    assert r.status_code == 200 and r.json()["has_password"] is False
+    assert google.audience == CLIENT_ID
+    user = s.scalar(select(User))
+    assert (user.email, user.first_name, user.last_name) == (EMAIL, "Anu", "K")
+    assert user.password_hash is None and user.google_sub == "g-123"
+    assert user.email_verified_at is not None
+    assert mailer.sent == []
+    assert me(client).json()["email"] == EMAIL
+
+
+def test_google_logs_into_the_existing_account_with_that_email(ctx, google):
+    client, s, mailer = ctx
+    signed_up(client, mailer)
+    post(client, "logout")
+    google.person = GoogleIdentity(sub="g-123", email=EMAIL, first_name="Other", last_name=None)
+    r = google_post(client)
+    assert r.status_code == 200 and r.json()["has_password"] is True
+    users = s.scalars(select(User)).all()
+    assert len(users) == 1 and users[0].google_sub == "g-123"
+    assert users[0].first_name == "Anu"  # a confirmed account keeps its own name
+    assert post(client, "login", email=EMAIL, password=PASSWORD).status_code == 200
+
+
+def test_google_drops_the_password_of_an_unconfirmed_account(ctx, google):
+    client, s, _ = ctx
+    post(client, "register", email=EMAIL, password=PASSWORD)  # never confirmed
+    assert google_post(client).status_code == 200
+    user = s.scalar(select(User))
+    assert user.password_hash is None and user.email_verified_at is not None
+    post(client, "logout")
+    assert post(client, "login", email=EMAIL, password=PASSWORD).status_code == 401
+
+
+def test_google_finds_the_account_by_google_id_after_an_email_change(ctx, google):
+    client, s, _ = ctx
+    google_post(client)
+    post(client, "logout")
+    google.person = GoogleIdentity(sub="g-123", email="new@example.com", first_name="Anu", last_name=None)
+    assert google_post(client).json()["email"] == EMAIL
+    assert len(s.scalars(select(User)).all()) == 1
+
+
+def test_google_refuses_a_different_google_account_for_a_linked_email(ctx, google):
+    client, _, _ = ctx
+    google_post(client)
+    post(client, "logout")
+    google.person = GoogleIdentity(sub="g-999", email=EMAIL, first_name="Anu", last_name=None)
+    assert google_post(client).status_code == 409
+
+
+def test_google_bad_token_is_refused(ctx, google):
+    client, s, _ = ctx
+    google.error = True
+    assert google_post(client).status_code == 400
+    assert s.scalar(select(User)) is None
+
+
+def test_google_needs_the_app_header(ctx, google):
+    client, _, _ = ctx
+    r = client.post(f"{PREFIX}/auth/google", json={"credential": "x" * 40})
+    assert r.status_code == 403
+
+
+def test_google_only_account_deletes_without_a_password(ctx, google):
+    client, s, _ = ctx
+    google_post(client)
+    assert post(client, "delete-account").status_code == 204
+    assert s.scalar(select(User)) is None
+
+
+def test_password_account_still_needs_its_password_to_delete(ctx):
+    client, s, mailer = ctx
+    signed_up(client, mailer)
+    assert post(client, "delete-account").status_code == 400
+    assert s.scalar(select(User)) is not None
+
+
+def test_google_only_account_can_set_a_password_by_reset(ctx, google):
+    client, s, mailer = ctx
+    google_post(client)
+    post(client, "forgot-password", email=EMAIL)
+    r = post(client, "reset-password", email=EMAIL, code=mailer.last_code(), new_password="new password 1")
+    assert r.status_code == 200
+    assert post(client, "login", email=EMAIL, password="new password 1").status_code == 200

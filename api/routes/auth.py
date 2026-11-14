@@ -23,6 +23,7 @@ from api.auth import (
     start_session,
 )
 from api.deps import get_write_session
+from api import google_login
 from api.mailer import get_mailer, send_safely
 from api.ratelimit import RateLimiter
 from api.schemas import MessageOut, UserOut
@@ -86,6 +87,14 @@ class VerifyIn(BaseModel):
 class LoginIn(BaseModel):
     email: Email
     password: str = Field(max_length=128)
+
+
+class GoogleIn(BaseModel):
+    credential: str = Field(min_length=20, max_length=4096)
+
+
+class GoogleConfigOut(BaseModel):
+    client_id: str | None
 
 
 class ResetIn(BaseModel):
@@ -218,6 +227,57 @@ def login(body: LoginIn, request: Request, response: Response,
     return UserOut.model_validate(user, from_attributes=True)
 
 
+@router.get("/google-config", response_model=GoogleConfigOut)
+def google_config():
+    """The page shows the Google button only when this returns a client ID."""
+    return GoogleConfigOut(client_id=google_login.client_id())
+
+
+@router.post("/google", response_model=UserOut)
+def google(body: GoogleIn, request: Request, response: Response,
+           session: Session = Depends(get_write_session)):
+    """Continue with Google: logs in, linking or creating the account by email.
+
+    Google has confirmed the email, so no code is needed. An unconfirmed account
+    with that email had its password typed by someone who never proved they own
+    the address, so that password is dropped."""
+    _limit(request)
+    audience = google_login.client_id()
+    if audience is None:
+        raise HTTPException(status_code=404, detail="Google sign-in is not set up.")
+    try:
+        person = google_login.verify(body.credential, audience)
+    except google_login.GoogleTokenError:
+        raise HTTPException(status_code=400, detail="Google sign-in didn't work. Try again.")
+    user = session.scalar(select(User).where(User.google_sub == person.sub))
+    if user is None:
+        user = _find(session, person.email)
+        if user is not None and user.google_sub not in (None, person.sub):
+            raise HTTPException(status_code=409, detail=EMAIL_TAKEN)
+    now = datetime.now(timezone.utc)
+    if user is None:
+        user = User(email=person.email, first_name=person.first_name, last_name=person.last_name,
+                    password_hash=None, google_sub=person.sub, email_verified_at=now)
+        session.add(user)
+        try:
+            session.flush()
+        except IntegrityError:  # the same person pressing the button twice at once
+            session.rollback()
+            raise HTTPException(status_code=409, detail="Please try again.")
+    else:
+        if user.email_verified_at is None:
+            user.password_hash = None
+            user.first_name, user.last_name = person.first_name, person.last_name
+            user.email_verified_at = now
+        user.google_sub = person.sub
+    if not user.is_active:
+        raise HTTPException(status_code=403, detail="This account is turned off.")
+    token = start_session(session, user)
+    session.commit()
+    _set_cookie(response, token)
+    return UserOut.model_validate(user, from_attributes=True)
+
+
 @router.post("/logout", status_code=204)
 def logout(request: Request, response: Response,
            session: Session = Depends(get_write_session)):
@@ -236,16 +296,17 @@ def me(user: User = Depends(require_user)):
 
 
 class DeleteAccountIn(BaseModel):
-    password: str = Field(max_length=128)
+    password: str = Field(default="", max_length=128)
 
 
 @router.post("/delete-account", status_code=204)
 def delete_account(body: DeleteAccountIn, request: Request, response: Response,
                    user: User = Depends(require_user),
                    session: Session = Depends(get_write_session)):
-    """Removes the account for good: saved items, alerts, codes and logins go with it."""
+    """Removes the account for good: saved items, alerts, codes and logins go with it.
+    An account with no password (Google only) is confirmed by being logged in."""
     _limit(request, "login", user.email)
-    if not verify_secret(user.password_hash, body.password):
+    if user.password_hash is not None and not verify_secret(user.password_hash, body.password):
         # 400, not 401: a wrong password must not look like being logged out.
         raise HTTPException(status_code=400, detail="Wrong password.")
     row = session.get(User, user.id)

@@ -30,9 +30,10 @@ function alertStatus(item) {
   return { label: 'Watching', cls: '' }
 }
 
-// Asks for the password, then removes the account for good.
+// Asks for the password (or, for a Google-only account, a second click), then removes the account for good.
 function DeleteAccount() {
-  const { setUser } = useAuth()
+  const { user, setUser } = useAuth()
+  const needsPassword = user?.has_password !== false
   const navigate = useNavigate()
   const [open, setOpen] = useState(false)
   const [password, setPassword] = useState('')
@@ -65,13 +66,13 @@ function DeleteAccount() {
         <form className="qy-tile qy-tile--pad qy-stack" style={{ gap: 12, maxWidth: 460 }} onSubmit={submit}>
           <h3 className="qy-h3">Delete your account?</h3>
           <p className="qy-small">Your account, saved items and price alerts are removed straight away. This can't be undone.</p>
-          <div className="qy-field">
+          {needsPassword && <div className="qy-field">
             <label className="qy-small" htmlFor="delete-password" style={{ color: 'var(--qy-ink)' }}>Type your password to confirm</label>
             <input id="delete-password" className="qy-input" type="password" autoComplete="current-password" required maxLength={128} autoFocus value={password} onChange={(e) => setPassword(e.target.value)} />
-          </div>
+          </div>}
           {error && <p className="qy-form-error" role="alert">{error}</p>}
           <div className="qy-row" style={{ gap: 8, flexWrap: 'wrap' }}>
-            <button className="qy-btn qy-btn--danger qy-btn--solid-danger" type="submit" disabled={busy || !password}>{busy ? 'Deleting…' : 'Delete for good'}</button>
+            <button className="qy-btn qy-btn--danger qy-btn--solid-danger" type="submit" disabled={busy || (needsPassword && !password)}>{busy ? 'Deleting…' : 'Delete for good'}</button>
             <button className="qy-btn qy-btn--ghost" type="button" disabled={busy} onClick={() => { setOpen(false); setPassword(''); setError(null) }}>Cancel</button>
           </div>
         </form>

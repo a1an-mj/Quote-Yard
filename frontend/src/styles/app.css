@@ -25,6 +25,10 @@ html.qy { min-height: 100%; }
 .qy-honeypot { position: absolute; left: -9999px; width: 1px; height: 1px; overflow: hidden; }
 .qy-form-error { margin: 0; color: var(--qy-err); font-size: 14px; }
 .qy-form-note { margin: 0; color: var(--qy-ok); font-size: 14px; }
+/* Continue with Google: Google draws the button; we centre it and add the "or" line. */
+.qy-google__button { display: flex; justify-content: center; min-height: 44px; }
+.qy-google__or { display: flex; align-items: center; gap: 12px; margin: 0; color: var(--qy-ink-2); }
+.qy-google__or::before, .qy-google__or::after { content: ""; flex: 1; height: 1px; background: var(--qy-line); }
 .qy-input--code { font-family: var(--qy-mono); font-size: 22px; letter-spacing: 0.3em; }
 
 .qy-searchbox { position: relative; flex: 1; min-width: 220px; max-width: 560px; }
