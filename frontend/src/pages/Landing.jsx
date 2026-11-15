@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import Footer from '../components/Footer'
 import Logo, { LogoMark, Wordmark } from '../components/Logo'
+import { MARK } from '../components/brand'
 import ThemeSwitch from '../components/ThemeSwitch'
 import { useAuth } from '../lib/auth'
 import { CircleLink } from '../lib/motion'
@@ -251,7 +252,6 @@ function PriceBox({ deals, loading }) {
       onFocus={() => setPaused(true)}
       onBlur={() => setPaused(false)}
     >
-      <div className="ql-box__lid" aria-hidden="true"><span>Today's deal</span></div>
       <div className="ql-box__body">
         {loading ? (
           <div className="qy-stack" role="status" aria-label="Loading today's deals" style={{ width: '100%' }}>
@@ -427,6 +427,62 @@ function Tickets({ deals }) {
   )
 }
 
+// Red intro with the logo's eyes, once a day, home page only. It covers the
+// home page's loading: it lifts as soon as the deals and stores have arrived
+// (after the eyes have glanced at least once, and never later than 2.5 s).
+// Click or press a key to skip; skipped for people who ask for less motion.
+const INTRO_KEY = 'qy-intro-day'
+const INTRO_MIN = 950 // ms: long enough for the glance
+const INTRO_MAX = 2500 // ms: never hold the page longer than this
+
+const today = () => new Date().toLocaleDateString('en-CA') // YYYY-MM-DD, local time
+
+function shouldSplash() {
+  try {
+    if (new URLSearchParams(window.location.search).has('intro')) return true // ?intro replays it, for checking
+    if (window.matchMedia?.('(prefers-reduced-motion: reduce)').matches) return false
+    return localStorage.getItem(INTRO_KEY) !== today()
+  } catch {
+    return false
+  }
+}
+
+function Splash({ ready }) {
+  const [show, setShow] = useState(shouldSplash)
+  const [leaving, setLeaving] = useState(false)
+  const started = useRef(0)
+  useEffect(() => {
+    if (!show) return
+    started.current = performance.now()
+    try { localStorage.setItem(INTRO_KEY, today()) } catch { /* blocked storage: it just shows again */ }
+    const cap = setTimeout(() => setLeaving(true), INTRO_MAX)
+    const skip = () => setLeaving(true)
+    window.addEventListener('keydown', skip)
+    return () => { clearTimeout(cap); window.removeEventListener('keydown', skip) }
+  }, [show])
+  useEffect(() => {
+    if (!show || !ready) return
+    const wait = Math.max(0, INTRO_MIN - (performance.now() - started.current))
+    const out = setTimeout(() => setLeaving(true), wait)
+    return () => clearTimeout(out)
+  }, [show, ready])
+  if (!show) return null
+  return createPortal(
+    <div
+      className={`ql-splash${leaving ? ' is-leaving' : ''}`}
+      aria-hidden="true"
+      onClick={() => setLeaving(true)}
+      onAnimationEnd={(e) => { if (e.target === e.currentTarget && leaving) setShow(false) }}
+    >
+      <svg className="ql-splash__eyes" viewBox="28 72 200 104" focusable="false">
+        <path className="ql-splash__whites" d={MARK.eyes} />
+        <path className="ql-splash__pupils" d={MARK.pupils} />
+      </svg>
+    </div>,
+    document.body,
+  )
+}
+
 export default function Landing() {
   const deals = useApi('/public/deals')
   const retailers = useApi('/retailers')
@@ -436,6 +492,7 @@ export default function Landing() {
 
   return (
     <div className="ql">
+      <Splash ready={!deals.loading && !retailers.loading} />
       <LandingNav />
       <main>
         <section className="ql-hero">

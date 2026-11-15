@@ -61,11 +61,7 @@ html:has(.ql) { scroll-padding-top: 84px; }
 /* the price box */
 .ql-box { position: relative; border-radius: 24px; background: var(--qy-surface); box-shadow: 0 2px 4px rgba(20, 20, 20, 0.05), 0 24px 60px rgba(20, 20, 20, 0.14); transform: perspective(900px) rotateX(var(--rx, 0deg)) rotateY(var(--ry, 0deg)); transition: transform 0.9s var(--ql-glide); will-change: transform; isolation: isolate; }
 .qy--dark .ql-box { box-shadow: 0 0 0 1px var(--qy-line), 0 24px 60px rgba(0, 0, 0, 0.5); }
-.ql-box__lid { position: absolute; inset: 0; z-index: 2; border-radius: 24px; display: grid; place-items: center; background: var(--qy-surface); color: var(--qy-ink); box-shadow: inset 0 0 0 1px var(--qy-line); font: 600 24px var(--qy-display); letter-spacing: -0.02em; transform-origin: top center; animation: ql-lid 1.4s 0.5s var(--ql-glide) forwards; pointer-events: none; }
-/* White in light mode; in dark mode it stays black with the highlight colour. */
-.qy--dark .ql-box__lid { background: var(--qy-surface); color: var(--qy-cta); box-shadow: none; }
 /* The lid lifts a little and fades, staying clear of the header. */
-@keyframes ql-lid { 45% { transform: translateY(-14%) rotateX(18deg); opacity: 0.95; } 100% { transform: translateY(-34%) rotateX(30deg); opacity: 0; } }
 .ql-box__body { padding: 22px 22px 14px; min-height: 290px; display: flex; }
 .ql-box__stack { display: grid; width: 100%; }
 .ql-box__face { grid-area: 1 / 1; display: flex; flex-direction: column; gap: 14px; min-width: 0; }
@@ -181,10 +177,21 @@ html:has(.ql) { scroll-padding-top: 84px; }
 
 /* ---------- less motion ---------- */
 @media (prefers-reduced-motion: reduce) {
-  .ql-box__lid { display: none; }
   .ql-curve__line { animation: none; stroke-dashoffset: 0; }
   .ql-curve__glow { display: none; }
   .ql-curve, .ql-curve__glow, .ql-box__face, .ql-overlay, .ql-overlay.is-closing, .ql-overlay__links a, .ql-scroll span { animation: none; }
   .ql-box, .ql-tag, .ql-tag__extra, .ql-variant, .ql-variant__drop, .ql-story__save, .ql-scene > *, .ql-ticket, .ql-box__dots i { transition: none; }
   .ql-store:hover .ql-store__dot::after { animation: none; }
 }
+
+/* ---------- intro: red screen, the logo's eyes glance, then it lifts away ---------- */
+.ql-splash { position: fixed; inset: 0; z-index: 100; display: grid; place-items: center; background: var(--qy-red); cursor: pointer; }
+.ql-splash.is-leaving { animation: ql-splash-out 0.55s cubic-bezier(0.7, 0, 0.2, 1) forwards; }
+.ql-splash__eyes { width: min(300px, 60vw); height: auto; overflow: visible; animation: ql-splash-pop 0.45s cubic-bezier(0.22, 1, 0.36, 1) both; }
+.ql-splash__whites { fill: var(--qy-cream); }
+.ql-splash__pupils { fill: #1A1413; animation: ql-splash-glance 0.6s cubic-bezier(0.22, 1, 0.36, 1) 0.35s both, ql-splash-look 0.9s ease-in-out 1.25s infinite alternate; }
+/* still loading after the glance: the eyes keep checking left and right */
+@keyframes ql-splash-look { to { transform: translateX(-30px); } }
+@keyframes ql-splash-pop { from { transform: scale(0.85); opacity: 0; } }
+@keyframes ql-splash-glance { from { transform: translateX(-30px); } }
+@keyframes ql-splash-out { to { clip-path: inset(0 0 100% 0); } }
