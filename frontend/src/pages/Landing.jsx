@@ -105,6 +105,15 @@ function LandingNav() {
   }, [open])
 
   const links = [['#deals', "Today's deals"], ['#stores', 'Stores'], ['#how', 'How it works']]
+  // The page can't scroll while the menu is open, so close it first, then go.
+  const goTo = (e, href) => {
+    e.preventDefault()
+    setOpen(false)
+    setTimeout(() => {
+      document.querySelector(href)?.scrollIntoView({ behavior: less ? 'auto' : 'smooth' })
+      history.replaceState(null, '', href)
+    }, less ? 0 : 320)
+  }
   return (
     <header className="ql-nav">
       <div className="qy-wrap ql-nav__in">
@@ -136,7 +145,7 @@ function LandingNav() {
             </button>
           </div>
           <nav className="ql-overlay__links" aria-label="Menu links">
-            {links.map(([href, label]) => <a key={href} href={href} onClick={() => setOpen(false)}>{label}</a>)}
+            {links.map(([href, label]) => <a key={href} href={href} onClick={(e) => goTo(e, href)}>{label}</a>)}
             {!user && <CircleLink to="/login">Log in</CircleLink>}
           </nav>
           <div className="ql-overlay__foot">

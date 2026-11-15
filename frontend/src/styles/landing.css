@@ -1,6 +1,8 @@
 /* The landing page only. Everything is under .ql so no other page changes. */
 
-.ql { --ql-night: #1A1413; --ql-glide: cubic-bezier(0.22, 1, 0.36, 1); overflow-x: clip; }
+/* The phone menu is drawn outside .ql (on <body>), so it needs the same settings. */
+.ql, .ql-overlay { --ql-night: #1A1413; --ql-glide: cubic-bezier(0.22, 1, 0.36, 1); }
+.ql { overflow-x: clip; }
 @media (prefers-reduced-motion: no-preference) {
   html:has(.ql) { scroll-behavior: smooth; }
 }
@@ -15,16 +17,16 @@ html:has(.ql) { scroll-padding-top: 84px; }
 
 /* full-screen phone menu */
 /* Rendered at the end of <body>, outside the blurred header, so it can cover the screen. */
-.ql-overlay { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; padding: 20px 20px 28px; background: #121212; color: #F2EBE3; animation: ql-unroll 0.5s var(--ql-glide); }
+.ql-overlay { position: fixed; inset: 0; z-index: 60; display: flex; flex-direction: column; padding: 20px 20px 28px; background: var(--qy-bg); color: var(--qy-ink); animation: ql-unroll 0.5s var(--ql-glide); }
 .ql-overlay__top { display: flex; justify-content: space-between; align-items: center; min-height: 48px; }
-.ql-overlay__brand { display: inline-flex; align-items: center; gap: 10px; color: #F2EBE3; line-height: 0; }
-.ql-overlay__close { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 0; background: rgba(255, 255, 255, 0.12); color: inherit; cursor: pointer; }
+.ql-overlay__brand { display: inline-flex; align-items: center; gap: 10px; color: var(--qy-ink); line-height: 0; }
+.ql-overlay__close { width: 44px; height: 44px; display: grid; place-items: center; border-radius: 50%; border: 0; background: color-mix(in srgb, var(--qy-ink) 10%, transparent); color: inherit; cursor: pointer; }
 .ql-overlay__links { flex: 1; display: flex; flex-direction: column; justify-content: center; gap: 6px; }
-.ql-overlay__links a { color: #F2EBE3; text-decoration: none; font: 600 clamp(36px, 11vw, 56px)/1.15 var(--qy-sans); letter-spacing: -0.02em; animation: ql-in 0.6s var(--ql-glide) both; }
+.ql-overlay__links a { color: var(--qy-ink); text-decoration: none; font: 600 clamp(36px, 11vw, 56px)/1.15 var(--qy-sans); letter-spacing: -0.02em; animation: ql-in 0.6s var(--ql-glide) both; }
 .ql-overlay__links a:nth-child(2) { animation-delay: 80ms; }
 .ql-overlay__links a:nth-child(3) { animation-delay: 160ms; }
 .ql-overlay__links a:nth-child(4) { animation-delay: 240ms; }
-.ql-overlay__foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 20px; border-top: 1px solid rgba(255, 255, 255, 0.16); }
+.ql-overlay__foot { display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap; padding-top: 20px; border-top: 1px solid var(--qy-line); }
 /* Unrolls down from the top, and rolls back up on close (300 ms, as Landing.jsx waits). */
 @keyframes ql-unroll { from { clip-path: inset(0 0 100% 0); } to { clip-path: inset(0 0 0 0); } }
 .ql-overlay.is-closing { animation: ql-roll-up 0.3s cubic-bezier(0.4, 0, 1, 1) forwards; }
