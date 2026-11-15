@@ -35,13 +35,13 @@ def teardown_function():
 
 def test_feedback_is_emailed_to_the_team(monkeypatch):
     c, mailer = client(monkeypatch)
-    r = c.post(URL, headers=HEADERS, json={"colour": "sunflower", "fatigue": "a-little",
+    r = c.post(URL, headers=HEADERS, json={"look": "love", "fatigue": "a-little",
                                             "mistakes": "Typo on the landing page", "name": "Anu"})
     assert r.status_code == 202
     ((to, subject, body),) = mailer.sent
     assert to == "quoteyard.alerts@gmail.com"
     assert subject == "Quote Yard feedback from Anu"
-    assert "Sunflower #FFD23F" in body and "A little" in body and "Typo on the landing page" in body
+    assert "The new look:\nLove it" in body and "A little" in body and "Typo on the landing page" in body
 
 
 def test_a_rating_alone_is_enough(monkeypatch):
@@ -75,9 +75,9 @@ def test_needs_the_app_header(monkeypatch):
     assert c.post(URL, json={"problems": "x"}).status_code in (400, 403)
 
 
-def test_unknown_colour_and_long_text_refused(monkeypatch):
+def test_unknown_look_and_long_text_refused(monkeypatch):
     c, _ = client(monkeypatch)
-    assert c.post(URL, headers=HEADERS, json={"colour": "rainbow"}).status_code == 422
+    assert c.post(URL, headers=HEADERS, json={"look": "rainbow"}).status_code == 422
     assert c.post(URL, headers=HEADERS, json={"problems": "x" * 2001}).status_code == 422
 
 

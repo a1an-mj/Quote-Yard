@@ -5,19 +5,12 @@ import Footer from '../components/Footer'
 import PublicNav from '../components/PublicNav'
 import { api, errorMessage } from '../lib/api'
 
-// The highlight colours testers can try. Keys match api/routes/feedback.py.
-const COLOURS = [
-  { key: 'neon-green', name: 'Neon green', hex: '#4DFF00', on: '#141414', note: 'Before' },
-  { key: 'sunflower', name: 'Sunflower', hex: '#FFD23F', on: '#141414' },
-  { key: 'coral', name: 'Coral', hex: '#FF8A65', on: '#141414', note: 'Now' },
-  { key: 'sky', name: 'Sky', hex: '#6CC4FF', on: '#141414' },
-  { key: 'lavender', name: 'Lavender', hex: '#B9A4FF', on: '#141414' },
-  { key: 'ink', name: 'Ink', hex: 'var(--qy-ink)', on: 'var(--qy-surface)', label: 'Black (white in dark mode)' },
-]
+// Keys match api/routes/feedback.py.
+const LOOK = [['love', 'Love it'], ['okay', "It's okay"], ['not-for-me', 'Not for me']]
 const FATIGUE = [['not-at-all', 'Not at all'], ['a-little', 'A little'], ['quite', 'Quite tiring'], ['very', 'Very tiring']]
 const DEVICES = [['phone', 'Phone'], ['computer', 'Computer'], ['tablet', 'Tablet']]
 const EMPTY = {
-  rating: '', colour: '', colour_note: '', fatigue: '', fatigue_note: '', problems: '', mistakes: '',
+  rating: '', look: '', look_note: '', fatigue: '', fatigue_note: '', problems: '', mistakes: '',
   questions: '', suggestions: '', device: '', name: '', email: '', website: '',
 }
 
@@ -62,9 +55,6 @@ export default function Feedback() {
   const [error, setError] = useState(null)
   const [sent, setSent] = useState(false)
   const set = (key) => (value) => setForm((f) => ({ ...f, [key]: value }))
-  const picked = COLOURS.find((c) => c.key === form.colour)
-  // The chosen colour is tried on this whole page, header buttons included.
-  const tryOn = picked ? { '--qy-cta': picked.hex, '--qy-on-cta': picked.on } : undefined
 
   async function submit(e) {
     e.preventDefault()
@@ -82,7 +72,7 @@ export default function Feedback() {
   }
 
   return (
-    <div style={tryOn}>
+    <div>
       <PublicNav />
       <main className="qy-wrap" style={{ paddingBlock: '40px 72px' }}>
         {sent ? (
@@ -114,27 +104,11 @@ export default function Feedback() {
               </div>
             </Question>
 
-            <Question n={2} title="The highlight colour" hint="The bright colour on main buttons like Sign up and Search. Tap one to try it on this page.">
-              <div className="qy-fb__swatches" role="radiogroup" aria-label="Highlight colour">
-                {COLOURS.map((c) => (
-                  <label key={c.key} className="qy-swatch">
-                    <input type="radio" name="colour" value={c.key} checked={form.colour === c.key} onChange={() => set('colour')(c.key)} />
-                    <span className="qy-swatch__sample" style={{ background: c.hex, color: c.on }}>Sign up</span>
-                    <span className="qy-swatch__name">{c.name}{c.note && <span className="qy-badge" style={{ marginLeft: 6 }}>{c.note}</span>}</span>
-                    <span className="qy-small">{c.label ?? c.hex}</span>
-                  </label>
-                ))}
-                <label className="qy-swatch qy-swatch--other">
-                  <input type="radio" name="colour" value="other" checked={form.colour === 'other'} onChange={() => set('colour')('other')} />
-                  <span className="qy-swatch__sample qy-swatch__sample--other">?</span>
-                  <span className="qy-swatch__name">Something else</span>
-                  <span className="qy-small">Tell us below</span>
-                </label>
-              </div>
-              <p className="qy-small">Green marks the lowest price everywhere on the site, so the highlight should stay clearly different from it.</p>
+            <Question n={2} title="How do you like the new look?" hint="The new logo with the eyes, the red colour and the fonts.">
+              <Pills name="look" options={LOOK} value={form.look} onChange={set('look')} />
               <div className="qy-field">
-                <label className="qy-small" htmlFor="colour-note" style={{ color: 'var(--qy-ink)' }}>Why, or which other colour? (optional)</label>
-                <input id="colour-note" className="qy-input" maxLength={300} value={form.colour_note} onChange={(e) => set('colour_note')(e.target.value)} />
+                <label className="qy-small" htmlFor="look-note" style={{ color: 'var(--qy-ink)' }}>What do you like or not like about it? (optional)</label>
+                <input id="look-note" className="qy-input" maxLength={300} value={form.look_note} onChange={(e) => set('look_note')(e.target.value)} />
               </div>
             </Question>
 

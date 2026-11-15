@@ -21,16 +21,12 @@ router = APIRouter(prefix="/public", tags=["public"], dependencies=[Depends(requ
 DEFAULT_TO = "quoteyard.alerts@gmail.com"
 PER_HOUR = 5
 
-# The highlight colours testers can pick from (frontend/src/pages/Feedback.jsx).
-Colour = Literal["neon-green", "sunflower", "coral", "sky", "lavender", "ink", "other", ""]
+# "How do you like the new look?" (frontend/src/pages/Feedback.jsx).
+Look = Literal["love", "okay", "not-for-me", ""]
 Fatigue = Literal["not-at-all", "a-little", "quite", "very", ""]
 Device = Literal["phone", "computer", "tablet", ""]
 
-COLOUR_NAMES = {
-    "neon-green": "Neon green #4DFF00 (before)", "sunflower": "Sunflower #FFD23F",
-    "coral": "Coral #FF8A65 (current)", "sky": "Sky #6CC4FF", "lavender": "Lavender #B9A4FF",
-    "ink": "Ink black #141414", "other": "Other (see note)", "": "(not answered)",
-}
+LOOK_NAMES = {"love": "Love it", "okay": "It's okay", "not-for-me": "Not for me", "": "(not answered)"}
 FATIGUE_NAMES = {
     "not-at-all": "Not at all", "a-little": "A little", "quite": "Quite tiring",
     "very": "Very tiring", "": "(not answered)",
@@ -41,8 +37,8 @@ Text = Field(default="", max_length=2000)
 
 class FeedbackIn(BaseModel):
     rating: int | None = Field(default=None, ge=1, le=10)  # overall, out of 10
-    colour: Colour = ""
-    colour_note: str = Field(default="", max_length=300)
+    look: Look = ""
+    look_note: str = Field(default="", max_length=300)
     fatigue: Fatigue = ""
     fatigue_note: str = Text
     problems: str = Text
@@ -77,7 +73,7 @@ def feedback_body(f: FeedbackIn) -> str:
         f"Device: {f.device or '(not answered)'}",
         "",
         _section("Overall rating:", f"{f.rating}/10" if f.rating else ""),
-        _section("Highlight colour:", COLOUR_NAMES[f.colour] + (f" ({f.colour_note.strip()})" if f.colour_note.strip() else "")),
+        _section("The new look:", LOOK_NAMES[f.look] + (f" ({f.look_note.strip()})" if f.look_note.strip() else "")),
         _section("Does the site feel tiring?", FATIGUE_NAMES[f.fatigue] + (f" ({f.fatigue_note.strip()})" if f.fatigue_note.strip() else "")),
         _section("Problems:", f.problems),
         _section("Spelling mistakes or wrong details:", f.mistakes),
@@ -89,7 +85,7 @@ def feedback_body(f: FeedbackIn) -> str:
 @router.post("/feedback", response_model=MessageOut, status_code=202)
 def send_feedback(body: FeedbackIn, request: Request, background: BackgroundTasks,
                   mailer=Depends(get_mailer)):
-    texts = (body.colour, body.colour_note, body.fatigue, body.fatigue_note, body.problems,
+    texts = (body.look, body.look_note, body.fatigue, body.fatigue_note, body.problems,
              body.mistakes, body.questions, body.suggestions)
     if body.rating is None and not any(t.strip() for t in texts):
         raise HTTPException(status_code=422, detail="Please answer at least one question.")
