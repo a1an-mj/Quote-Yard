@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App.jsx'
 import { AuthProvider } from './lib/auth.jsx'
 // Fonts are served by the site itself, so no visitor data goes to Google.
-// Geist (text) and Geist Mono (prices, labels) as before; Bricolage Grotesque only for brand moments, Anek Malayalam for Malayalam letters (src/assets/fonts).
+// Geist (text, section titles), Geist Mono (prices, labels), Doto (big counters); Bricolage Grotesque for headlines and page titles (src/assets/fonts).
 import './styles/fonts.css'
 import '@fontsource/doto/latin-800.css'
 import '@fontsource/doto/latin-ext-800.css'

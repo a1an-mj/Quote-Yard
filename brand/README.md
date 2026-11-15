@@ -39,15 +39,15 @@ For print, match Side-eye Red against a physical Pantone swatch book. Don't trus
 
 | Role | Font | Settings |
 |---|---|---|
-| Wordmark, hero line, Log in / Create your account titles | **Bricolage Grotesque** | ExtraBold 800, opsz 96, tracking −1.5 % |
-| UI, body, headings | **Geist** | 400–600 |
+| Wordmark, big headlines, Log in / Create your account titles | **Bricolage Grotesque** | ExtraBold 800, opsz 96, tracking −1.5 % |
+| Page titles ("Today's deals", "Categories"…) | **Bricolage Grotesque** | Bold 700, opsz 48, tracking −1 % |
+| UI, body, section titles | **Geist** | 400–600 |
 | Prices, small labels, codes | **Geist Mono** | 400–500, `tabular-nums` |
 | Big counters and step numbers | **Doto** (dot-matrix) | 800 |
-| Malayalam letters | **Anek Malayalam** | fills in automatically after Geist |
 
-Keep Bricolage for those few brand moments only; normal headings stay Geist.
+The site has no Malayalam text, so no Malayalam font is loaded. If Malayalam is added later, add a Malayalam font (Anek Malayalam fits Bricolage) after Geist.
 
-Both brand fonts are SIL Open Font License (free, logo use allowed). The site self-hosts them from `frontend/src/assets/fonts/`. They're split into Latin and Malayalam files, so English-only pages never download the Malayalam glyphs.
+Bricolage Grotesque is SIL Open Font License (free, logo use allowed). The site self-hosts it from `frontend/src/assets/fonts/`.
 
 ## 4. Clear space and minimum size
 

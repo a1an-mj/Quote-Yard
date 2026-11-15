@@ -33,10 +33,10 @@
   --qy-err: #A3203B;         /* out of stock / error — crimson, kept apart from brand red */
 
   /* type */
-  --qy-brand: 'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif; /* brand moments only: hero line, Log in / Sign up titles */
+  --qy-brand: 'Bricolage Grotesque', 'Helvetica Neue', Arial, sans-serif; /* big headlines and page titles; section titles stay Geist */
   --qy-dots: 'Doto', 'Geist Mono', ui-monospace, monospace; /* dot-matrix numbers, as before */
-  --qy-display: 'Geist', 'Anek Malayalam', 'Helvetica Neue', Arial, sans-serif;
-  --qy-sans: 'Geist', 'Anek Malayalam', 'Helvetica Neue', Arial, system-ui, sans-serif; /* Anek only fills in Malayalam letters */
+  --qy-display: var(--qy-brand);
+  --qy-sans: 'Geist', 'Helvetica Neue', Arial, system-ui, sans-serif;
   --qy-mono: 'Geist Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
 
   /* spacing (4-pt) */
@@ -97,8 +97,8 @@
 @media (max-width: 640px) { .qy-grid-4, .qy-grid-5, .qy-grid-3 { grid-template-columns: minmax(0, 1fr); } .qy-wrap { padding-inline: 16px; } }
 
 /* ---------- type ---------- */
-.qy-display { font-family: var(--qy-display); font-weight: 600; font-size: 64px; line-height: 1; letter-spacing: -0.03em; margin: 0; text-wrap: balance; }
-.qy-h1 { font-size: 36px; line-height: 1.1; font-weight: 500; letter-spacing: -0.02em; margin: 0; text-wrap: balance; }
+.qy-display { font-family: var(--qy-display); font-weight: 800; font-size: 64px; line-height: 0.98; letter-spacing: -0.015em; font-variation-settings: 'opsz' 96; margin: 0; text-wrap: balance; }
+.qy-h1 { font-family: var(--qy-brand); font-size: 36px; line-height: 1.1; font-weight: 700; letter-spacing: -0.01em; font-variation-settings: 'opsz' 48; margin: 0; text-wrap: balance; }
 .qy-brand-type { font-family: var(--qy-brand); font-weight: 800; letter-spacing: -0.015em; font-variation-settings: 'opsz' 96; }
 .qy-h2 { font-size: 24px; line-height: 1.2; font-weight: 500; letter-spacing: -0.01em; margin: 0; text-wrap: balance; }
 .qy-h3 { font-size: 17px; line-height: 1.3; font-weight: 500; margin: 0; }
