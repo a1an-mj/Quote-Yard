@@ -40,7 +40,7 @@ html.qy { min-height: 100%; }
 .qy-form-error { margin: 0; color: var(--qy-err); font-size: 14px; }
 .qy-form-note { margin: 0; color: var(--qy-ok); font-size: 14px; }
 /* Continue with Google: Google draws the button; we centre it and add the "or" line. */
-.qy-google__button { display: flex; justify-content: center; min-height: 44px; }
+.qy-google__button { display: flex; justify-content: center; min-height: 44px; color-scheme: light; } /* Google's frame is light; matching it keeps the frame see-through in dark mode instead of a white box */
 /* Google sizes its button once, sometimes before the form has its width; keep it inside the form */
 .qy-google__button > div { max-width: 100%; }
 .qy-google__button [role="button"] { max-width: 100% !important; }
