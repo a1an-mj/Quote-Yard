@@ -198,6 +198,9 @@ export default function Results() {
     }
     if (!('page' in changes)) next.delete('page')
     setParams(next)
+    // A new page of results starts at the top. (Filters keep your place, and the
+    // site only jumps to the top when the address path changes, so do it here.)
+    if ('page' in changes) window.scrollTo(0, 0)
   }
 
   function clear() {
